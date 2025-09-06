@@ -1,0 +1,343 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  name            String?
+  password        String
+  role            Role     @default(MEMBER)
+  githubUsername  String?
+  location        String?
+  bio             String?
+  avatar          String?
+  joinedAt        DateTime @default(now())
+  lastActive      DateTime @default(now())
+  
+  // Gamification
+  level           Int      @default(1)
+  experience      Int      @default(0)
+  streak          Int      @default(0)
+  lastStreakDate  DateTime?
+  
+  // Relations
+  projects        ProjectMember[]
+  events          EventAttendee[]
+  activities      Activity[]
+  githubStats     GitHubStats?
+  createdProjects Project[] @relation("ProjectCreator")
+  approvedProjects Project[] @relation("ProjectApprover")
+  createdEvents   Event[]   @relation("EventCreator")
+  approvedEvents  Event[]   @relation("EventApprover")
+  achievements    UserAchievement[]
+  badges          UserBadge[]
+  notifications   Notification[]
+  
+  @@map("users")
+}
+
+model Project {
+  id            String        @id @default(cuid())
+  name          String
+  description   String
+  repoUrl       String?
+  language      String
+  status        ProjectStatus @default(PLANNING)
+  approvalStatus ApprovalStatus @default(PENDING)
+  rejectionReason String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  approvedAt    DateTime?
+  approvedById  String?
+  
+  // Relations
+  creatorId     String
+  creator       User            @relation("ProjectCreator", fields: [creatorId], references: [id])
+  approvedBy    User?           @relation("ProjectApprover", fields: [approvedById], references: [id])
+  members       ProjectMember[]
+  activities    Activity[]
+  
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String @id @default(cuid())
+  userId    String
+  projectId String
+  role      String @default("contributor")
+  joinedAt  DateTime @default(now())
+  
+  // Relations
+  user      User    @relation(fields: [userId], references: [id])
+  project   Project @relation(fields: [projectId], references: [id])
+  
+  @@unique([userId, projectId])
+  @@map("project_members")
+}
+
+model Event {
+  id              String      @id @default(cuid())
+  title           String
+  description     String
+  date            DateTime
+  location        String
+  maxAttendees    Int
+  type            EventType
+  status          EventStatus @default(UPCOMING)
+  approvalStatus  ApprovalStatus @default(PENDING)
+  rejectionReason String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  approvedAt      DateTime?
+  approvedById    String?
+  
+  // Relations
+  creatorId       String
+  creator         User            @relation("EventCreator", fields: [creatorId], references: [id])
+  approvedBy      User?           @relation("EventApprover", fields: [approvedById], references: [id])
+  attendees       EventAttendee[]
+  activities      Activity[]
+  
+  @@map("events")
+}
+
+model EventAttendee {
+  id       String   @id @default(cuid())
+  userId   String
+  eventId  String
+  joinedAt DateTime @default(now())
+  
+  // Relations
+  user     User  @relation(fields: [userId], references: [id])
+  event    Event @relation(fields: [eventId], references: [id])
+  
+  @@unique([userId, eventId])
+  @@map("event_attendees")
+}
+
+model GitHubStats {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  commits       Int      @default(0)
+  pullRequests  Int      @default(0)
+  issues        Int      @default(0)
+  repositories  Int      @default(0)
+  followers     Int      @default(0)
+  contributions Int      @default(0)
+  languages     Json?    // Store as JSON: {"JavaScript": 45, "TypeScript": 30}
+  lastSynced    DateTime @default(now())
+  
+  // Relations
+  user          User @relation(fields: [userId], references: [id])
+  
+  @@map("github_stats")
+}
+
+model Activity {
+  id          String       @id @default(cuid())
+  type        ActivityType
+  userId      String
+  description String
+  metadata    Json?        // Store additional data as JSON
+  createdAt   DateTime     @default(now())
+  
+  // Optional relations
+  projectId   String?
+  eventId     String?
+  
+  // Relations
+  user        User     @relation(fields: [userId], references: [id])
+  project     Project? @relation(fields: [projectId], references: [id])
+  event       Event?   @relation(fields: [eventId], references: [id])
+  
+  @@map("activities")
+}
+
+// Enums
+enum Role {
+  ADMIN
+  MAINTAINER
+  MODERATOR
+  MEMBER
+  VOLUNTEER
+}
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum EventType {
+  WORKSHOP
+  HACKATHON
+  MEETUP
+  CONFERENCE
+}
+
+enum EventStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum ActivityType {
+  COMMIT
+  PULL_REQUEST
+  ISSUE
+  EVENT_JOIN
+  EVENT_CREATE
+  PROJECT_JOIN
+  PROJECT_CREATE
+  MEMBER_JOIN
+  ACHIEVEMENT
+  PROJECT_PROPOSAL
+  EVENT_PROPOSAL
+  PROJECT_APPROVED
+  PROJECT_REJECTED
+  EVENT_APPROVED
+  EVENT_REJECTED
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+// Gamification Models
+model Achievement {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  icon        String
+  category    AchievementCategory
+  points      Int      @default(0)
+  requirement Json     // Store requirement criteria as JSON
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  users       UserAchievement[]
+  
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime    @default(now())
+  progress      Json?       // Store progress data as JSON
+  
+  // Relations
+  user          User        @relation(fields: [userId], references: [id])
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+  
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+model Badge {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String
+  icon        String
+  color       String
+  rarity      BadgeRarity @default(COMMON)
+  createdAt   DateTime   @default(now())
+  
+  // Relations
+  users       UserBadge[]
+  
+  @@map("badges")
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+  
+  // Relations
+  user     User  @relation(fields: [userId], references: [id])
+  badge    Badge @relation(fields: [badgeId], references: [id])
+  
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+model Leaderboard {
+  id        String          @id @default(cuid())
+  type      LeaderboardType
+  period    String          // "daily", "weekly", "monthly", "all-time"
+  data      Json            // Store leaderboard data as JSON
+  updatedAt DateTime        @updatedAt
+  
+  @@unique([type, period])
+  @@map("leaderboards")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?            // Additional notification data
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  
+  // Relations
+  user      User @relation(fields: [userId], references: [id])
+  
+  @@map("notifications")
+}
+
+// Additional Enums
+enum AchievementCategory {
+  COMMITS
+  PULL_REQUESTS
+  ISSUES
+  PROJECTS
+  EVENTS
+  SOCIAL
+  STREAK
+  SPECIAL
+}
+
+enum BadgeRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+enum LeaderboardType {
+  COMMITS
+  PULL_REQUESTS
+  ISSUES
+  CONTRIBUTIONS
+  EXPERIENCE
+  STREAK
+}
+
+enum NotificationType {
+  ACHIEVEMENT
+  BADGE
+  LEVEL_UP
+  EVENT_REMINDER
+  PROJECT_UPDATE
+  MENTION
+  SYSTEM
+}
