@@ -60,16 +60,7 @@ export default function AboutPageClient() {
         }
       `}</style>
 
-      {/* Back to Home Button */}
-      <div className="fixed top-6 right-6 z-50">
-        <Link
-          href="/"
-          className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-white hover:bg-white/20 transition-all duration-200 group"
-        >
-          <Home className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
-          <span className="text-sm font-mono">HOME</span>
-        </Link>
-      </div>
+      {/* Global navbar now present; removed page-specific home button */}
 
       <div className="relative">
         {/* Background centered neon lines */}

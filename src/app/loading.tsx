@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useLoading } from '@/lib/loading-context';
 import { Code, Users, Globe, Heart, Share2 } from 'lucide-react';
 
 interface StoryStep {
@@ -17,6 +18,7 @@ interface PathPoint {
 }
 
 const LoadingPage = () => {
+  const { setIsLoading } = useLoading();
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const [arrowPosition, setArrowPosition] = useState({ x: 0, y: 0, angle: 0 });
@@ -198,6 +200,9 @@ const LoadingPage = () => {
     if (last) {
       setArrowPosition({ x: last.x, y: last.y, angle: last.angle });
     }
+
+    // Immediately hide the global overlay
+    setIsLoading(false);
   };
   
 
@@ -215,7 +220,7 @@ const LoadingPage = () => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black flex flex-col justify-between overflow-hidden">
+    <div className="fixed inset-0 bg-black flex flex-col justify-between overflow-hidden z-50">
       {/* Main Content Area with 10vw margins */}
         {/* Skip Button */}
         <button

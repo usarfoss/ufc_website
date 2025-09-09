@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { ArrowLeft, Home } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import PageTransition from "../../Components/page-transition"
 
@@ -9,19 +9,7 @@ export default function ExploreProjectsPage() {
   return (
     <PageTransition>
       <div className="min-h-screen bg-black text-white">
-        {/* Back to Home Button */}
-        <div className="fixed top-6 left-6 z-50">
-          <Link href="/">
-            <motion.div
-              className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white hover:text-green-400 transition-colors font-bold rounded-lg"
-              whileHover={{ scale: 1.05, x: -5 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Home className="w-4 h-4" />
-              HOME
-            </motion.div>
-          </Link>
-        </div>
+        {/* Global navbar is present; removed page-specific home button */}
 
         {/* Back to Projects Button */}
         <div className="fixed top-6 right-6 z-50">

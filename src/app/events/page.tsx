@@ -30,19 +30,6 @@ export default function EventsPage() {
         
         {/* Radial Grid Pattern */}
         <div className="fixed inset-0 bg-[radial-gradient(circle_at_center,rgba(11,135,79,0.05)_1px,transparent_1px)] bg-[size:60px_60px] opacity-30 z-0"></div>
-        {/* Back to Home Button */}
-        <div className="fixed top-6 left-6 z-50">
-          <Link href="/">
-            <motion.div
-              className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white hover:text-green-400 transition-colors font-bold rounded-lg"
-              whileHover={{ scale: 1.05, x: -5 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Home className="w-4 h-4" />
-              HOME
-            </motion.div>
-          </Link>
-        </div>
 
         {/* Coming Soon Section */}
         <section className="relative h-screen flex items-center justify-center">

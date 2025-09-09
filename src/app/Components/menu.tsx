@@ -6,6 +6,11 @@ export const Menu = () => {
       <nav className="bg-black/40 backdrop-blur-lg border border-[#0B874F] shadow-lg rounded-lg p-4">
         <ul className="flex gap-6 text-sm font-mono">
           <li>
+            <Link href="/" className="hover:text-[#0B874F] transition">
+              Home
+            </Link>
+          </li>
+          <li>
             <Link href="/about" className="hover:text-[#0B874F] transition">
               About
             </Link>
