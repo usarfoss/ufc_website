@@ -1,52 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import GlobeComponent from "./Components/Globe";
 import { Header } from "./Components/header";
 import { TerminalOverlay } from "./Components/terminalOverlay";
 import { BackgroundElements } from "./Components/backgroundElements";
 import { CursorTrail } from "./Components/cursorTrail";
-import { Menu } from "./Components/menu";
-import LoadingPage from "./loading"; // Import loading page
 
 export default function Page() {
-  const [forceShowLoader, setForceShowLoader] = useState(false);
-  const [showPage, setShowPage] = useState(false);
-
-  useEffect(() => {
-    const hasSeenLoader = localStorage.getItem("hasSeenLoader");
-
-    if (!hasSeenLoader) {
-      // First-time visitor → force loading animation fully
-      setForceShowLoader(true);
-
-      // Mark loader as seen after full animation duration
-      const timer = setTimeout(() => {
-        localStorage.setItem("hasSeenLoader", "true");
-        setForceShowLoader(false);
-        setShowPage(true);
-      }, 10000); // Match your animation duration (~10s)
-
-      return () => clearTimeout(timer);
-    } else {
-      // Returning visitor → show page immediately
-      setShowPage(true);
-    }
-  }, []);
-
-  // Show loader only on first visit
-  if (forceShowLoader) {
-    return <LoadingPage />;
-  }
-
-  // Hide everything until loading animation finishes
-  if (!showPage) {
-    return null;
-  }
-
   return (
-    <>
-      <div
+    <div
         className="relative w-full h-screen overflow-hidden font-mono"
         style={{ backgroundColor: "#000000" }}
       >
@@ -79,7 +41,6 @@ export default function Page() {
 
         {/* UI Components */}
         <Header />
-        <Menu />
         <TerminalOverlay />
 
         {/* Enhanced Legend */}
@@ -158,6 +119,5 @@ export default function Page() {
           </div>
         </div>
       </div>
-    </>
   );
 }

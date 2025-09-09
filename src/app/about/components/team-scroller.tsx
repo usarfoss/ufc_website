@@ -81,7 +81,7 @@ const defaultMembers: Member[] = [
     name: "Vikram Aditya Verma", 
     role: "Anonymous Member", 
     img: "/team-images/vikram.jpg",
-    description: "A digital phantom who exists in the shadows of code. Some say they've seen traces of his work in the commit history, but his true identity remains shrouded in mystery. The legend grows with each bug fix."
+    description: "Anonymous Member, No information available."
   },
 ]
 
