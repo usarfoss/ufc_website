@@ -10,7 +10,7 @@ We’re a **student-driven open-source community** at **University School of Aut
 
 ## 🌐 About UFC  
 
-UFC is more than just a club — it’s a **community of developers, designers, and creators** who believe in **open knowledge and free learning**.
+UFC is more than just a club - it’s a **community of developers, designers, and creators** who believe in **open knowledge and free learning**.
 
 ### **What We Do**  
 - 🛠️ Build **real-world projects** & open-source tools  
@@ -61,7 +61,7 @@ git checkout -b feature-name
 # 4. Make your changes & commit
 git commit -m "Added: new feature"
 
-# 5. Push and open a PR 🎉
+# 5. Push and open a PR 
 git push origin feature-name
 ````
 
