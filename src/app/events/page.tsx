@@ -5,7 +5,8 @@ import { Calendar, Clock, MapPin, Users, Star, Plus, ArrowRight, ExternalLink, H
 import Link from "next/link"
 import { useState, useRef, useEffect } from "react"
 import PageTransition from "../Components/page-transition"
-import PrismaticBurst from "../../components/PrismaticBurst"
+import { GitGudSVG } from "../../components/event-svgs/GitGudSVG"
+import { FossForgeSVG } from "../../components/event-svgs/FossForgeSVG"
 
 const events = [
   {
@@ -463,20 +464,9 @@ function HologramEventCard({ event, index, isSelected, onSelect, isCompact = fal
               : "0 0 20px rgba(34, 197, 94, 0.1)",
           }}
         >
-          {/* PrismaticBurst Background */}
+          {/* Event SVG Background */}
           <div className="absolute inset-0 opacity-80">
-            <PrismaticBurst
-              animationType="rotate3d"
-              intensity={2}
-              speed={0.5}
-              distort={1.0}
-              paused={false}
-              offset={{ x: 0, y: 0 }}
-              hoverDampness={0.25}
-              rayCount={24}
-              mixBlendMode="lighten"
-              colors={event.category === "Workshop" ? ['#00ffb2', '#0B874F', '#22c55e'] : ['#ff007a', '#4d3dff', '#ffffff']}
-            />
+            {event.id === 1 ? <GitGudSVG /> : <FossForgeSVG />}
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
           </div>
 

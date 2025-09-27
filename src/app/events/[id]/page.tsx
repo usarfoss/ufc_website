@@ -5,7 +5,8 @@ import { Calendar, Clock, MapPin, Users, ArrowLeft, Share2, Heart, Copy, Check }
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { use, useState, useRef, useEffect } from "react"
-import PrismaticBurst from "../../../components/PrismaticBurst"
+import { GitGudSVG } from "../../../components/event-svgs/GitGudSVG"
+import { FossForgeSVG } from "../../../components/event-svgs/FossForgeSVG"
 
 const events = [
   {
@@ -225,18 +226,7 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
           animate={{ scale: 1 }}
           transition={{ duration: 1.5 }}
         >
-          <PrismaticBurst
-            animationType="rotate3d"
-            intensity={2}
-            speed={0.5}
-            distort={1.0}
-            paused={false}
-            offset={{ x: 0, y: 0 }}
-            hoverDampness={0.25}
-            rayCount={24}
-            mixBlendMode="lighten"
-            colors={event.category === "Workshop" ? ['#00ffb2', '#0B874F', '#22c55e'] : ['#ff007a', '#4d3dff', '#ffffff']}
-          />
+          {event.id === 1 ? <GitGudSVG /> : <FossForgeSVG />}
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
         </motion.div>
 
