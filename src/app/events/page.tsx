@@ -303,22 +303,22 @@ export default function EventsPage() {
             }}
           />
 
-          <div className="relative z-10 w-full max-w-7xl mx-auto px-12">
+          <div className="relative z-10 w-full max-w-7xl mx-auto px-4 md:px-12">
             <motion.div
-              className="text-center mb-12"
+              className="text-center mb-8 md:mb-12"
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1 }}
             >
-              <h1 className="text-6xl md:text-8xl font-black mb-6 bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent px-8 overflow-visible tracking-wider" style={{ fontFamily: "var(--font-orbitron)" }}>
+              <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-8xl font-black mb-4 md:mb-6 bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent px-2 md:px-8 overflow-visible tracking-wider" style={{ fontFamily: "var(--font-orbitron)" }}>
                 EVENTS
               </h1>
-              <p className="text-xl text-gray-400 mb-8">Join Our Community Events</p>
+              <p className="text-base md:text-xl text-gray-400 mb-6 md:mb-8">Join Our Community Events</p>
             </motion.div>
 
             {/* Category Filter */}
             <motion.div
-              className="flex flex-wrap justify-center gap-4 mb-12"
+              className="flex flex-wrap justify-center gap-2 md:gap-4 mb-8 md:mb-12"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
@@ -326,7 +326,7 @@ export default function EventsPage() {
               {categories.map((category) => (
                 <motion.button
                   key={category}
-                  className={`px-6 py-2 rounded-full border transition-all ${
+                  className={`px-3 md:px-6 py-1.5 md:py-2 rounded-full border transition-all text-sm md:text-base ${
                     selectedCategory === category
                       ? "bg-green-500 text-black border-green-500"
                       : "bg-transparent text-green-400 border-green-500/30 hover:border-green-500/60"

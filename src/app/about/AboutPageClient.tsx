@@ -73,7 +73,7 @@ export default function AboutPageClient() {
             {/* Intro */}
             <section
               aria-labelledby="intro-heading"
-              className="relative flex min-h-[100svh] items-center px-6 md:px-12 lg:px-16"
+              className="relative flex min-h-[100svh] items-center px-4 md:px-12 lg:px-16 py-8 md:py-0"
             >
               <style>{`
                 @keyframes floatY {
@@ -95,11 +95,11 @@ export default function AboutPageClient() {
                   animation-delay: 2.2s;
                 }
               `}</style>
-              <div className="mx-auto grid w-full max-w-7xl items-center gap-10 md:grid-cols-2">
+              <div className="mx-auto grid w-full max-w-7xl items-center gap-8 md:gap-10 md:grid-cols-2">
                 <div className="text-left">
                   <div
                     id="intro-heading"
-                    className="font-[var(--font-space-grotesk)] mb-6"
+                    className="font-[var(--font-space-grotesk)] mb-4 md:mb-6"
                   >
                     <TrueFocus 
                       sentence="Open Source, Open Minds"
@@ -109,33 +109,33 @@ export default function AboutPageClient() {
                       glowColor="rgba(16, 185, 129, 0.6)"
                       animationDuration={0.8}
                       pauseBetweenAnimations={1.5}
-                      className="text-4xl sm:text-5xl md:text-7xl tracking-tight"
+                      className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl tracking-tight"
                     />
                   </div>
-                  <p className="mt-6 text-pretty text-base sm:text-lg md:text-xl font-[var(--font-plex-mono)] text-emerald-200/90">
+                  <p className="mt-4 md:mt-6 text-pretty text-sm sm:text-base md:text-lg lg:text-xl font-[var(--font-plex-mono)] text-emerald-200/90">
                     We are a college community of maintainers, designers, and tinkerers. We ship in public, learn
                     together, and choose growth and free will over gatekeeping. If you can imagine it, you can fork it.
                   </p>
-                  <p className="mt-4 text-emerald-100/90 font-[var(--font-plex-mono)]">
+                  <p className="mt-3 md:mt-4 text-sm sm:text-base md:text-lg text-emerald-100/90 font-[var(--font-plex-mono)]">
                     From first PRs to core maintainers—our projects span docs, design systems, DX tooling, and campus
                     infrastructure. We mentor, pair, and publish so everyone can climb faster.
                   </p>
 
-                  <div className="mt-8 flex flex-wrap gap-3">
+                  <div className="mt-6 md:mt-8 flex flex-wrap gap-2 md:gap-3">
                     <Button
                       asChild
                       variant="default"
-                      className="bg-emerald-500 text-black hover:bg-emerald-400"
+                      className="bg-emerald-500 text-black hover:bg-emerald-400 text-sm md:text-base px-3 md:px-4 py-2 md:py-2"
                       data-magnetic
                     >
-                      <Link href="https://github.com" target="_blank" rel="noreferrer" className="spark-underline">
+                      <Link href="https://github.com/usarfoss" target="_blank" rel="noreferrer" className="spark-underline">
                         View GitHub
                       </Link>
                     </Button>
                     <Button
                       asChild
                       variant="outline"
-                      className="border-emerald-400/50 text-emerald-200 hover:bg-white/5 bg-transparent"
+                      className="border-emerald-400/50 text-emerald-200 hover:bg-white/5 bg-transparent text-sm md:text-base px-3 md:px-4 py-2 md:py-2"
                       data-magnetic
                     >
                       <Link href="https://discord.gg/7HrTYAUpdd" target="_blank" rel="noreferrer" className="spark-underline">
@@ -144,7 +144,7 @@ export default function AboutPageClient() {
                     </Button>
                   </div>
 
-                  <div className="mt-10 grid grid-cols-3 gap-4">
+                  <div className="mt-6 md:mt-10 grid grid-cols-3 gap-2 md:gap-4">
                     {[
                       { k: "Members", v: "45+" },
                       { k: "Repos", v: "TBM" },
@@ -152,10 +152,10 @@ export default function AboutPageClient() {
                     ].map((s, i) => (
                       <div
                         key={i}
-                        className="rounded-xl border border-emerald-500/20 bg-white/[0.02] p-4 text-center"
+                        className="rounded-xl border border-emerald-500/20 bg-white/[0.02] p-2 md:p-4 text-center"
                         data-magnetic
                       >
-                        <div className="font-[var(--font-space-grotesk)] text-2xl">{s.v}</div>
+                        <div className="font-[var(--font-space-grotesk)] text-lg md:text-2xl">{s.v}</div>
                         <div className="text-xs font-[var(--font-plex-mono)] text-emerald-200/80">{s.k}</div>
                       </div>
                     ))}
@@ -163,10 +163,10 @@ export default function AboutPageClient() {
                 </div>
 
                 {/* Media mosaic */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-2 md:gap-4">
                   <div className="float">
                     <div
-                      className="relative aspect-[4/5] overflow-hidden rounded-2xl ring-1 ring-emerald-500/30"
+                      className="relative aspect-[4/5] overflow-hidden rounded-xl md:rounded-2xl ring-1 ring-emerald-500/30"
                       data-magnetic
                     >
                       <img
@@ -177,9 +177,9 @@ export default function AboutPageClient() {
                       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                     </div>
                   </div>
-                  <div className="space-y-4">
+                  <div className="space-y-2 md:space-y-4">
                     <div
-                      className="float-delay relative aspect-video overflow-hidden rounded-2xl ring-1 ring-emerald-500/30"
+                      className="float-delay relative aspect-video overflow-hidden rounded-xl md:rounded-2xl ring-1 ring-emerald-500/30"
                       data-magnetic
                     >
                       <img
@@ -197,29 +197,29 @@ export default function AboutPageClient() {
             {/* What is FOSS? */}
             <section
               aria-labelledby="what-is-foss-heading"
-              className="relative mx-auto max-w-7xl px-6 md:px-12 lg:px-16 py-[12vh] md:py-[15vh]"
+              className="relative mx-auto max-w-7xl px-4 md:px-12 lg:px-16 py-8 md:py-[12vh] lg:py-[15vh]"
             >
-              <div className="grid gap-10 md:grid-cols-2 md:gap-14 items-center">
+              <div className="grid gap-6 md:gap-10 lg:grid-cols-2 lg:gap-14 items-center">
                 <div>
                   <h2
                     id="what-is-foss-heading"
-                    className="font-[var(--font-space-grotesk)] text-3xl sm:text-4xl md:text-5xl"
+                    className="font-[var(--font-space-grotesk)] text-2xl sm:text-3xl md:text-4xl lg:text-5xl"
                   >
                     <span className="spark-underline">What is FOSS?</span>
                   </h2>
-                  <p className="mt-4 text-emerald-100/90 font-[var(--font-plex-mono)] leading-relaxed">
-                    Free and Open Source Software (FOSS) means anyone can view, use, modify, and share code. It’s a
+                  <p className="mt-3 md:mt-4 text-sm sm:text-base md:text-lg text-emerald-100/90 font-[var(--font-plex-mono)] leading-relaxed">
+                    Free and Open Source Software (FOSS) means anyone can view, use, modify, and share code. It's a
                     permissionless ecosystem where ideas compound, ownership is distributed, and learning is accelerated
                     through transparency.
                   </p>
-                  <ul className="mt-6 grid gap-3 text-emerald-200/90 font-[var(--font-plex-mono)]">
-                    <li className="rounded-md border border-emerald-500/20 bg-white/[0.02] px-4 py-3" data-magnetic>
+                  <ul className="mt-4 md:mt-6 grid gap-2 md:gap-3 text-sm sm:text-base text-emerald-200/90 font-[var(--font-plex-mono)]">
+                    <li className="rounded-md border border-emerald-500/20 bg-white/[0.02] px-3 md:px-4 py-2 md:py-3" data-magnetic>
                       • Open licenses empower contribution and remixing.
                     </li>
-                    <li className="rounded-md border border-emerald-500/20 bg-white/[0.02] px-4 py-3" data-magnetic>
+                    <li className="rounded-md border border-emerald-500/20 bg-white/[0.02] px-3 md:px-4 py-2 md:py-3" data-magnetic>
                       • Transparent roadmaps foster trust and shared purpose.
                     </li>
-                    <li className="rounded-md border border-emerald-500/20 bg-white/[0.02] px-4 py-3" data-magnetic>
+                    <li className="rounded-md border border-emerald-500/20 bg-white/[0.02] px-3 md:px-4 py-2 md:py-3" data-magnetic>
                       • Community governance and merit-based leadership.
                     </li>
                   </ul>
