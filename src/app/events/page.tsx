@@ -212,16 +212,9 @@ const categories = [
   "Competition"
 ]
 
-const completedCategories = [
-  "All",
-  "Hackathon",
-  "Workshop",
-  "Competition"
-]
 
 export default function EventsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All")
-  const [selectedCompletedCategory, setSelectedCompletedCategory] = useState("All")
   const [selectedEvent, setSelectedEvent] = useState<number | null>(null)
   const [hologramActive, setHologramActive] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -263,9 +256,6 @@ export default function EventsPage() {
   })
 
   const completedEvents = processedEvents.filter(event => event.status === "completed")
-  const filteredCompletedEvents = completedEvents.filter((event) => {
-    return selectedCompletedCategory === "All" || event.category === selectedCompletedCategory
-  })
 
   const upcomingEvents = processedEvents.filter((event) => event.status === "upcoming")
   return (
@@ -401,33 +391,9 @@ export default function EventsPage() {
               </p>
             </motion.div>
 
-            {/* Completed Events Filter */}
-            <motion.div
-              className="flex flex-wrap justify-center gap-4 mb-12"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              {completedCategories.map((category) => (
-                <motion.button
-                  key={category}
-                  className={`px-6 py-3 rounded-full border transition-all duration-300 ${
-                    selectedCompletedCategory === category
-                      ? "bg-green-500 text-black border-green-500"
-                      : "border-green-500/50 text-green-400 hover:border-green-500 hover:bg-green-500/10"
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setSelectedCompletedCategory(category)}
-                >
-                  {category}
-                </motion.button>
-              ))}
-            </motion.div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredCompletedEvents.map((event, index) => (
+              {completedEvents.map((event, index) => (
                 <motion.div
                   key={event.id}
                   initial={{ opacity: 0, y: 30 }}
@@ -654,35 +620,19 @@ function HologramEventCard({ event, index, isSelected, onSelect, isCompact = fal
                 {event.title}
               </h3>
               <p className="text-gray-300 text-sm mb-4">{event.description}</p>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4 text-xs text-gray-400">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-green-400" />
-                    {new Date(event.date).toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: '2-digit', 
-                      day: '2-digit' 
-                    })}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Users className="w-3 h-3 text-green-400" />
-                    {event.attendees}
-                  </div>
+              <div className="flex items-center gap-4 text-xs text-gray-400">
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3 text-green-400" />
+                  {new Date(event.date).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: '2-digit', 
+                    day: '2-digit' 
+                  })}
                 </div>
-                {event.registrationUrl && event.status === "upcoming" && (
-                  <motion.button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      window.open(event.registrationUrl, '_blank', 'noopener,noreferrer');
-                    }}
-                    className="px-4 py-2 bg-green-500 text-black text-xs font-bold rounded-lg hover:bg-green-400 transition-colors"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Register Now
-                  </motion.button>
-                )}
+                <div className="flex items-center gap-1">
+                  <Users className="w-3 h-3 text-green-400" />
+                  {event.attendees}
+                </div>
               </div>
             </motion.div>
           </div>
@@ -701,6 +651,7 @@ function HologramEventCard({ event, index, isSelected, onSelect, isCompact = fal
             transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
             style={{ opacity: isHovered ? 0.3 : 0 }}
           />
+
         </motion.div>
       </Link>
     </motion.div>
