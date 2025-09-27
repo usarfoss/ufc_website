@@ -34,6 +34,7 @@ const events = [
     featured: true,
     organizer: "UFC Tech Team",
     requirements: ["Laptop", "Basic programming knowledge", "GitHub account (we'll help you create one)"],
+    registrationUrl: "https://docs.google.com/forms/d/e/1FAIpQLSf01qxq5oOiLDGlk4RE2Z_5piLapMK_bbp8R7Ut71Elx_UfWQ/viewform?usp=sharing&ouid=113101111311849957004",
     schedule: [
       { time: "02:00 PM", activity: "Welcome & Introduction" },
       { time: "02:15 PM", activity: "Git Fundamentals Demo" },
@@ -112,6 +113,7 @@ Scoring:
     featured: false,
     organizer: "UFC Tech Team",
     requirements: ["Laptop", "GitHub account", "Team of 3 members", "Basic programming knowledge"],
+    registrationUrl: "https://docs.google.com/forms/d/e/1FAIpQLSeU4yxc8kZQ-60l4lMjTb688nSLtDydmlIzfHYNFdE8o589Lw/viewform?usp=dialog",
     schedule: [
       { time: "09:00 AM", activity: "Registration & Team Formation" },
       { time: "10:00 AM", activity: "Opening Ceremony" },
@@ -298,17 +300,22 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
                 viewport={{ once: true }}
               >
                 {/* Registration Card */}
-                <div className="p-6 bg-gradient-to-br from-green-900/20 to-green-800/20 rounded-2xl border border-green-500/30 backdrop-blur-sm">
-                  <h3 className="text-xl font-bold mb-4 text-green-400">Register Now</h3>
-                  <p className="text-gray-300 mb-6">Secure your spot at this amazing event. Limited seats available!</p>
-                  <motion.button
-                    className="w-full py-3 bg-gradient-to-r from-green-600 to-green-500 text-black font-semibold rounded-lg hover:from-green-500 hover:to-green-400 transition-all duration-300"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Register for Event
-                  </motion.button>
-                </div>
+                {event.registrationUrl && event.status === "upcoming" && (
+                  <div className="p-6 bg-gradient-to-br from-green-900/20 to-green-800/20 rounded-2xl border border-green-500/30 backdrop-blur-sm">
+                    <h3 className="text-xl font-bold mb-4 text-green-400">Register Now</h3>
+                    <p className="text-gray-300 mb-6">Secure your spot at this amazing event. Limited seats available!</p>
+                    <motion.a
+                      href={event.registrationUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full py-3 bg-gradient-to-r from-green-600 to-green-500 text-black font-semibold rounded-lg hover:from-green-500 hover:to-green-400 transition-all duration-300 text-center"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      Register for Event
+                    </motion.a>
+                  </div>
+                )}
 
                 {/* Event Details */}
                 <div className="p-6 bg-gray-900/50 rounded-2xl border border-gray-700/50 backdrop-blur-sm">

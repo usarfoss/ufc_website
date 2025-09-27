@@ -44,9 +44,9 @@ export default function Page() {
         <TerminalOverlay />
 
         {/* Enhanced Legend */}
-        <div className="absolute top-1/4 left-4 md:left-8 transform -translate-y-1/2 z-20">
+        <div className="absolute top-1/4 left-2 md:left-4 lg:left-8 transform -translate-y-1/2 z-20 max-w-[200px] md:max-w-none">
           <div
-            className="rounded-lg p-3 md:p-4 font-mono backdrop-blur-md border transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20"
+            className="rounded-lg p-2 md:p-3 lg:p-4 font-mono backdrop-blur-md border transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20"
             style={{
               backgroundColor: "rgba(0, 0, 0, 0.3)",
               borderColor: "#0B874F",
@@ -54,54 +54,54 @@ export default function Page() {
             }}
           >
             <h4
-              className="text-xs md:text-sm font-bold mb-2 md:mb-3"
+              className="text-xs md:text-sm font-bold mb-1 md:mb-2 lg:mb-3"
               style={{ color: "#F5A623" }}
             >
               FOSS Activity
             </h4>
             <div className="space-y-1 md:space-y-2 text-xs">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 md:gap-2">
                 <div
-                  className="w-2 h-2 md:w-3 md:h-3 rounded-sm"
+                  className="w-2 h-2 md:w-3 md:h-3 rounded-sm flex-shrink-0"
                   style={{ backgroundColor: "#2D8F5A" }}
                 ></div>
-                <span style={{ color: "#FFFFFF" }} className="text-xs">
+                <span style={{ color: "#FFFFFF" }} className="text-xs truncate">
                   Very High (1M+ repos)
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 md:gap-2">
                 <div
-                  className="w-2 h-2 md:w-3 md:h-3 rounded-sm"
+                  className="w-2 h-2 md:w-3 md:h-3 rounded-sm flex-shrink-0"
                   style={{ backgroundColor: "#4A6741" }}
                 ></div>
-                <span style={{ color: "#FFFFFF" }} className="text-xs">
+                <span style={{ color: "#FFFFFF" }} className="text-xs truncate">
                   High (500k-1M repos)
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 md:gap-2">
                 <div
-                  className="w-2 h-2 md:w-3 md:h-3 rounded-sm"
+                  className="w-2 h-2 md:w-3 md:h-3 rounded-sm flex-shrink-0"
                   style={{ backgroundColor: "#6B7A3A" }}
                 ></div>
-                <span style={{ color: "#FFFFFF" }} className="text-xs">
+                <span style={{ color: "#FFFFFF" }} className="text-xs truncate">
                   Medium (100k-500k repos)
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 md:gap-2">
                 <div
-                  className="w-2 h-2 md:w-3 md:h-3 rounded-sm"
+                  className="w-2 h-2 md:w-3 md:h-3 rounded-sm flex-shrink-0"
                   style={{ backgroundColor: "#8B6B2A" }}
                 ></div>
-                <span style={{ color: "#FFFFFF" }} className="text-xs">
+                <span style={{ color: "#FFFFFF" }} className="text-xs truncate">
                   Low-Med (10k-100k repos)
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 md:gap-2">
                 <div
-                  className="w-2 h-2 md:w-3 md:h-3 rounded-sm"
+                  className="w-2 h-2 md:w-3 md:h-3 rounded-sm flex-shrink-0"
                   style={{ backgroundColor: "#8B3A3A" }}
                 ></div>
-                <span style={{ color: "#FFFFFF" }} className="text-xs">
+                <span style={{ color: "#FFFFFF" }} className="text-xs truncate">
                   Low (&lt;10k repos)
                 </span>
               </div>
@@ -110,8 +110,8 @@ export default function Page() {
         </div>
 
         {/* Interactive Hint */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-          <div className="bg-black/50 text-green-400 text-xs px-3 py-2 rounded-full backdrop-blur-sm border border-green-400/30 animate-pulse">
+        <div className="absolute bottom-20 md:bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+          <div className="bg-black/50 text-green-400 text-xs px-2 md:px-3 py-1 md:py-2 rounded-full backdrop-blur-sm border border-green-400/30 animate-pulse mx-4">
             <span className="hidden md:inline">
               Hover over countries to explore FOSS activity •{" "}
             </span>

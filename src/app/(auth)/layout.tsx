@@ -74,7 +74,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
   return (
     <div
-      className="relative flex items-center justify-center min-h-screen px-4 overflow-hidden"
+      className="relative flex items-center justify-center min-h-screen px-4 py-8 md:py-4 overflow-hidden"
       style={{
         backgroundColor: "#000",
         fontFamily: "monospace",
@@ -112,7 +112,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
       {/* Form Container */}
       <div
-        className="relative w-[420px] p-8 rounded-lg shadow-xl border transform transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_25px_#0B874F] z-10"
+        className="relative w-full max-w-[420px] mx-4 p-4 md:p-8 rounded-lg shadow-xl border transform transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_25px_#0B874F] z-10 mt-16 md:mt-0"
         style={{
           backgroundColor: "#050505",
           borderColor: "#0B874F",

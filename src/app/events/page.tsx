@@ -35,6 +35,7 @@ const events = [
     organizer: "UFC Tech Team",
     tags: ["Git", "GitHub", "Open Source", "Version Control"],
     requirements: ["Laptop", "Basic programming knowledge", "GitHub account (we'll help you create one)"],
+    registrationUrl: "https://docs.google.com/forms/d/e/1FAIpQLSf01qxq5oOiLDGlk4RE2Z_5piLapMK_bbp8R7Ut71Elx_UfWQ/viewform?usp=sharing&ouid=113101111311849957004",
     schedule: [
       { time: "02:00 PM", activity: "Welcome & Introduction" },
       { time: "02:15 PM", activity: "Git Fundamentals Demo" },
@@ -151,6 +152,7 @@ Scoring:
     organizer: "UFC Tech Team",
     tags: ["Open Source", "Competition", "Git", "Team Event"],
     requirements: ["Laptop", "GitHub account", "Team of 3 members", "Basic programming knowledge"],
+    registrationUrl: "https://docs.google.com/forms/d/e/1FAIpQLSeU4yxc8kZQ-60l4lMjTb688nSLtDydmlIzfHYNFdE8o589Lw/viewform?usp=dialog",
     schedule: [
       { time: "09:00 AM", activity: "Registration & Team Formation" },
       { time: "10:00 AM", activity: "Opening Ceremony" },
@@ -667,6 +669,20 @@ function HologramEventCard({ event, index, isSelected, onSelect, isCompact = fal
                     {event.attendees}
                   </div>
                 </div>
+                {event.registrationUrl && event.status === "upcoming" && (
+                  <motion.button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      window.open(event.registrationUrl, '_blank', 'noopener,noreferrer');
+                    }}
+                    className="px-4 py-2 bg-green-500 text-black text-xs font-bold rounded-lg hover:bg-green-400 transition-colors"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Register Now
+                  </motion.button>
+                )}
               </div>
             </motion.div>
           </div>

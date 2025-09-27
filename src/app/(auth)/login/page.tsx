@@ -71,7 +71,7 @@ export default function LoginPage() {
     <>
       {/* Title */}
       <h1
-        className="text-4xl font-extrabold text-center mb-4"
+        className="text-2xl md:text-4xl font-extrabold text-center mb-2 md:mb-4"
         style={{
           color: "#0B874F",
           textShadow: "2px 2px #00ff95",
@@ -82,7 +82,7 @@ export default function LoginPage() {
       </h1>
 
       {/* Subtitle */}
-      <p className="text-center text-sm mb-6" style={{ color: "#F5A623" }}>
+      <p className="text-center text-xs md:text-sm mb-4 md:mb-6" style={{ color: "#F5A623" }}>
         "Access granted only to authorized users."
       </p>
 
@@ -94,10 +94,10 @@ export default function LoginPage() {
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
         {/* Email */}
         <div>
-          <label className="block mb-2 text-sm font-bold" style={{ color: "#0B874F" }}>
+          <label className="block mb-1 md:mb-2 text-xs md:text-sm font-bold" style={{ color: "#0B874F" }}>
             Email
           </label>
           <input
@@ -105,7 +105,7 @@ export default function LoginPage() {
             value={formData.email}
             onChange={(e) => handleInputChange('email', e.target.value)}
             placeholder="Enter your email"
-            className={`w-full px-4 py-3 border focus:outline-none transition-all duration-200 ${
+            className={`w-full px-3 md:px-4 py-2 md:py-3 border focus:outline-none transition-all duration-200 text-sm md:text-base ${
               errors.email ? 'border-red-500' : ''
             }`}
             style={{
@@ -116,13 +116,13 @@ export default function LoginPage() {
             }}
           />
           {errors.email && (
-            <p className="mt-1 text-sm text-red-400">{errors.email}</p>
+            <p className="mt-1 text-xs md:text-sm text-red-400">{errors.email}</p>
           )}
         </div>
 
         {/* Password */}
         <div>
-          <label className="block mb-2 text-sm font-bold" style={{ color: "#0B874F" }}>
+          <label className="block mb-1 md:mb-2 text-xs md:text-sm font-bold" style={{ color: "#0B874F" }}>
             Password
           </label>
           <div className="relative">
@@ -131,7 +131,7 @@ export default function LoginPage() {
               value={formData.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
               placeholder="Enter your password"
-              className={`w-full px-4 py-3 border focus:outline-none transition-all duration-200 ${
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border focus:outline-none transition-all duration-200 text-sm md:text-base ${
                 errors.password ? 'border-red-500' : ''
               }`}
               style={{
@@ -144,7 +144,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute top-2.5 right-3 text-xs px-2 py-1 border rounded transition-all duration-200 hover:bg-[#0B874F] hover:text-black"
+              className="absolute top-1.5 md:top-2.5 right-2 md:right-3 text-xs px-1.5 md:px-2 py-0.5 md:py-1 border rounded transition-all duration-200 hover:bg-[#0B874F] hover:text-black"
               style={{
                 color: "#0B874F",
                 borderColor: "#0B874F",
@@ -155,7 +155,7 @@ export default function LoginPage() {
             </button>
           </div>
           {errors.password && (
-            <p className="mt-1 text-sm text-red-400">{errors.password}</p>
+            <p className="mt-1 text-xs md:text-sm text-red-400">{errors.password}</p>
           )}
         </div>
 
@@ -163,7 +163,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 mt-4 font-bold border transition-all duration-300 hover:scale-105 hover:shadow-[0_0_15px_#0B874F] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-2 md:py-3 mt-2 md:mt-4 font-bold border transition-all duration-300 hover:scale-105 hover:shadow-[0_0_15px_#0B874F] disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
           style={{
             backgroundColor: "#0B874F",
             color: "#000",
@@ -176,14 +176,14 @@ export default function LoginPage() {
       </form>
 
       {/* Divider */}
-      <div className="flex items-center justify-center my-6">
+      <div className="flex items-center justify-center my-4 md:my-6">
         <span className="w-1/3 border-b" style={{ borderColor: "#0B874F" }}></span>
-        <span className="px-4 text-xs" style={{ color: "#F5A623" }}>OR</span>
+        <span className="px-2 md:px-4 text-xs" style={{ color: "#F5A623" }}>OR</span>
         <span className="w-1/3 border-b" style={{ borderColor: "#0B874F" }}></span>
       </div>
 
       {/* Signup Link */}
-      <p className="text-center text-sm" style={{ color: "#fff" }}>
+      <p className="text-center text-xs md:text-sm" style={{ color: "#fff" }}>
         Don't have an account?{" "}Can't do much<br/>
         Core members only
       </p>

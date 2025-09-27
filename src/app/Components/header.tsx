@@ -2,7 +2,7 @@
 
 export function Header() {
   return (
-    <header className="fixed top-0 left-0 right-0 z-20 p-8">
+    <header className="fixed top-0 left-0 right-0 z-20 p-4 md:p-8">
       <style jsx>{`
         @keyframes glowPulse {
           0%, 100% {
@@ -50,7 +50,7 @@ export function Header() {
       <div className="text-center">
         {/* Main Title */}
         <h1
-          className="text-6xl font-black mb-4 tracking-widest ufc-glow"
+          className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-2 md:mb-4 tracking-widest ufc-glow"
           style={{
             fontFamily: '"IBM Plex Mono", monospace',
             letterSpacing: '0.25em'
@@ -59,7 +59,7 @@ export function Header() {
           UFC
         </h1>
         <p
-          className="text-xl font-mono font-medium"
+          className="text-sm sm:text-base md:text-lg lg:text-xl font-mono font-medium px-4"
           style={{
             color: '#FFFFFF',
             textShadow: '0 0 15px rgba(255, 255, 255, 0.8), 0 0 35px rgba(0, 255, 179, 0.6)',

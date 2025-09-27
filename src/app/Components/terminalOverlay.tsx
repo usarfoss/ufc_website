@@ -85,9 +85,9 @@ export function TerminalOverlay() {
   };
 
   return (
-    <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-30 w-full max-w-6xl px-8">
+    <div className="fixed bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 z-30 w-full max-w-6xl px-4 md:px-8">
       <div
-        className="rounded-xl p-6 font-mono backdrop-blur-xl border-2"
+        className="rounded-xl p-3 md:p-6 font-mono backdrop-blur-xl border-2"
         style={{
           backgroundColor: 'rgba(0, 0, 0, 0.4)',
           borderColor: '#0B874F',
@@ -97,25 +97,25 @@ export function TerminalOverlay() {
       >
         {/* Terminal header */}
         <div
-          className="flex items-center gap-2 mb-4 pb-3 border-b-2"
+          className="flex items-center gap-1 md:gap-2 mb-3 md:mb-4 pb-2 md:pb-3 border-b-2"
           style={{ borderColor: '#0B874F' }}
         >
-          <div className="flex gap-2">
+          <div className="flex gap-1 md:gap-2">
             <div
-              className="w-4 h-4 rounded-full"
+              className="w-3 h-3 md:w-4 md:h-4 rounded-full"
               style={{ backgroundColor: '#E94B3C' }}
             ></div>
             <div
-              className="w-4 h-4 rounded-full"
+              className="w-3 h-3 md:w-4 md:h-4 rounded-full"
               style={{ backgroundColor: '#F5A623' }}
             ></div>
             <div
-              className="w-4 h-4 rounded-full"
+              className="w-3 h-3 md:w-4 md:h-4 rounded-full"
               style={{ backgroundColor: '#0B874F' }}
             ></div>
           </div>
           <span
-            className="ml-4 text-base font-bold"
+            className="ml-2 md:ml-4 text-xs md:text-base font-bold truncate"
             style={{ color: '#4A90E2' }}
           >
             /ufc/community/activity_feed
@@ -123,11 +123,11 @@ export function TerminalOverlay() {
         </div>
 
         {/* Terminal content */}
-        <div className="space-y-2 mb-4 max-h-[200px] overflow-y-auto">
+        <div className="space-y-1 md:space-y-2 mb-3 md:mb-4 max-h-[120px] md:max-h-[200px] overflow-y-auto">
           {lines.map((line, index) => (
             <div
               key={index}
-              className="text-base"
+              className="text-xs md:text-base break-words"
               style={{ color: '#0B874F' }}
             >
               {line}
@@ -138,7 +138,7 @@ export function TerminalOverlay() {
         {/* Input line */}
         <form onSubmit={handleSubmit} className="flex items-center">
           <span
-            className="text-base mr-3 font-bold"
+            className="text-xs md:text-base mr-2 md:mr-3 font-bold"
             style={{ color: '#F5A623' }}
           >
             {'>'}
@@ -147,7 +147,7 @@ export function TerminalOverlay() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            className="flex-1 bg-transparent outline-none text-base font-mono border-b-2 pb-1 transition-colors duration-300"
+            className="flex-1 bg-transparent outline-none text-xs md:text-base font-mono border-b-2 pb-1 transition-colors duration-300"
             style={{
               color: '#FFFFFF',
               borderColor: '#333333',
