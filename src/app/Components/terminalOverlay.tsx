@@ -85,7 +85,7 @@ export function TerminalOverlay() {
   };
 
   return (
-    <div className="hidden md:block fixed bottom-2 sm:bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 z-30 w-full max-w-6xl px-2 sm:px-4 md:px-8">
+    <div className="fixed bottom-2 sm:bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 z-30 w-full max-w-6xl px-2 sm:px-4 md:px-8">
       <div
         className="rounded-xl p-2 sm:p-3 md:p-6 font-mono backdrop-blur-xl border-2"
         style={{

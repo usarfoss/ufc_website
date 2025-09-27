@@ -2,7 +2,7 @@
 
 export function Header() {
   return (
-    <header className="fixed top-0 left-0 right-0 z-20 p-2 sm:p-4 md:p-8 pointer-events-none">
+    <header className="fixed top-0 left-0 right-0 z-20 p-2 sm:p-4 md:p-8">
       <style jsx>{`
         @keyframes glowPulse {
           0%, 100% {
@@ -47,7 +47,7 @@ export function Header() {
         }
       `}</style>
 
-      <div className="text-center pointer-events-auto">
+      <div className="text-center">
         {/* Main Title */}
         <h1
           className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-1 sm:mb-2 md:mb-4 tracking-widest ufc-glow"

@@ -12,7 +12,7 @@ export const Menu = () => {
   }
 
   return (
-    <div className="fixed top-2 right-2 sm:top-4 sm:right-4 md:top-6 md:right-8 z-30">
+    <div className="absolute top-2 right-2 sm:top-4 sm:right-4 md:top-6 md:right-8 z-30">
       <nav className="bg-black/50 backdrop-blur-lg border border-[#0B874F] shadow-lg rounded-lg p-1.5 sm:p-2 md:p-4">
         <ul className="flex flex-wrap gap-1 sm:gap-2 md:gap-6 text-xs sm:text-sm md:text-sm font-mono">
           <li>
