@@ -9,39 +9,120 @@ import { use } from "react"
 const events = [
   {
     id: 1,
-    title: "Open Source Hackathon 2024",
-    date: "2024-03-15",
-    time: "09:00 AM",
-    location: "USAR Campus, Tech Hub",
-    attendees: 150,
-    category: "Hackathon",
+    title: "Git Gud – Introduction to Open Source",
+    date: "2025-10-10",
+    time: "02:00 PM",
+    location: "USAR Campus, GGSIPU EDC",
+    attendees: "TBD",
+    category: "Meetup",
     status: "upcoming",
-    description: "48-hour intensive hackathon focusing on solving real-world problems with open source solutions.",
-    fullDescription: `Join us for the most exciting hackathon of the year! This 48-hour intensive event brings together developers, designers, and innovators to tackle real-world challenges using open source technologies.
+    description: "Learn Git, GitHub, and open source contribution in this hands-on workshop for beginners.",
+    fullDescription: `Git Gud is a focused meetup designed to introduce students to the world of open source. This engaging, interactive session features live demos and discussions covering essential topics that every developer should know.
 
-    What to expect:
-    • Collaborative problem-solving sessions
-    • Mentorship from industry experts  
-    • Access to cutting-edge tools and APIs
-    • Networking opportunities with like-minded developers
-    • Amazing prizes and recognition
+    What you'll learn:
+    • Version Control Fundamentals - Understanding Git and GitHub
+    • Collaborative Coding - Working with teams on shared projects
+    • Open Source Contribution - How to find and contribute to projects
+    • Best Practices - Code review, documentation, and community etiquette
+    • Career Pathways - How open source experience benefits your career
 
-    Whether you're a seasoned developer or just starting your coding journey, this hackathon offers something for everyone. Form teams, build innovative solutions, and contribute to the open source community while competing for exciting prizes.
+    This session is perfect for students who are new to open source or want to deepen their understanding of collaborative development. Whether you're a beginner or have some coding experience, you'll leave with practical knowledge and confidence to start contributing to open source projects.
 
-    Registration includes meals, swag, and access to all workshops and mentoring sessions. Don't miss this opportunity to showcase your skills and make lasting connections in the tech community!`,
-    image: "/hackathon-coding-event.png",
-    tags: ["React", "Python", "AI/ML", "Blockchain"],
+    The event includes hands-on activities, live coding demonstrations, and plenty of time for Q&A. Bring your laptop and get ready to dive into the world of open source development!`,
+    image: "/git-gud-event.jpg",
+    tags: ["Git", "GitHub", "Open Source", "Version Control"],
     featured: true,
     organizer: "UFC Tech Team",
-    requirements: ["Laptop", "Basic programming knowledge", "Enthusiasm to learn"],
+    requirements: ["Laptop", "Basic programming knowledge", "GitHub account (we'll help you create one)"],
     schedule: [
-      { time: "09:00 AM", activity: "Registration & Welcome" },
+      { time: "02:00 PM", activity: "Welcome & Introduction" },
+      { time: "02:15 PM", activity: "Git Fundamentals Demo" },
+      { time: "02:45 PM", activity: "Hands-on Git Practice" },
+      { time: "03:15 PM", activity: "Break & Networking" },
+      { time: "03:30 PM", activity: "Open Source Contribution Guide" },
+      { time: "04:00 PM", activity: "Live Project Contribution" },
+      { time: "04:30 PM", activity: "Q&A and Discussion" },
+      { time: "05:00 PM", activity: "Wrap-up & Next Steps" },
+    ],
+  },
+  {
+    id: 2,
+    title: "FOSS FORGE 2025",
+    date: "2025-10-15",
+    time: "09:00 AM",
+    location: "USAR Campus, GGSIPU EDC",
+    attendees: "TBD",
+    category: "Competition",
+    status: "upcoming",
+    description: "Flagship open-source competition and festival during ELYSIAN 2025. 2-day multi-stage competition with development sprints, creative coding games, and Git battles.",
+    fullDescription: `FOSS FORGE is the flagship open-source competition and festival hosted by UFC during ELYSIAN 2025. It blends serious coding challenges with fun, game-style competitions, creating an engaging festival of open-source culture.
+
+**Key Highlights:**
+• 2-day, multi-stage competition (between 15–17 Oct)
+• Mix of development sprints, creative coding games, and large-scale Git battles
+• Designed for maximum student participation and audience engagement
+• Live leaderboards, interactive battles, and projection displays
+
+**Competition Format:**
+• Team Size: 3 members per team
+• Structure: 3 Sub-Competitions + Live Leaderboard
+• Scoring: Points-based system across all events (individual + team totals)
+
+**Day 1 – Kickoff:**
+
+**1. Repo Sprint – Fork, Build, Win**
+Teams contribute to curated UFC GitHub repositories by solving issues, improving UI/UX, and submitting PRs.
+
+Scoring (100 pts total):
+• High-impact feature/creative solution – 30 pts
+• Code Quality & Documentation – 25 pts
+• UI/UX improvement – 20 pts
+• Valid PR merged & verified – 25 pts
+
+**2. Pokémon YAML Showdown – Battle of Configs**
+A live, Pokémon-style game where YAML configuration files decide battles. Teams push configs to GitHub, and battles are simulated and projected live.
+
+Scoring:
+• Match Victory – 30 pts
+• Close Match – 15 pts
+• Creative Strategy – 10 pts
+• Valid Participation – 5 pts
+
+**Day 2 – The Finals:**
+
+**3. Git Clash – Commit Storm (MVP Event)**
+The ultimate showdown: teams tackle curated repos with issues ranging from simple to complex. PRs are judged live with a running leaderboard.
+
+Scoring:
+• Valid PR – 10 pts
+• Medium issue – +5 bonus
+• Hard issue – +10 bonus
+• Earliest Accepted PRs – +5 bonus each
+• Clean Git Workflow – up to 30 pts/team
+
+**Final Rankings:** Aggregated scores from Day 1 + Day 2.
+
+**Suggested Bonus Rounds:**
+• Code Hunt: Hidden vulnerabilities to uncover
+• PR Review Round: Spot and fix faulty PRs
+• Docs or Disaster: Write quick-fire documentation under 20 minutes
+• Open-Source Pitch: Present your contributions like a mini hackathon demo`,
+    image: "/foss-forge-2025.jpg",
+    tags: ["Open Source", "Competition", "Git", "Team Event"],
+    featured: false,
+    organizer: "UFC Tech Team",
+    requirements: ["Laptop", "GitHub account", "Team of 3 members", "Basic programming knowledge"],
+    schedule: [
+      { time: "09:00 AM", activity: "Registration & Team Formation" },
       { time: "10:00 AM", activity: "Opening Ceremony" },
-      { time: "11:00 AM", activity: "Team Formation" },
-      { time: "12:00 PM", activity: "Hacking Begins!" },
-      { time: "01:00 PM", activity: "Lunch Break" },
-      { time: "06:00 PM", activity: "Dinner & Networking" },
-      { time: "12:00 AM", activity: "Midnight Snacks" },
+      { time: "10:30 AM", activity: "Repo Sprint - Fork, Build, Win" },
+      { time: "12:00 PM", activity: "Lunch Break" },
+      { time: "01:00 PM", activity: "Pokémon YAML Showdown" },
+      { time: "03:00 PM", activity: "Day 1 Results & Leaderboard" },
+      { time: "09:00 AM", activity: "Day 2 - Git Clash Begins" },
+      { time: "12:00 PM", activity: "Lunch Break" },
+      { time: "01:00 PM", activity: "Final Rounds & Judging" },
+      { time: "04:00 PM", activity: "Awards Ceremony" },
     ],
   },
   // Add other events here...
@@ -153,11 +234,17 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
               >
                 <h2 className="text-3xl font-bold mb-6 text-green-400">About This Event</h2>
                 <div className="prose prose-invert max-w-none">
-                  {event.fullDescription?.split("\n\n").map((paragraph, index) => (
-                    <p key={index} className="text-gray-300 mb-4 leading-relaxed">
-                      {paragraph}
-                    </p>
-                  ))}
+                  <div 
+                    className="text-gray-300 leading-relaxed"
+                    dangerouslySetInnerHTML={{
+                      __html: event.fullDescription
+                        ?.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>')
+                        ?.replace(/• (.*?)(?=\n|$)/g, '<li class="ml-4 mb-2">$1</li>')
+                        ?.replace(/\n\n/g, '</p><p class="mb-4">')
+                        ?.replace(/^/, '<p class="mb-4">')
+                        ?.replace(/$/, '</p>') || ''
+                    }}
+                  />
                 </div>
 
                 <div className="flex flex-wrap gap-2 mt-8">

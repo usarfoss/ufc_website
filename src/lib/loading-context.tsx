@@ -24,22 +24,34 @@ export function LoadingProvider({ children }: { children: ReactNode }) {
     } else {
       localStorage.setItem('hasVisited', 'true');
       setIsLoading(true);
-      // Show loading for 10 seconds on first visit
+      // Show loading for 10 seconds on first visit to home page
       setTimeout(() => {
         setIsLoading(false);
       }, 10000);
     }
   }, []);
 
-  // Show loading screen on route changes (10 seconds as requested)
+  // Show loading screen on route changes with different durations
   useEffect(() => {
     if (!isFirstVisit) {
-      setIsLoading(true);
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 10000);
+      // Define surface pages that should show loading animation
+      const surfacePages = ['/', '/home', '/about', '/projects', '/events', '/login', '/signup'];
+      const isSurfacePage = surfacePages.includes(pathname);
       
-      return () => clearTimeout(timer);
+      // Only show loading for surface pages, skip dashboard and other internal pages
+      if (isSurfacePage) {
+        setIsLoading(true);
+        
+        // Determine loading duration based on the page
+        const isHomePage = pathname === '/' || pathname === '/home';
+        const loadingDuration = isHomePage ? 10000 : 300; // 10 seconds for home, 0.3 seconds for others
+        
+        const timer = setTimeout(() => {
+          setIsLoading(false);
+        }, loadingDuration);
+        
+        return () => clearTimeout(timer);
+      }
     }
   }, [pathname, isFirstVisit]);
 

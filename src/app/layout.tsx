@@ -23,7 +23,9 @@ const orbitron = Orbitron({
 export const metadata: Metadata = {
   title: "Fosser",
   description: "Just a simple club website",
-  icons:"",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({

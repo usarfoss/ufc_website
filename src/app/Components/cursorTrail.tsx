@@ -44,7 +44,7 @@ export function CursorTrail() {
   }, [])
 
   return (
-		<div className="fixed inset-0 pointer-events-none z-50">
+		<div className="fixed inset-0 pointer-events-none z-[100]">
 			{trail.map((point, index) => {
 				const age = Date.now() - point.createdAt
 				const opacity = Math.max(0, 1 - age / 1000)

@@ -279,45 +279,68 @@ export default function ProjectsPage() {
           </div>
         </section>
 
-        {/* Call to Action */}
+        {/* All Projects Grid */}
         <section className="py-8 px-6 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
+          <div className="max-w-7xl mx-auto">
             <motion.div
+              className="text-center mb-8"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
               <h2 className="text-4xl md:text-5xl font-bold mb-4 text-green-400">
-                Ready to Contribute?
+                All Projects
               </h2>
-              <p className="text-xl text-gray-400 mb-6">
-                Join our community of developers and help shape the future of authentication solutions
+              <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                Discover all our ongoing and completed projects
               </p>
-              <div className="flex flex-wrap justify-center gap-4 relative z-20">
-                <Link href="/projects/explore">
-                  <motion.button
-                    className="flex items-center gap-2 px-8 py-4 bg-green-500 text-black font-semibold rounded-lg hover:bg-green-400 transition-colors relative z-20"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    style={{ pointerEvents: 'auto' }}
-                  >
-                    Explore More Projects
-                    <ArrowRight className="w-5 h-5" />
-                  </motion.button>
-                </Link>
+            </motion.div>
+
+            {/* Category Filter */}
+            <motion.div
+              className="flex flex-wrap justify-center gap-4 mb-12"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              {categories.map((category) => (
                 <motion.button
-                  className="flex items-center gap-2 px-8 py-4 border border-green-500 text-green-400 rounded-lg hover:bg-green-500/10 transition-colors relative z-20"
+                  key={category}
+                  className={`px-6 py-3 rounded-full border transition-all duration-300 ${
+                    selectedCategory === category
+                      ? "bg-green-500 text-black border-green-500"
+                      : "border-green-500/50 text-green-400 hover:border-green-500 hover:bg-green-500/10"
+                  }`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => window.open(ongoingProjects[0].github, "_blank")}
-                  style={{ pointerEvents: 'auto' }}
+                  onClick={() => setSelectedCategory(category)}
                 >
-                  <Github className="w-5 h-5" />
-                  Contribute on GitHub
+                  {category}
                 </motion.button>
-              </div>
+              ))}
             </motion.div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredProjects.map((project, index) => (
+                <motion.div
+                  key={project.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <HologramProjectCard
+                    project={project}
+                    index={index}
+                    isSelected={selectedProject === project.id}
+                    onSelect={setSelectedProject}
+                    isCompact={true}
+                  />
+                </motion.div>
+              ))}
+            </div>
           </div>
         </section>
       </div>
@@ -536,24 +559,6 @@ function HologramProjectCard({ project, index, isSelected, onSelect, isCompact =
                     <Users className="w-3 h-3 text-green-400" />
                     {project.contributors}
                   </div>
-                </div>
-                <div className="flex gap-2">
-                  <motion.button
-                    className="flex items-center gap-1 px-3 py-1 bg-green-500/20 text-green-400 rounded text-xs border border-green-500/50 hover:bg-green-500/30 transition-colors"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      window.open(project.github, "_blank")
-                    }}
-                  >
-                    <GitPullRequest className="w-3 h-3" />
-                    Contribute
-                  </motion.button>
-                  <Github className="w-4 h-4 text-gray-400 hover:text-green-400 transition-colors" />
-                  {project.demo && (
-                    <ExternalLink className="w-4 h-4 text-gray-400 hover:text-green-400 transition-colors" />
-                  )}
                 </div>
               </div>
             </motion.div>

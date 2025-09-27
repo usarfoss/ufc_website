@@ -31,7 +31,7 @@ export default function ShortTrailCursor() {
 
     type Point = { x: number; y: number; t: number }
     const trail: Point[] = []
-    const maxPoints = 10 // very short trail
+    const maxPoints = 15 // slightly longer trail for better responsiveness
 
     let lastT = performance.now()
     let lastMoveAt = performance.now()
@@ -44,8 +44,8 @@ export default function ShortTrailCursor() {
       lastT = now
 
       const idleMs = now - lastMoveAt
-      // Quick vanish: start fading after 200ms idle, gone by ~450ms
-      const decay = idleMs <= 200 ? 1 : Math.max(0, 1 - (idleMs - 200) / 250)
+      // Smooth trail: start fading after 300ms idle, gone by ~800ms
+      const decay = idleMs <= 300 ? 1 : Math.max(0, 1 - (idleMs - 300) / 500)
 
       // Stop animation when completely faded and no trail
       if (decay === 0 && trail.length === 0) {
@@ -54,20 +54,20 @@ export default function ShortTrailCursor() {
         return
       }
 
-      // Faster clear when idle, otherwise keep a slight persistence
+      // Clear canvas without overlay
       ctx.globalCompositeOperation = "source-over"
-      ctx.fillStyle = `rgba(0,0,0,${idleMs > 200 ? 0.35 : 0.12})`
-      ctx.fillRect(0, 0, width, height)
+      ctx.clearRect(0, 0, width, height)
 
       if (trail.length > 1 && decay > 0) {
-        ctx.globalCompositeOperation = "lighter"
+        ctx.globalCompositeOperation = "source-over"
         ctx.lineCap = "round"
         ctx.lineJoin = "round"
 
+        // White trail with improved responsiveness
         const layers = [
-          { width: 4.5, hueShift: 0, alpha: 0.35 },
-          { width: 3, hueShift: 80, alpha: 0.55 },
-          { width: 1.6, hueShift: 210, alpha: 0.9 },
+          { width: 6, alpha: 0.4 },
+          { width: 4, alpha: 0.6 },
+          { width: 2, alpha: 0.8 },
         ]
 
         layers.forEach((layer, li) => {
@@ -76,9 +76,8 @@ export default function ShortTrailCursor() {
             const p0 = trail[i - 1]
             const p1 = trail[i]
             const t = i / (trail.length - 1)
-            const hue = (230 * t + layer.hueShift + now * 0.05) % 360
-            const a = layer.alpha * (0.3 + 0.7 * t) * decay
-            ctx.strokeStyle = `hsla(${hue}, 95%, ${li === 2 ? 68 : 58}%, ${a})`
+            const a = layer.alpha * (0.4 + 0.6 * t) * decay
+            ctx.strokeStyle = `rgba(255, 255, 255, ${a})`
             ctx.beginPath()
             ctx.moveTo(p0.x, p0.y)
             ctx.lineTo(p1.x, p1.y)
@@ -86,12 +85,11 @@ export default function ShortTrailCursor() {
           }
         })
 
-        // Bright head
+        // Bright white head
         const head = trail[trail.length - 1]
-        const coreHue = (now * 0.2) % 360
         ctx.beginPath()
-        ctx.fillStyle = `hsla(${coreHue}, 95%, 70%, ${0.9 * decay})`
-        ctx.arc(head.x, head.y, 2, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(255, 255, 255, ${0.9 * decay})`
+        ctx.arc(head.x, head.y, 3, 0, Math.PI * 2)
         ctx.fill()
       }
 
@@ -131,5 +129,5 @@ export default function ShortTrailCursor() {
     }
   }, [])
 
-  return <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-[3] h-full w-full" aria-hidden="true" />
+  return <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-[100] h-full w-full" aria-hidden="true" />
 }
