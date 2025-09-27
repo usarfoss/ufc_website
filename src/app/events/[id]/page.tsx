@@ -5,13 +5,14 @@ import { Calendar, Clock, MapPin, Users, ArrowLeft, Share2, Heart, Copy, Check }
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { use, useState, useRef, useEffect } from "react"
+import PrismaticBurst from "../../../components/PrismaticBurst"
 
 const events = [
   {
     id: 1,
     title: "Git Gud – Introduction to Open Source",
     date: "2025-10-10",
-    time: "02:00 PM",
+    time: "03:00 PM",
     location: "USAR Campus, GGSIPU EDC",
     attendees: "TBD",
     category: "Meetup",
@@ -36,14 +37,14 @@ const events = [
     requirements: ["Laptop", "Basic programming knowledge", "GitHub account (we'll help you create one)"],
     registrationUrl: "https://docs.google.com/forms/d/e/1FAIpQLSf01qxq5oOiLDGlk4RE2Z_5piLapMK_bbp8R7Ut71Elx_UfWQ/viewform?usp=sharing&ouid=113101111311849957004",
     schedule: [
-      { time: "02:00 PM", activity: "Welcome & Introduction" },
-      { time: "02:15 PM", activity: "Git Fundamentals Demo" },
-      { time: "02:45 PM", activity: "Hands-on Git Practice" },
-      { time: "03:15 PM", activity: "Break & Networking" },
-      { time: "03:30 PM", activity: "Open Source Contribution Guide" },
-      { time: "04:00 PM", activity: "Live Project Contribution" },
-      { time: "04:30 PM", activity: "Q&A and Discussion" },
-      { time: "05:00 PM", activity: "Wrap-up & Next Steps" },
+      { time: "03:00 PM", activity: "Welcome & Introduction" },
+      { time: "03:15 PM", activity: "Git Fundamentals Demo" },
+      { time: "03:45 PM", activity: "Hands-on Git Practice" },
+      { time: "04:15 PM", activity: "Speaker Session" },
+      { time: "04:30 PM", activity: "Open Source Contribution Guide" },
+      { time: "04:45 PM", activity: "Live Project Contribution" },
+      { time: "05:00 PM", activity: "Q&A and Discussion" },
+      { time: "05:15 PM", activity: "Wrap-up & Next Steps" },
     ],
   },
   {
@@ -224,7 +225,18 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
           animate={{ scale: 1 }}
           transition={{ duration: 1.5 }}
         >
-          <img src={event.image || "/placeholder.svg"} alt={event.title} className="w-full h-full object-cover" />
+          <PrismaticBurst
+            animationType="rotate3d"
+            intensity={2}
+            speed={0.5}
+            distort={1.0}
+            paused={false}
+            offset={{ x: 0, y: 0 }}
+            hoverDampness={0.25}
+            rayCount={24}
+            mixBlendMode="lighten"
+            colors={event.category === "Workshop" ? ['#00ffb2', '#0B874F', '#22c55e'] : ['#ff007a', '#4d3dff', '#ffffff']}
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
         </motion.div>
 
