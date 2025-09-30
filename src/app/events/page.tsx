@@ -8,6 +8,20 @@ import PageTransition from "../Components/page-transition"
 import { GitGudSVG } from "../../components/event-svgs/GitGudSVG"
 import { FossForgeSVG } from "../../components/event-svgs/FossForgeSVG"
 
+// Event background mapping - add new events here
+const backgroundById: Record<number, React.ComponentType> = {
+  1: GitGudSVG,
+  // Add more event backgrounds as needed:
+  // 2: SomeOtherSVG,
+  // 3: AnotherSVG,
+}
+
+// Helper function to render event background with fallback
+const renderEventBackground = (id: number) => {
+  const BackgroundComponent = backgroundById[id] || FossForgeSVG
+  return <BackgroundComponent />
+}
+
 const events = [
   {
     id: 1,
@@ -466,7 +480,7 @@ function HologramEventCard({ event, index, isSelected, onSelect, isCompact = fal
         >
           {/* Event SVG Background */}
           <div className="absolute inset-0 opacity-80">
-            {event.id === 1 ? <GitGudSVG /> : <FossForgeSVG />}
+            {renderEventBackground(event.id)}
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
           </div>
 
