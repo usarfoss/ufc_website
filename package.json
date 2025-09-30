@@ -32,6 +32,7 @@
     "framer-motion": "^12.23.12",
     "gsap": "^3.13.0",
     "jsonwebtoken": "^9.0.2",
+    "jose": "^5.9.6",
     "locomotive-scroll": "^4.1.4",
     "lucide-react": "^0.536.0",
     "motion": "^12.23.12",

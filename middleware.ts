@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import jwt from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // Check if the request is for a dashboard route
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
     const token = request.cookies.get('auth-token')?.value;
@@ -12,7 +12,8 @@ export function middleware(request: NextRequest) {
     }
 
     try {
-      jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret');
+      await jwtVerify(token, secret);
       return NextResponse.next();
     } catch (error) {
       console.log('JWT verification failed:', error);
@@ -26,7 +27,8 @@ export function middleware(request: NextRequest) {
 
     if (token) {
       try {
-        jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret');
+        await jwtVerify(token, secret);
         return NextResponse.redirect(new URL('/dashboard', request.url));
       } catch (error) {
         // Invalid token, allow access to auth pages
