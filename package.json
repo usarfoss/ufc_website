@@ -48,10 +48,10 @@
     "tailwind-merge": "^3.3.1",
     "three": "^0.179.1",
     "ws": "^8.18.3",
-    "zod": "^4.0.17"
+    "zod": "^4.0.17",
+    "@tailwindcss/postcss": "^4"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
