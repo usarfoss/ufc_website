@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Set HTTP-only cookie
-    const cookieDomain = process.env.COOKIE_DOMAIN || (process.env.NODE_ENV === 'production' ? '.ufc-ipu.tech' : undefined);
+    const cookieDomain = process.env.COOKIE_DOMAIN;
     response.cookies.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
