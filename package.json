@@ -49,7 +49,8 @@
     "three": "^0.179.1",
     "ws": "^8.18.3",
     "zod": "^4.0.17",
-    "@tailwindcss/postcss": "^4"
+    "@tailwindcss/postcss": "^4",
+    "tw-animate-css": "^1.3.6"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -57,7 +58,6 @@
     "@types/react-dom": "^19",
     "tailwindcss": "^4",
     "tsx": "^4.20.4",
-    "tw-animate-css": "^1.3.6",
     "typescript": "^5"
   }
 }
