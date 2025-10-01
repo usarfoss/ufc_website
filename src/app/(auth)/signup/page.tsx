@@ -231,23 +231,6 @@ export default function SignupPage() {
           {loading ? "CREATING ACCOUNT..." : "SIGNUP →"}
         </button>
 
-        {/* Debug Button */}
-        <button
-          type="button"
-          onClick={() => {
-            console.log('Debug button clicked!');
-            console.log('Form data:', formData);
-            console.log('Auth context:', { signup });
-          }}
-          className="w-full py-2 mt-2 text-xs border"
-          style={{
-            backgroundColor: "#F5A623",
-            color: "#000",
-            borderColor: "#F5A623",
-          }}
-        >
-          DEBUG: Test Button
-        </button>
       </form>
 
       {/* Divider */}
