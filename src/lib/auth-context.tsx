@@ -64,18 +64,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signup = async (email: string, password: string, name: string, githubUsername?: string): Promise<boolean> => {
     try {
+      console.log('Signup attempt:', { email, name, githubUsername });
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, name, githubUsername }),
       });
 
+      console.log('Signup response:', response.status, response.statusText);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Signup success:', data);
         setUser(data.user);
         return true;
+      } else {
+        const errorData = await response.json();
+        console.error('Signup failed:', errorData);
+        return false;
       }
-      return false;
     } catch (error) {
       console.error('Signup failed:', error);
       return false;
