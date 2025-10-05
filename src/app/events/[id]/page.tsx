@@ -6,7 +6,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { use, useState, useRef, useEffect } from "react"
 import { GitGudSVG } from "../../../components/event-svgs/GitGudSVG"
-import { FossForgeSVG } from "../../../components/event-svgs/FossForgeSVG"
+import Image from "next/image"
 
 const events = [
   {
@@ -52,18 +52,18 @@ const events = [
     id: 2,
     title: "FOSS FORGE 2025",
     date: "2025-10-15",
-    time: "09:00 AM",
+    time: "11:00 AM - 05:00 PM",
     location: "USAR Campus, GGSIPU EDC",
     attendees: "TBD",
     category: "Competition",
     status: "upcoming",
-    description: "Flagship open-source competition and festival during ELYSIAN 2025. 2-day multi-stage competition with development sprints, creative coding games, and Git battles.",
+    description: "Flagship open-source competition and festival during ELYSIAN 2025. 2-day competition (Oct 15–16) with development sprints, creative coding games, and Git battles.",
     fullDescription: `FOSS FORGE is the flagship open-source competition and festival hosted by UFC during ELYSIAN 2025. It blends serious coding challenges with fun, game-style competitions, creating an engaging festival of open-source culture.
 
 **Key Highlights:**
-• 2-day, multi-stage competition (between 15–17 Oct)
-• Mix of development sprints, creative coding games, and large-scale Git battles
-• Designed for maximum student participation and audience engagement
+• 2-day, multi-stage competition (Oct 15–16)
+• Day 1: Git Clash (code battle) + Pokémon YAML Showdown (config battle)
+• Day 2: Repo Sprint (build from base repos; creativity + execution)
 • Live leaderboards, interactive battles, and projection displays
 
 **Competition Format:**
@@ -71,62 +71,64 @@ const events = [
 • Structure: 3 Sub-Competitions + Live Leaderboard
 • Scoring: Points-based system across all events (individual + team totals)
 
-**Day 1 – Kickoff:**
+**Day 1 – Kickoff (11 AM – 5 PM):**
 
-**1. Repo Sprint – Fork, Build, Win**
-Teams contribute to curated UFC GitHub repositories by solving issues, improving UI/UX, and submitting PRs.
-
-Scoring (100 pts total):
-• High-impact feature/creative solution – 30 pts
-• Code Quality & Documentation – 25 pts
-• UI/UX improvement – 20 pts
-• Valid PR merged & verified – 25 pts
-
-**2. Pokémon YAML Showdown – Battle of Configs**
-A live, Pokémon-style game where YAML configuration files decide battles. Teams push configs to GitHub, and battles are simulated and projected live.
-
-Scoring:
-• Match Victory – 30 pts
-• Close Match – 15 pts
-• Creative Strategy – 10 pts
-• Valid Participation – 5 pts
-
-**Day 2 – The Finals:**
-
-**3. Git Clash – Commit Storm (MVP Event)**
-The ultimate showdown: teams tackle curated repos with issues ranging from simple to complex. PRs are judged live with a running leaderboard.
+**1. Git Clash – Commit Storm**
+Teams tackle curated issues ranging from simple to complex under time pressure. PRs are judged live with a running leaderboard.
 
 Scoring:
 • Valid PR – 10 pts
 • Medium issue – +5 bonus
 • Hard issue – +10 bonus
-• Earliest Accepted PRs – +5 bonus each
-• Clean Git Workflow – up to 30 pts/team
+• Earliest accepted PRs – +5 bonus each
+• Clean Git workflow – up to 30 pts/team
+
+**2. Pokémon YAML Showdown – Battle of Configs**
+A live, Pokémon-style game where YAML configuration files decide battles. Teams push configs to GitHub; matches are simulated and projected live.
+
+Scoring:
+• Match victory – 30 pts
+• Close match – 15 pts
+• Creative strategy – 10 pts
+• Valid participation – 5 pts
+
+**Day 2 – The Finals (11 AM – 5 PM):**
+
+**3. Repo Sprint – Build from Base Repos**
+Teams receive base repositories and showcase creativity: features, UX, documentation, and polish.
+
+Scoring (sample breakdown):
+• High-impact feature/creative solution – 30 pts
+• Code quality & documentation – 25 pts
+• UI/UX improvement – 20 pts
+• Valid PRs merged & verified – 25 pts
 
 **Final Rankings:** Aggregated scores from Day 1 + Day 2.
 
 **Suggested Bonus Rounds:**
-• Code Hunt: Hidden vulnerabilities to uncover
-• PR Review Round: Spot and fix faulty PRs
-• Docs or Disaster: Write quick-fire documentation under 20 minutes
-• Open-Source Pitch: Present your contributions like a mini hackathon demo`,
+• Code Hunt – hidden vulnerabilities to uncover
+• PR Review Round – spot and fix faulty PRs
+• Docs or Disaster – quick-fire documentation (20 mins)
+• Open-Source Pitch – present contributions like a mini hackathon demo`,
     image: "/foss-forge-2025.jpg",
     tags: ["Open Source", "Competition", "Git", "Team Event"],
     featured: false,
     organizer: "UFC Tech Team",
     requirements: ["Laptop", "GitHub account", "Team of 3 members", "Basic programming knowledge"],
-    registrationUrl: "https://docs.google.com/forms/d/e/1FAIpQLSeU4yxc8kZQ-60l4lMjTb688nSLtDydmlIzfHYNFdE8o589Lw/viewform?usp=dialog",
+    registrationUrl: "https://tinyurl.com/FOSS-FORGE-REGISTRATION",
     schedule: [
-      { time: "09:00 AM", activity: "Registration & Team Formation" },
-      { time: "10:00 AM", activity: "Opening Ceremony" },
-      { time: "10:30 AM", activity: "Repo Sprint - Fork, Build, Win" },
-      { time: "12:00 PM", activity: "Lunch Break" },
-      { time: "01:00 PM", activity: "Pokémon YAML Showdown" },
-      { time: "03:00 PM", activity: "Day 1 Results & Leaderboard" },
-      { time: "09:00 AM", activity: "Day 2 - Git Clash Begins" },
-      { time: "12:00 PM", activity: "Lunch Break" },
-      { time: "01:00 PM", activity: "Final Rounds & Judging" },
-      { time: "04:00 PM", activity: "Awards Ceremony" },
+      // Day 1 (Oct 15): 11 AM – 5 PM
+      { time: "11:00 AM", activity: "Registration & Team Formation" },
+      { time: "11:30 AM", activity: "Opening Ceremony" },
+      { time: "12:00 PM", activity: "Git Clash – Commit Storm (Round 1)" },
+      { time: "02:00 PM", activity: "Lunch Break" },
+      { time: "02:30 PM", activity: "Pokémon YAML Showdown" },
+      { time: "05:00 PM", activity: "Day 1 Wrap & Leaderboard" },
+      // Day 2 (Oct 16): 11 AM – 5 PM
+      { time: "11:00 AM", activity: "Repo Sprint – Build from Base Repos (Creativity Round)" },
+      { time: "01:30 PM", activity: "Lunch Break" },
+      { time: "02:00 PM", activity: "Showcase & Judging" },
+      { time: "05:00 PM", activity: "Awards Ceremony" },
     ],
   },
   // Add other events here...
@@ -152,7 +154,7 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
 
   const handleShare = async (platform: string) => {
     const eventUrl = `${window.location.origin}/events/${event.id}`
-    const shareText = `Check out this event: ${event.title} - ${event.description}`
+    const shareText = `${event.title} — ${event.description}\n\nDates: Oct 15–16\nTime: 11:00 AM – 5:00 PM\nLocation: ${event.location}\nRegister: ${event.registrationUrl}\n\nJoin UFC at ELYSIAN for Git Clash, Pokémon YAML Showdown, and Repo Sprint!`
     
     switch (platform) {
       case 'twitter':
@@ -162,7 +164,7 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
         window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(eventUrl)}`, '_blank')
         break
       case 'whatsapp':
-        window.open(`https://wa.me/?text=${encodeURIComponent(`${shareText} ${eventUrl}`)}`, '_blank')
+        window.open(`https://wa.me/?text=${encodeURIComponent(`${shareText}\n${eventUrl}`)}`, '_blank')
         break
       case 'copy':
         try {
@@ -226,7 +228,17 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
           animate={{ scale: 1 }}
           transition={{ duration: 1.5 }}
         >
-          {event.id === 1 ? <GitGudSVG /> : <FossForgeSVG />}
+          {event.id === 1 ? (
+            <GitGudSVG />
+          ) : (
+            <Image
+              src={event.image}
+              alt={event.title}
+              fill
+              priority
+              className="object-cover"
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
         </motion.div>
 
@@ -533,3 +545,5 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
     </div>
   )
 }
+
+// generateMetadata must be exported from a server component (e.g., layout.tsx)

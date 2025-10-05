@@ -6,19 +6,23 @@ import Link from "next/link"
 import { useState, useRef, useEffect } from "react"
 import PageTransition from "../Components/page-transition"
 import { GitGudSVG } from "../../components/event-svgs/GitGudSVG"
-import { FossForgeSVG } from "../../components/event-svgs/FossForgeSVG"
+import Image from "next/image"
 
 // Event background mapping - add new events here
-const backgroundById: Record<number, React.ComponentType> = {
+const backgroundById: Record<number, React.ComponentType | 'image'> = {
   1: GitGudSVG,
-  // Add more event backgrounds as needed:
-  // 2: SomeOtherSVG,
-  // 3: AnotherSVG,
+  2: 'image',
 }
 
 // Helper function to render event background with fallback
-const renderEventBackground = (id: number) => {
-  const BackgroundComponent = backgroundById[id] || FossForgeSVG
+const renderEventBackground = (id: number, image: string, title: string) => {
+  const bg = backgroundById[id]
+  if (bg === 'image') {
+    return (
+      <Image src={image} alt={title} fill priority className="object-cover" />
+    )
+  }
+  const BackgroundComponent = (bg as React.ComponentType) || GitGudSVG
   return <BackgroundComponent />
 }
 
@@ -103,11 +107,11 @@ const events = [
   {
     id: 2,
     title: "FOSS FORGE 2025",
-    description: "Flagship open-source competition and festival during ELYSIAN 2025. 2-day multi-stage competition with development sprints, creative coding games, and Git battles.",
+    description: "Flagship open-source competition and festival during ELYSIAN 2025. 2-day competition (Oct 15–16) with development sprints, creative coding games, and Git battles.",
     longDescription: `FOSS FORGE is the flagship open-source competition and festival hosted by UFC during ELYSIAN 2025. It blends serious coding challenges with fun, game-style competitions, creating an engaging festival of open-source culture.
 
 **Key Highlights:**
-• 2-day, multi-stage competition (between 15–17 Oct)
+• 2-day, multi-stage competition (Oct 15–16)
 • Mix of development sprints, creative coding games, and large-scale Git battles
 • Designed for maximum student participation and audience engagement
 • Live leaderboards, interactive battles, and projection displays
@@ -117,37 +121,37 @@ const events = [
 • Structure: 3 Sub-Competitions + Live Leaderboard
 • Scoring: Points-based system across all events (individual + team totals)
 
-**Day 1 – Kickoff:**
+**Day 1 – Kickoff (11 AM – 5 PM):**
 
-**1. Repo Sprint – Fork, Build, Win**
-Teams contribute to curated UFC GitHub repositories by solving issues, improving UI/UX, and submitting PRs.
-
-Scoring (100 pts total):
-• High-impact feature/creative solution – 30 pts
-• Code Quality & Documentation – 25 pts
-• UI/UX improvement – 20 pts
-• Valid PR merged & verified – 25 pts
-
-**2. Pokémon YAML Showdown – Battle of Configs**
-A live, Pokémon-style game where YAML configuration files decide battles. Teams push configs to GitHub, and battles are simulated and projected live.
-
-Scoring:
-• Match Victory – 30 pts
-• Close Match – 15 pts
-• Creative Strategy – 10 pts
-• Valid Participation – 5 pts
-
-**Day 2 – The Finals:**
-
-**3. Git Clash – Commit Storm (MVP Event)**
-The ultimate showdown: teams tackle curated repos with issues ranging from simple to complex. PRs are judged live with a running leaderboard.
+**1. Git Clash – Commit Storm**
+Teams tackle curated issues ranging from simple to complex under time pressure. PRs are judged live with a running leaderboard.
 
 Scoring:
 • Valid PR – 10 pts
 • Medium issue – +5 bonus
 • Hard issue – +10 bonus
-• Earliest Accepted PRs – +5 bonus each
-• Clean Git Workflow – up to 30 pts/team
+• Earliest accepted PRs – +5 bonus each
+• Clean Git workflow – up to 30 pts/team
+
+**2. Pokémon YAML Showdown – Battle of Configs**
+A live, Pokémon-style game where YAML configuration files decide battles. Teams push configs to GitHub; matches are simulated and projected live.
+
+Scoring:
+• Match victory – 30 pts
+• Close match – 15 pts
+• Creative strategy – 10 pts
+• Valid participation – 5 pts
+
+**Day 2 – The Finals (11 AM – 5 PM):**
+
+**3. Repo Sprint – Build from Base Repos**
+Teams receive base repositories and showcase creativity: features, UX, documentation, and polish.
+
+Scoring (sample breakdown):
+• High-impact feature/creative solution – 30 pts
+• Code quality & documentation – 25 pts
+• UI/UX improvement – 20 pts
+• Valid PRs merged & verified – 25 pts
 
 **Final Rankings:** Aggregated scores from Day 1 + Day 2.
 
@@ -157,7 +161,7 @@ Scoring:
 • Docs or Disaster: Write quick-fire documentation under 20 minutes
 • Open-Source Pitch: Present your contributions like a mini hackathon demo`,
     date: "2025-10-15",
-    time: "09:00 AM",
+    time: "11:00 AM - 05:00 PM",
     location: "USAR Campus, GGSIPU EDC",
     attendees: "TBD",
     category: "Competition",
@@ -168,18 +172,18 @@ Scoring:
     organizer: "UFC Tech Team",
     tags: ["Open Source", "Competition", "Git", "Team Event"],
     requirements: ["Laptop", "GitHub account", "Team of 3 members", "Basic programming knowledge"],
-    registrationUrl: "https://docs.google.com/forms/d/e/1FAIpQLSeU4yxc8kZQ-60l4lMjTb688nSLtDydmlIzfHYNFdE8o589Lw/viewform?usp=dialog",
+    registrationUrl: "https://tinyurl.com/FOSS-FORGE-REGISTRATION",
     schedule: [
-      { time: "09:00 AM", activity: "Registration & Team Formation" },
-      { time: "10:00 AM", activity: "Opening Ceremony" },
-      { time: "10:30 AM", activity: "Repo Sprint - Fork, Build, Win" },
-      { time: "12:00 PM", activity: "Lunch Break" },
-      { time: "01:00 PM", activity: "Pokémon YAML Showdown" },
-      { time: "03:00 PM", activity: "Day 1 Results & Leaderboard" },
-      { time: "09:00 AM", activity: "Day 2 - Git Clash Begins" },
-      { time: "12:00 PM", activity: "Lunch Break" },
-      { time: "01:00 PM", activity: "Final Rounds & Judging" },
-      { time: "04:00 PM", activity: "Awards Ceremony" },
+      { time: "11:00 AM", activity: "Registration & Team Formation" },
+      { time: "11:30 AM", activity: "Opening Ceremony" },
+      { time: "12:00 PM", activity: "Git Clash – Commit Storm (Round 1)" },
+      { time: "02:00 PM", activity: "Lunch Break" },
+      { time: "02:30 PM", activity: "Pokémon YAML Showdown" },
+      { time: "05:00 PM", activity: "Day 1 Wrap & Leaderboard" },
+      { time: "11:00 AM", activity: "Repo Sprint – Build from Base Repos (Creativity Round)" },
+      { time: "01:30 PM", activity: "Lunch Break" },
+      { time: "02:00 PM", activity: "Showcase & Judging" },
+      { time: "05:00 PM", activity: "Awards Ceremony" },
     ],
     hologramData: {
       components: ["Repo Sprint", "YAML Battle", "Git Clash", "Leaderboard", "Awards"],
@@ -480,7 +484,7 @@ function HologramEventCard({ event, index, isSelected, onSelect, isCompact = fal
         >
           {/* Event SVG Background */}
           <div className="absolute inset-0 opacity-80">
-            {renderEventBackground(event.id)}
+            {renderEventBackground(event.id, event.image, event.title)}
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
           </div>
 
