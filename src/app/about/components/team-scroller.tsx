@@ -21,25 +21,31 @@ const defaultMembers: Member[] = [
     name: "Siddharth Bansal", 
     role: "President", 
     img: "/team-images/siddharth.jpg",
-    description: "Leading the vision and strategic direction of our open source community with passion and innovation."
+    description: "The One Piece... THE ONE PIECE IS REAL!!."
   },
   { 
     name: "Dhruv Sharma", 
     role: "Tech Lead", 
     img: "/team-images/dhruv.jpg",
-    description: "Overseeing technical direction and ensuring high-quality development standards across all projects."
+    description: "The real yakuza was the friends we made along the way."
+  },
+  { 
+    name: "Pranshu Bansal", 
+    role: "Non-Tech Lead", 
+    img: "/team-images/pranshu.jpg",
+    description: "Sleeping half the time, Bored half the time, sharing cat memes all the time (UwU)."
   },
   { 
     name: "Manandeep Singh", 
-    role: "Co Tech Lead", 
+    role: "classified.", 
     img: "/team-images/manandeep.jpg",
-    description: "Supporting technical leadership and mentoring developers in cutting-edge technologies."
+    description: "Sometimes it takes a man to be best girl. ~ Gigguk"
   },
   { 
     name: "Avish Chaudhary", 
     role: "Co Tech Lead", 
     img: "/team-images/avish.jpg",
-    description: "Contributing technical expertise and helping shape the future of our development practices."
+    description: "Trying to do better."
   },
   { 
     name: "Ojaswini Fauzdar", 
@@ -69,7 +75,7 @@ const defaultMembers: Member[] = [
     name: "Moksh", 
     role: "Core Member", 
     img: "/team-images/moksh.jpg",
-    description: "Supporting core initiatives and contributing to the technical foundation of our open source projects."
+    description: "Wanderer."
   },
   { 
     name: "Piyush Gupta", 
@@ -81,7 +87,7 @@ const defaultMembers: Member[] = [
     name: "Vikram Aditya Verma", 
     role: "Anonymous Member", 
     img: "/team-images/vikram.jpg",
-    description: "Anonymous Member, No information available."
+    description: "Mera khel khatam hai."
   },
 ]
 
