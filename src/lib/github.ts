@@ -114,39 +114,44 @@ export class GitHubService {
       // Get user's repositories
       const repos = await this.getUserRepositories(username);
       
-      // Calculate language distribution across ALL repos
-      const languages: Record<string, number> = {};
-      let totalSize = 0;
+      // Prefer GitHub Readme Stats (SVG) parsing for top languages
+      let languagePercentages: Record<string, number> = await this.getTopLanguagesFromReadmeStats(username);
 
-      const results = await Promise.allSettled(
-        repos.map(async (repo) => {
-          try {
-            const { data: langData } = await this.octokit.rest.repos.listLanguages({
-              owner: username,
-              repo: repo.name,
-            });
-            return langData as Record<string, number>;
-          } catch (error: any) {
-            console.warn(`Failed to fetch languages for ${username}/${repo.name}:`, error.status, error.message);
-            return {} as Record<string, number>;
-          }
-        })
-      );
+      if (Object.keys(languagePercentages).length === 0) {
+        // Fallback: aggregate across all repos using GitHub languages API
+        const languages: Record<string, number> = {};
+        let totalSize = 0;
 
-      for (const r of results) {
-        if (r.status === 'fulfilled') {
-          for (const [lang, bytes] of Object.entries(r.value)) {
-            languages[lang] = (languages[lang] || 0) + (bytes as number);
-            totalSize += bytes as number;
+        const results = await Promise.allSettled(
+          repos.map(async (repo) => {
+            try {
+              const { data: langData } = await this.octokit.rest.repos.listLanguages({
+                owner: username,
+                repo: repo.name,
+              });
+              return langData as Record<string, number>;
+            } catch (error: any) {
+              console.warn(`Failed to fetch languages for ${username}/${repo.name}:`, error.status, error.message);
+              return {} as Record<string, number>;
+            }
+          })
+        );
+
+        for (const r of results) {
+          if (r.status === 'fulfilled') {
+            for (const [lang, bytes] of Object.entries(r.value)) {
+              languages[lang] = (languages[lang] || 0) + (bytes as number);
+              totalSize += bytes as number;
+            }
           }
         }
-      }
 
-      // Convert to percentages
-      const languagePercentages: Record<string, number> = {};
-      if (totalSize > 0) {
-        for (const [lang, bytes] of Object.entries(languages)) {
-          languagePercentages[lang] = Math.round(((bytes as number) / totalSize) * 100);
+        if (totalSize > 0) {
+          const tmp: Record<string, number> = {};
+          for (const [lang, bytes] of Object.entries(languages)) {
+            tmp[lang] = Math.round(((bytes as number) / totalSize) * 100);
+          }
+          languagePercentages = tmp;
         }
       }
 
@@ -176,6 +181,30 @@ export class GitHubService {
         languages: {},
         recentActivity: [],
       };
+    }
+  }
+
+  // Extract top languages using the public GitHub Readme Stats SVG endpoint
+  private async getTopLanguagesFromReadmeStats(username: string): Promise<Record<string, number>> {
+    try {
+      const url = `https://github-readme-stats.vercel.app/api/top-langs/?username=${encodeURIComponent(username)}&theme=dark&hide_border=false&include_all_commits=false&count_private=false&layout=compact`;
+      const res = await fetch(url, { next: { revalidate: 300 } });
+      if (!res.ok) return {};
+      const svg = await res.text();
+
+      // Parse pairs like "TypeScript 45.35%" from the SVG text content
+      const matches = svg.matchAll(/([A-Za-z0-9+#._-]+)\s+(\d+(?:\.\d+)?)%/g);
+      const parsed: Record<string, number> = {};
+      for (const m of matches) {
+        const lang = m[1];
+        const pct = Number.parseFloat(m[2]);
+        if (lang && Number.isFinite(pct) && pct > 0 && pct <= 100 && lang.length < 50) {
+          parsed[lang] = Math.round(pct);
+        }
+      }
+      return parsed;
+    } catch {
+      return {};
     }
   }
 
