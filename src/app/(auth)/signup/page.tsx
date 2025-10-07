@@ -22,10 +22,15 @@ export default function SignupPage() {
 
   const handleInputChange = (field: keyof SignupFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear field error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+    if (field === 'password') {
+      if (value && value.length < 6) {
+        setErrors(prev => ({ ...prev, password: 'Password is too small' }));
+      } else if (errors.password) {
+        setErrors(prev => ({ ...prev, password: undefined }));
+      }
+      return;
     }
+    if (errors[field]) setErrors(prev => ({ ...prev, [field]: undefined }));
   };
 
   const validateForm = (): boolean => {
@@ -211,6 +216,9 @@ export default function SignupPage() {
               {showPassword ? "HIDE" : "SHOW"}
             </button>
           </div>
+          {!errors.password && (
+            <p className="mt-1 text-xs text-gray-400">Use at least 6 characters.</p>
+          )}
           {errors.password && (
             <p className="mt-1 text-sm text-red-400">{errors.password}</p>
           )}
