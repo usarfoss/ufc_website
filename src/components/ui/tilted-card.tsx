@@ -13,7 +13,6 @@ interface TiltedCardProps {
   style?: React.CSSProperties
   overlayContent?: React.ReactNode
   displayOverlay?: boolean
-  showMobileWarning?: boolean
 }
 
 export function TiltedCard({
@@ -25,7 +24,6 @@ export function TiltedCard({
   style,
   overlayContent,
   displayOverlay = false,
-  showMobileWarning = true,
 }: TiltedCardProps) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [isHovered, setIsHovered] = useState(false)
@@ -106,12 +104,6 @@ export function TiltedCard({
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
     >
-      {/* Mobile warning */}
-      {showMobileWarning && isMobile && (
-        <div className="absolute top-2 left-2 right-2 z-30 bg-yellow-500/90 text-black text-xs px-2 py-1 rounded text-center font-medium">
-          💡 This effect works best on desktop
-        </div>
-      )}
             <motion.div
         className="w-full h-full"
         style={{

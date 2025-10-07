@@ -78,7 +78,7 @@ export default function SignupPage() {
     <>
       {/* Title */}
       <h1
-        className="text-4xl font-extrabold text-center mb-4"
+        className="text-2xl md:text-3xl font-extrabold text-center mb-3"
         style={{
           color: "#0B874F",
           textShadow: "2px 2px #00ff95",
@@ -89,7 +89,7 @@ export default function SignupPage() {
       </h1>
 
       {/* Subtitle */}
-      <p className="text-center text-sm mb-6" style={{ color: "#F5A623" }}>
+      <p className="text-center text-xs md:text-sm mb-4" style={{ color: "#F5A623" }}>
         "Join the community of developers."
       </p>
 
@@ -101,10 +101,10 @@ export default function SignupPage() {
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* Name */}
         <div>
-          <label className="block mb-2 text-sm font-bold" style={{ color: "#0B874F" }}>
+          <label className="block mb-1 text-xs md:text-sm font-bold" style={{ color: "#0B874F" }}>
             Full Name
           </label>
           <input
@@ -112,7 +112,7 @@ export default function SignupPage() {
             value={formData.name}
             onChange={(e) => handleInputChange('name', e.target.value)}
             placeholder="Enter your full name"
-            className={`w-full px-4 py-3 border focus:outline-none transition-all duration-200 ${
+            className={`w-full px-3 py-2 text-sm border focus:outline-none transition-all duration-200 ${
               errors.name ? 'border-red-500' : ''
             }`}
             style={{
@@ -129,7 +129,7 @@ export default function SignupPage() {
 
         {/* Email */}
         <div>
-          <label className="block mb-2 text-sm font-bold" style={{ color: "#0B874F" }}>
+          <label className="block mb-1 text-xs md:text-sm font-bold" style={{ color: "#0B874F" }}>
             Email
           </label>
           <input
@@ -137,7 +137,7 @@ export default function SignupPage() {
             value={formData.email}
             onChange={(e) => handleInputChange('email', e.target.value)}
             placeholder="Enter your email"
-            className={`w-full px-4 py-3 border focus:outline-none transition-all duration-200 ${
+            className={`w-full px-3 py-2 text-sm border focus:outline-none transition-all duration-200 ${
               errors.email ? 'border-red-500' : ''
             }`}
             style={{
@@ -154,15 +154,15 @@ export default function SignupPage() {
 
         {/* GitHub Username */}
         <div>
-          <label className="block mb-2 text-sm font-bold" style={{ color: "#0B874F" }}>
-            GitHub Username <span className="text-gray-400">(optional)</span>
+          <label className="block mb-1 text-xs md:text-sm font-bold" style={{ color: "#0B874F" }}>
+            GitHub Username *
           </label>
           <input
             type="text"
             value={formData.githubUsername || ''}
             onChange={(e) => handleInputChange('githubUsername', e.target.value)}
             placeholder="Enter your GitHub username"
-            className={`w-full px-4 py-3 border focus:outline-none transition-all duration-200 ${
+            className={`w-full px-3 py-2 text-sm border focus:outline-none transition-all duration-200 ${
               errors.githubUsername ? 'border-red-500' : ''
             }`}
             style={{
@@ -179,7 +179,7 @@ export default function SignupPage() {
 
         {/* Password */}
         <div>
-          <label className="block mb-2 text-sm font-bold" style={{ color: "#0B874F" }}>
+          <label className="block mb-1 text-xs md:text-sm font-bold" style={{ color: "#0B874F" }}>
             Password
           </label>
           <div className="relative">
@@ -188,7 +188,7 @@ export default function SignupPage() {
               value={formData.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
               placeholder="Enter your password"
-              className={`w-full px-4 py-3 border focus:outline-none transition-all duration-200 ${
+              className={`w-full px-3 py-2 pr-10 text-sm border focus:outline-none transition-all duration-200 ${
                 errors.password ? 'border-red-500' : ''
               }`}
               style={{
@@ -220,7 +220,7 @@ export default function SignupPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 mt-4 font-bold border transition-all duration-300 hover:scale-105 hover:shadow-[0_0_15px_#0B874F] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-2 mt-3 text-sm font-bold border transition-all duration-300 hover:scale-105 hover:shadow-[0_0_15px_#0B874F] disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
             backgroundColor: "#0B874F",
             color: "#000",
@@ -234,14 +234,14 @@ export default function SignupPage() {
       </form>
 
       {/* Divider */}
-      <div className="flex items-center justify-center my-6">
+      <div className="flex items-center justify-center my-4">
         <span className="w-1/3 border-b" style={{ borderColor: "#0B874F" }}></span>
         <span className="px-4 text-xs" style={{ color: "#F5A623" }}>OR</span>
         <span className="w-1/3 border-b" style={{ borderColor: "#0B874F" }}></span>
       </div>
 
       {/* Login Link */}
-      <p className="text-center text-sm" style={{ color: "#fff" }}>
+      <p className="text-center text-xs md:text-sm" style={{ color: "#fff" }}>
         Already have an account?{" "}
         <Link href="/login" className="font-bold hover:underline" style={{ color: "#0B874F" }}>
           Login here

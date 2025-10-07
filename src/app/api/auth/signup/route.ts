@@ -9,21 +9,33 @@ export async function POST(request: NextRequest) {
     const { email, password, name, githubUsername } = await request.json();
     const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
 
-    if (!email || !password || !name) {
+    if (!email || !password || !name || !githubUsername) {
       return NextResponse.json(
-        { error: 'Email, password, and name are required' },
+        { error: 'Email, password, name, and GitHub username are required' },
         { status: 400 }
       );
     }
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
+    // Check if user already exists by email
+    const existingUserByEmail = await prisma.user.findUnique({
       where: { email: normalizedEmail }
     });
 
-    if (existingUser) {
+    if (existingUserByEmail) {
       return NextResponse.json(
-        { error: 'User already exists' },
+        { error: 'User with this email already exists' },
+        { status: 409 }
+      );
+    }
+
+    // Check if GitHub username already exists
+    const existingUserByGitHub = await prisma.user.findFirst({
+      where: { githubUsername: githubUsername }
+    });
+
+    if (existingUserByGitHub) {
+      return NextResponse.json(
+        { error: 'User with this GitHub username already exists' },
         { status: 409 }
       );
     }

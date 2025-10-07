@@ -20,20 +20,21 @@ export async function GET(request: NextRequest) {
 
     // Get query parameters
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const offset = parseInt(searchParams.get('offset') || '0');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50);
+    const cursor = searchParams.get('cursor');
 
     // Fetch user activities
     const activities = await prisma.activity.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
-      take: limit,
-      skip: offset,
-      include: {
-        project: true,
-        event: true
-      }
+      take: limit + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      include: { project: true, event: true }
     });
+
+    const hasMore = activities.length > limit;
+    const pageItems = activities.slice(0, limit);
+    const nextCursor = hasMore ? activities[limit].id : null;
 
     // Format activities for frontend
     const formattedActivities = activities.map(activity => ({
@@ -47,11 +48,15 @@ export async function GET(request: NextRequest) {
       metadata: activity.metadata
     }));
 
+    // Count for UI indicators (lightweight index-backed)
+    const totalCount = await prisma.activity.count({ where: { userId } });
+
     return NextResponse.json({
       success: true,
       activities: formattedActivities,
-      total: activities.length,
-      hasMore: activities.length === limit
+      total: totalCount,
+      hasMore,
+      nextCursor
     });
 
   } catch (error) {

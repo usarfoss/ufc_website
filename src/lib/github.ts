@@ -83,14 +83,15 @@ export class GitHubService {
 
   async getUserRepositories(username: string): Promise<GitHubRepoStats[]> {
     try {
-      const { data } = await this.octokit.rest.repos.listForUser({
+      // Fetch all pages of repos for the user
+      const data = await this.octokit.paginate(this.octokit.rest.repos.listForUser, {
         username,
         type: 'all',
         sort: 'updated',
         per_page: 100,
       });
 
-      return data.map(repo => ({
+      return data.map((repo: any) => ({
         name: repo.name,
         full_name: repo.full_name,
         description: repo.description,
@@ -113,33 +114,40 @@ export class GitHubService {
       // Get user's repositories
       const repos = await this.getUserRepositories(username);
       
-      // Calculate language distribution
+      // Calculate language distribution across ALL repos
       const languages: Record<string, number> = {};
       let totalSize = 0;
 
-      for (const repo of repos) {
-        if (repo.language) {
+      const results = await Promise.allSettled(
+        repos.map(async (repo) => {
           try {
             const { data: langData } = await this.octokit.rest.repos.listLanguages({
               owner: username,
               repo: repo.name,
             });
+            return langData as Record<string, number>;
+          } catch (error: any) {
+            console.warn(`Failed to fetch languages for ${username}/${repo.name}:`, error.status, error.message);
+            return {} as Record<string, number>;
+          }
+        })
+      );
 
-            for (const [lang, bytes] of Object.entries(langData)) {
-              languages[lang] = (languages[lang] || 0) + bytes;
-              totalSize += bytes;
-            }
-          } catch (error) {
-            // Skip if we can't access language data
-            continue;
+      for (const r of results) {
+        if (r.status === 'fulfilled') {
+          for (const [lang, bytes] of Object.entries(r.value)) {
+            languages[lang] = (languages[lang] || 0) + (bytes as number);
+            totalSize += bytes as number;
           }
         }
       }
 
       // Convert to percentages
       const languagePercentages: Record<string, number> = {};
-      for (const [lang, bytes] of Object.entries(languages)) {
-        languagePercentages[lang] = Math.round((bytes / totalSize) * 100);
+      if (totalSize > 0) {
+        for (const [lang, bytes] of Object.entries(languages)) {
+          languagePercentages[lang] = Math.round(((bytes as number) / totalSize) * 100);
+        }
       }
 
       // Get recent activity (commits, PRs, issues)
@@ -172,46 +180,87 @@ export class GitHubService {
   }
 
   private async getTotalCommits(username: string, repos: GitHubRepoStats[]): Promise<number> {
-    let totalCommits = 0;
-    
-    for (const repo of repos.slice(0, 5)) { // Limit to avoid rate limits
-      try {
-        const { data } = await this.octokit.rest.repos.listCommits({
-          owner: username,
-          repo: repo.name,
-          author: username,
-          per_page: 100,
-        });
-        totalCommits += data.length;
-      } catch (error) {
-        // Skip if we can't access commits
-        continue;
+    try {
+      // Use GitHub's contribution graph API to get the most accurate count
+      const response = await fetch(`https://github.com/users/${username}/contributions`);
+      
+      if (response.ok) {
+        const html = await response.text();
+        
+        // Parse the contribution count from the HTML
+        // Look for patterns like "165 contributions in the last year"
+        const contributionMatch = html.match(/(\d+)\s+contributions?\s+in\s+the\s+last\s+year/i);
+        if (contributionMatch) {
+          const totalCommits = parseInt(contributionMatch[1]);
+          console.log(`Found ${totalCommits} contributions from GitHub profile for ${username}`);
+          return totalCommits;
+        }
+        
+        // Alternative: Look for the total contribution count in the profile
+        const totalMatch = html.match(/total\s+contributions?\s*:?\s*(\d+)/i);
+        if (totalMatch) {
+          const totalCommits = parseInt(totalMatch[1]);
+          console.log(`Found ${totalCommits} total contributions from GitHub profile for ${username}`);
+          return totalCommits;
+        }
       }
+    } catch (error: any) {
+      console.warn(`Failed to fetch contributions from GitHub profile for ${username}:`, error.message);
     }
 
-    return totalCommits;
+    // Fallback: Use the search API
+    try {
+      const { data } = await this.octokit.rest.search.commits({
+        q: `author:${username}`,
+        per_page: 100,
+      });
+      
+      const totalCommits = data.total_count;
+      console.log(`Found ${totalCommits} total commits via search for ${username}`);
+      return totalCommits;
+    } catch (error: any) {
+      console.warn(`Failed to fetch commits via search for ${username}:`, error.status, error.message);
+      return 0;
+    }
   }
 
   private async getTotalPullRequests(username: string): Promise<number> {
     try {
-      const { data } = await this.octokit.rest.search.issuesAndPullRequests({
-        q: `author:${username} type:pr`,
-        per_page: 100,
-      });
-      return data.total_count;
+      const query = `
+        query($q: String!) {
+          search(type: ISSUE, query: $q, first: 1) {
+            issueCount
+          }
+        }
+      `;
+      const variables = { q: `author:${username} is:pr` };
+      const { data } = await this.octokit.request('POST /graphql', { query, variables });
+      // Be defensive in case GraphQL returns partial data or errors
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const count = (data as any)?.data?.search?.issueCount ?? (data as any)?.search?.issueCount ?? 0;
+      return typeof count === 'number' ? count : 0;
     } catch (error) {
+      console.warn(`Failed to fetch PRs for ${username}:`, error);
       return 0;
     }
   }
 
   private async getTotalIssues(username: string): Promise<number> {
     try {
-      const { data } = await this.octokit.rest.search.issuesAndPullRequests({
-        q: `author:${username} type:issue`,
-        per_page: 100,
-      });
-      return data.total_count;
+      const query = `
+        query($q: String!) {
+          search(type: ISSUE, query: $q, first: 1) {
+            issueCount
+          }
+        }
+      `;
+      const variables = { q: `author:${username} is:issue` };
+      const { data } = await this.octokit.request('POST /graphql', { query, variables });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const count = (data as any)?.data?.search?.issueCount ?? (data as any)?.search?.issueCount ?? 0;
+      return typeof count === 'number' ? count : 0;
     } catch (error) {
+      console.warn(`Failed to fetch issues for ${username}:`, error);
       return 0;
     }
   }
@@ -225,15 +274,57 @@ export class GitHubService {
     try {
       const { data } = await this.octokit.rest.activity.listPublicEventsForUser({
         username,
-        per_page: 30,
+        per_page: 50,
       });
 
-      return data.slice(0, 10).map(event => ({
-        type: event.type || 'unknown',
-        repo: event.repo?.name || 'Unknown',
-        date: event.created_at || new Date().toISOString(),
-        message: this.getEventMessage(event),
-      }));
+      const items: Array<{ type: string; repo: string; date: string; message: string }> = [];
+
+      for (const event of data) {
+        const type = event.type || 'unknown';
+        const repo = event.repo?.name || 'Unknown';
+        const date = event.created_at || new Date().toISOString();
+
+        if (type === 'PushEvent') {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const commits = (event as any).payload?.commits || [];
+          for (const c of commits) {
+            items.push({
+              type: 'Commit',
+              repo,
+              date,
+              message: (c.message as string) || 'Pushed commit',
+            });
+            if (items.length >= 7) break;
+          }
+        } else if (type === 'PullRequestEvent') {
+          items.push({
+            type: 'Pull Request',
+            repo,
+            date,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            message: ((event as any).payload?.pull_request?.title as string) || `${(event as any).payload?.action || 'updated'} PR`,
+          });
+        } else if (type === 'IssuesEvent') {
+          items.push({
+            type: 'Issue',
+            repo,
+            date,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            message: ((event as any).payload?.issue?.title as string) || `${(event as any).payload?.action || 'updated'} issue`,
+          });
+        } else if (type === 'CreateEvent') {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          items.push({ type: 'Create', repo, date, message: `Created ${(event as any).payload?.ref_type || 'resource'}` });
+        } else if (type === 'ForkEvent') {
+          items.push({ type: 'Fork', repo, date, message: 'Forked repository' });
+        } else if (type === 'WatchEvent') {
+          items.push({ type: 'Star', repo, date, message: 'Starred repository' });
+        }
+
+        if (items.length >= 7) break;
+      }
+
+      return items.slice(0, 7);
     } catch (error) {
       return [];
     }

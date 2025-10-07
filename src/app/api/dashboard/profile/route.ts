@@ -48,7 +48,33 @@ export async function GET(request: NextRequest) {
         repositories: user.githubStats.repositories,
         followers: user.githubStats.followers,
         contributions: user.githubStats.contributions,
-        languages: user.githubStats.languages as Record<string, number> || {}
+        languages: (() => {
+          try {
+            // Parse languages JSON string safely
+            if (typeof user.githubStats.languages === 'string') {
+              const parsed = JSON.parse(user.githubStats.languages);
+              // Validate and clean the data
+              if (parsed && typeof parsed === 'object') {
+                const cleaned: Record<string, number> = {};
+                for (const [lang, value] of Object.entries(parsed)) {
+                  if (typeof lang === 'string' && 
+                      typeof value === 'number' && 
+                      value >= 0 && 
+                      lang.length > 0 && 
+                      lang.length < 50 &&
+                      !lang.includes('%')) {
+                    cleaned[lang] = Math.round(value);
+                  }
+                }
+                return cleaned;
+              }
+            }
+            return {};
+          } catch (error) {
+            console.error('Error parsing languages:', error);
+            return {};
+          }
+        })()
       } : null
     };
 

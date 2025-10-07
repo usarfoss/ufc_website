@@ -23,6 +23,10 @@ model User {
   joinedAt        DateTime @default(now())
   lastActive      DateTime @default(now())
   
+  // Password reset
+  resetToken      String?
+  resetTokenExpiry DateTime?
+  
   // Gamification
   level           Int      @default(1)
   experience      Int      @default(0)
@@ -43,6 +47,8 @@ model User {
   notifications   Notification[]
   
   @@map("users")
+  @@index([joinedAt])
+  @@index([lastActive])
 }
 
 model Project {
@@ -82,6 +88,8 @@ model ProjectMember {
   
   @@unique([userId, projectId])
   @@map("project_members")
+  @@index([userId])
+  @@index([projectId])
 }
 
 model Event {
@@ -122,6 +130,8 @@ model EventAttendee {
   
   @@unique([userId, eventId])
   @@map("event_attendees")
+  @@index([userId])
+  @@index([eventId])
 }
 
 model GitHubStats {
@@ -140,6 +150,7 @@ model GitHubStats {
   user          User @relation(fields: [userId], references: [id])
   
   @@map("github_stats")
+  @@index([lastSynced])
 }
 
 model Activity {
@@ -160,6 +171,8 @@ model Activity {
   event       Event?   @relation(fields: [eventId], references: [id])
   
   @@map("activities")
+  @@index([userId, createdAt])
+  @@index([createdAt])
 }
 
 // Enums
@@ -301,6 +314,7 @@ model Notification {
   user      User @relation(fields: [userId], references: [id])
   
   @@map("notifications")
+  @@index([userId, createdAt])
 }
 
 // Additional Enums

@@ -23,10 +23,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
   const title = `${event.title} | UFC Events`
   const description = event.description
-  const rawBase = process.env.NEXT_PUBLIC_SITE_URL || 'https://ufc-ipu.tech'
-  const base = rawBase.startsWith('http') ? rawBase : `https://${rawBase}`
-  const url = `${base}/events/${event.id}`
-  const absoluteImage = event.image.startsWith('http') ? event.image : `${base}${event.image}`
 
   return {
     title,
@@ -34,17 +30,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     openGraph: {
       title,
       description,
-      url,
       type: 'website',
-      images: [
-        { url: absoluteImage },
-      ],
     },
     twitter: {
-      card: 'summary_large_image',
+      card: 'summary',
       title,
       description,
-      images: [absoluteImage],
     },
   }
 }

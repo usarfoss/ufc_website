@@ -104,9 +104,21 @@ export default function ProfilePage() {
   const getTopLanguages = () => {
     if (!profile?.githubStats?.languages) return [];
     
-    return Object.entries(profile.githubStats.languages)
+    // Filter out invalid language names and ensure they're strings
+    const validLanguages = Object.entries(profile.githubStats.languages)
+      .filter(([language, percentage]) => {
+        // Check if language is a valid string and percentage is a number
+        return typeof language === 'string' && 
+               language.length > 0 && 
+               language.length < 50 && // Reasonable length limit
+               !language.includes('%') && // Remove entries with % in name
+               typeof percentage === 'number' && 
+               percentage >= 0;
+      })
       .sort(([,a], [,b]) => b - a)
       .slice(0, 5);
+    
+    return validLanguages;
   };
 
   if (loading) {
@@ -284,27 +296,40 @@ export default function ProfilePage() {
               </div>
 
               {/* Top Languages */}
-              {getTopLanguages().length > 0 && (
-                <div>
-                  <h3 className="text-lg font-bold text-white mb-3">Top Languages</h3>
+              <div>
+                <h3 className="text-lg font-bold text-white mb-3">Top Languages</h3>
+                {getTopLanguages().length > 0 ? (
                   <div className="space-y-2">
-                    {getTopLanguages().map(([language, percentage]) => (
-                      <div key={language} className="flex items-center justify-between">
-                        <span className="text-gray-400">{language}</span>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-20 h-2 bg-gray-700 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-[#0B874F] rounded-full"
-                              style={{ width: `${percentage}%` }}
-                            />
+                    {getTopLanguages().map(([language, percentage]) => {
+                      // Additional safety checks
+                      const safeLanguage = typeof language === 'string' ? language : 'Unknown';
+                      const safePercentage = typeof percentage === 'number' ? Math.round(percentage) : 0;
+                      
+                      return (
+                        <div key={safeLanguage} className="flex items-center gap-3">
+                          <span className="text-gray-400 text-sm min-w-0 flex-shrink-0" title={safeLanguage}>
+                            {safeLanguage}
+                          </span>
+                          <div className="flex items-center gap-2 flex-1">
+                            <div className="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-[#0B874F] rounded-full transition-all duration-300"
+                                style={{ width: `${Math.min(safePercentage, 100)}%` }}
+                              />
+                            </div>
+                            <span className="text-sm text-gray-400 w-8 text-right">{safePercentage}%</span>
                           </div>
-                          <span className="text-sm text-gray-400 w-8">{percentage}%</span>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="text-center py-4 text-gray-400">
+                    <p className="text-sm">No language data available</p>
+                    <p className="text-xs mt-1">Sync your GitHub to see language statistics</p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

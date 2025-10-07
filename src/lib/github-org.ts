@@ -103,19 +103,21 @@ export class OrgGitHubService {
     let reviews = 0;
 
     try {
-      // PRs authored by user across org
-      const prsSearch = await this.octokit.search.issuesAndPullRequests({
-        q: `org:${this.org} author:${login} is:pr`,
-        per_page: 100,
-      });
-      pullRequests = prsSearch.data.total_count;
-
-      // Issues authored by user across org
-      const issuesSearch = await this.octokit.search.issuesAndPullRequests({
-        q: `org:${this.org} author:${login} is:issue`,
-        per_page: 100,
-      });
-      issues = issuesSearch.data.total_count;
+      const query = `
+        query($qPr: String!, $qIssue: String!) {
+          prs: search(type: ISSUE, query: $qPr, first: 1) { issueCount }
+          issues: search(type: ISSUE, query: $qIssue, first: 1) { issueCount }
+        }
+      `;
+      const variables = {
+        qPr: `org:${this.org} author:${login} is:pr`,
+        qIssue: `org:${this.org} author:${login} is:issue`,
+      };
+      const { data } = await this.octokit.request('POST /graphql', { query, variables });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const root: any = (data as any)?.data ?? data;
+      pullRequests = root?.prs?.issueCount ?? 0;
+      issues = root?.issues?.issueCount ?? 0;
     } catch (error) {
       console.warn(`Search failed for ${login}:`, error);
     }

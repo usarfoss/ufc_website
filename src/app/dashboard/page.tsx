@@ -7,7 +7,6 @@ import {
   GitPullRequest, 
   Users, 
   Calendar,
-  TrendingUp,
   Star,
   Activity,
   Trophy
@@ -48,20 +47,13 @@ interface RecentActivity {
   time: string;
 }
 
-interface GitHubWeeklyStats {
-  commits: number;
-  prsMerged: number;
-  issuesClosed: number;
-}
 
 const DashboardPage = React.memo(function DashboardPage() {
   const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
-  const [githubWeeklyStats, setGitHubWeeklyStats] = useState<GitHubWeeklyStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -71,21 +63,6 @@ const DashboardPage = React.memo(function DashboardPage() {
     try {
       setLoading(true);
       setError(null);
-
-      // Check cache first
-      const cachedData = sessionStorage.getItem('dashboard-data');
-      const cacheTime = sessionStorage.getItem('dashboard-data-time');
-      const now = Date.now();
-      
-      // Use cache if it's less than 5 minutes old
-      if (cachedData && cacheTime && (now - parseInt(cacheTime)) < 5 * 60 * 1000) {
-        const parsedData = JSON.parse(cachedData);
-        setStats(parsedData.stats);
-        setRecentActivity(parsedData.recentActivity);
-        setGitHubWeeklyStats(parsedData.githubWeeklyStats);
-        setLoading(false);
-        return;
-      }
 
       const [statsResponse, activitiesResponse] = await Promise.all([
         fetch('/api/dashboard/stats'),
@@ -99,19 +76,8 @@ const DashboardPage = React.memo(function DashboardPage() {
       const statsData = await statsResponse.json();
       const activitiesData = await activitiesResponse.json();
 
-      const dataToCache = {
-        stats: statsData.stats,
-        recentActivity: statsData.recentActivity || activitiesData.activities || [],
-        githubWeeklyStats: statsData.githubWeeklyStats
-      };
-
-      // Cache the data
-      sessionStorage.setItem('dashboard-data', JSON.stringify(dataToCache));
-      sessionStorage.setItem('dashboard-data-time', now.toString());
-
-      setStats(dataToCache.stats);
-      setRecentActivity(dataToCache.recentActivity);
-      setGitHubWeeklyStats(dataToCache.githubWeeklyStats);
+      setStats(statsData.stats);
+      setRecentActivity(statsData.recentActivity || activitiesData.activities || []);
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
       setError('Failed to load dashboard data');
@@ -120,36 +86,6 @@ const DashboardPage = React.memo(function DashboardPage() {
     }
   };
 
-  const syncGitHubData = async () => {
-    if (!user?.githubUsername) {
-      alert('No GitHub username configured. Please update your profile.');
-      return;
-    }
-
-    try {
-      setSyncing(true);
-      const response = await fetch('/api/dashboard/sync-github', {
-        method: 'POST'
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to sync GitHub data');
-      }
-
-      // Clear cache and refetch data
-      sessionStorage.removeItem('dashboard-data');
-      sessionStorage.removeItem('dashboard-data-time');
-      await fetchDashboardData();
-      
-      alert('GitHub data synced successfully!');
-    } catch (err) {
-      console.error('Error syncing GitHub data:', err);
-      alert(err instanceof Error ? err.message : 'Failed to sync GitHub data');
-    } finally {
-      setSyncing(false);
-    }
-  };
 
   const getIconComponent = (iconName: string) => {
     switch (iconName) {
@@ -285,10 +221,8 @@ const DashboardPage = React.memo(function DashboardPage() {
         })}
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Activity */}
-        <div className="lg:col-span-2 bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
+      {/* Recent Activity */}
+      <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-white flex items-center">
               <Activity className="w-5 h-5 mr-2 text-[#0B874F]" />
@@ -347,75 +281,6 @@ const DashboardPage = React.memo(function DashboardPage() {
             )}
           </div>
         </div>
-
-        {/* Quick Actions */}
-        <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
-          <h2 className="text-xl font-bold text-white mb-6 flex items-center">
-            <TrendingUp className="w-5 h-5 mr-2 text-[#0B874F]" />
-            Quick Actions
-          </h2>
-          
-          <div className="space-y-3">
-            <button 
-              onClick={() => window.location.href = '/dashboard/leaderboard'}
-              className="w-full p-4 bg-[#0B874F]/10 border border-[#0B874F]/30 rounded-lg text-left hover:bg-[#0B874F]/20 transition-colors"
-            >
-              <div className="text-[#0B874F] font-medium">View Leaderboard</div>
-              <div className="text-gray-400 text-sm">Check your ranking</div>
-            </button>
-            
-            <button 
-              onClick={() => window.location.href = '/dashboard/events'}
-              className="w-full p-4 bg-[#F5A623]/10 border border-[#F5A623]/30 rounded-lg text-left hover:bg-[#F5A623]/20 transition-colors"
-            >
-              <div className="text-[#F5A623] font-medium">Join Event</div>
-              <div className="text-gray-400 text-sm">Upcoming workshops</div>
-            </button>
-            
-            <button 
-              onClick={() => window.location.href = '/dashboard/projects'}
-              className="w-full p-4 bg-[#9B59B6]/10 border border-[#9B59B6]/30 rounded-lg text-left hover:bg-[#9B59B6]/20 transition-colors"
-            >
-              <div className="text-[#9B59B6] font-medium">New Project</div>
-              <div className="text-gray-400 text-sm">Start contributing</div>
-            </button>
-            
-            {user?.githubUsername && (
-              <button 
-                onClick={syncGitHubData}
-                disabled={syncing}
-                className="w-full p-4 bg-[#E74C3C]/10 border border-[#E74C3C]/30 rounded-lg text-left hover:bg-[#E74C3C]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <div className="text-[#E74C3C] font-medium">
-                  {syncing ? 'Syncing...' : 'Sync GitHub'}
-                </div>
-                <div className="text-gray-400 text-sm">Update your stats</div>
-              </button>
-            )}
-          </div>
-
-          {/* GitHub Stats Preview */}
-          {githubWeeklyStats && (
-            <div className="mt-6 p-4 bg-black/30 rounded-lg border border-[#0B874F]/20">
-              <h3 className="text-white font-medium mb-3">GitHub This Week</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400">Commits</span>
-                  <span className="text-[#0B874F]">{githubWeeklyStats.commits}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400">PRs Merged</span>
-                  <span className="text-[#0B874F]">{githubWeeklyStats.prsMerged}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400">Issues Closed</span>
-                  <span className="text-[#0B874F]">{githubWeeklyStats.issuesClosed}</span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
     </div>
   );
 });

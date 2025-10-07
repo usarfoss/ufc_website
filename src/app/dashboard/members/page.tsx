@@ -194,10 +194,15 @@ export default function MembersPage() {
                 </div>
               )}
 
-              {/* Contact Button */}
-              <button className="w-full mt-4 px-4 py-2 bg-[#0B874F]/10 border border-[#0B874F]/30 rounded-lg text-[#0B874F] hover:bg-[#0B874F]/20 transition-colors text-sm font-medium">
+              {/* View GitHub Profile */}
+              <a
+                href={member.githubUsername ? `https://github.com/${member.githubUsername}` : `mailto:${member.email}`}
+                target={member.githubUsername ? "_blank" : undefined}
+                rel={member.githubUsername ? "noopener noreferrer" : undefined}
+                className="block w-full mt-4 px-4 py-2 text-center bg-[#0B874F]/10 border border-[#0B874F]/30 rounded-lg text-[#0B874F] hover:bg-[#0B874F]/20 transition-colors text-sm font-medium"
+              >
                 View Profile
-              </button>
+              </a>
             </div>
           ))}
         </div>

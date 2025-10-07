@@ -36,7 +36,7 @@ const events = [
     featured: true,
     organizer: "UFC Tech Team",
     requirements: ["Laptop", "Basic programming knowledge", "GitHub account (we'll help you create one)"],
-    registrationUrl: "https://docs.google.com/forms/d/e/1FAIpQLSf01qxq5oOiLDGlk4RE2Z_5piLapMK_bbp8R7Ut71Elx_UfWQ/viewform?usp=sharing&ouid=113101111311849957004",
+    registrationUrl: "https://fossunited.org/c/university-school-of-automation-and-robotics/git-gudd/rsvp",
     schedule: [
       { time: "03:00 PM", activity: "Welcome & Introduction" },
       { time: "03:15 PM", activity: "Git Fundamentals Demo" },

@@ -175,6 +175,17 @@ export default function LoginPage() {
         </button>
       </form>
 
+      {/* Forgot Password Link */}
+      <div className="text-center mt-3">
+        <Link 
+          href="/forgot-password" 
+          className="text-xs md:text-sm font-bold hover:underline" 
+          style={{ color: "#F5A623" }}
+        >
+          Forgot your password?
+        </Link>
+      </div>
+
       {/* Divider */}
       <div className="flex items-center justify-center my-4 md:my-6">
         <span className="w-1/3 border-b" style={{ borderColor: "#0B874F" }}></span>

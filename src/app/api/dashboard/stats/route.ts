@@ -187,8 +187,6 @@ export async function GET(request: NextRequest) {
       githubWeeklyStats,
     });
 
-    // Add cache headers
-    response.headers.set('Cache-Control', 'private, s-maxage=300, stale-while-revalidate=600');
     return response;
 
   } catch (error) {
