@@ -8,13 +8,11 @@ import PageTransition from "../Components/page-transition"
 import { GitGudSVG } from "../../components/event-svgs/GitGudSVG"
 import Image from "next/image"
 
-// Event background mapping - add new events here
 const backgroundById: Record<number, React.ComponentType | 'image'> = {
   1: GitGudSVG,
   2: 'image',
 }
 
-// Helper function to render event background with fallback
 const renderEventBackground = (id: number, image: string, title: string) => {
   const bg = backgroundById[id]
   if (bg === 'image') {

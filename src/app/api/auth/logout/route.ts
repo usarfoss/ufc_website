@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST() {
   const response = NextResponse.json({ success: true });
-  
-  // Clear the auth cookie
+
   const cookieDomain = process.env.COOKIE_DOMAIN;
   response.cookies.set('auth-token', '', {
     httpOnly: true,

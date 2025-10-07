@@ -66,24 +66,19 @@ export class WebSocketService {
 
       console.log(`User ${user.name} connected`);
 
-      // Join user-specific room
       socket.join(`user:${user.id}`);
 
-      // Join general rooms
       socket.join('leaderboard');
       socket.join('activities');
 
-      // Handle user status
       this.broadcastUserStatus(user.id, 'online');
 
-      // Handle disconnection
       socket.on('disconnect', () => {
         this.connectedUsers.delete(socket.id);
         this.broadcastUserStatus(user.id, 'offline');
         console.log(`User ${user.name} disconnected`);
       });
 
-      // Handle GitHub sync request
       socket.on('sync-github', async () => {
         try {
           if (!user.githubUsername) {
@@ -93,19 +88,16 @@ export class WebSocketService {
 
           socket.emit('sync-started');
           
-          // Import GitHub service
           const { githubService } = await import('./github');
           const result = await githubService.syncUserStats(user.id, user.githubUsername);
           
           socket.emit('sync-completed', result);
           
-          // Broadcast to leaderboard room
           this.io.to('leaderboard').emit('stats-updated', {
             userId: user.id,
             stats: result.contributions,
           });
 
-          // Check for achievements
           const { gamificationService } = await import('./gamification');
           await gamificationService.checkAchievements(user.id);
           
@@ -114,7 +106,6 @@ export class WebSocketService {
         }
       });
 
-      // Handle activity updates
       socket.on('activity-created', (activity) => {
         this.io.to('activities').emit('new-activity', {
           ...activity,
@@ -126,7 +117,6 @@ export class WebSocketService {
         });
       });
 
-      // Handle typing indicators for chat (future feature)
       socket.on('typing-start', (data) => {
         socket.to(data.room).emit('user-typing', {
           userId: user.id,
@@ -142,7 +132,6 @@ export class WebSocketService {
     });
   }
 
-  // Public methods for broadcasting events
   public broadcastLeaderboardUpdate(leaderboardData: any) {
     this.io.to('leaderboard').emit('leaderboard-updated', leaderboardData);
   }

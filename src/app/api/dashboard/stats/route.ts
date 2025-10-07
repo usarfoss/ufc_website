@@ -5,7 +5,6 @@ import { githubService } from '@/lib/github';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get user from JWT token
     const token = request.cookies.get('auth-token')?.value;
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -19,7 +18,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    // Get user with GitHub stats
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
@@ -45,7 +43,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Sync GitHub data if user has GitHub username and data is stale
     if (user.githubUsername) {
       const shouldSync = !user.githubStats || 
         (new Date().getTime() - user.githubStats.lastSynced.getTime()) > 30 * 60 * 1000; // 30 minutes
@@ -53,7 +50,6 @@ export async function GET(request: NextRequest) {
       if (shouldSync) {
         try {
           await githubService.syncUserStats(userId, user.githubUsername);
-          // Refetch user data after sync
           const updatedUser = await prisma.user.findUnique({
             where: { id: userId },
             include: {
@@ -68,12 +64,10 @@ export async function GET(request: NextRequest) {
           }
         } catch (error) {
           console.error('Failed to sync GitHub stats:', error);
-          // Continue with existing data
         }
       }
     }
 
-    // Calculate user's leaderboard rank
     const allUsers = await prisma.user.findMany({
       include: { githubStats: true },
       orderBy: {
@@ -86,13 +80,11 @@ export async function GET(request: NextRequest) {
     const userRank = allUsers.findIndex(u => u.id === userId) + 1;
     const totalUsers = allUsers.length;
 
-    // Calculate percentage changes (mock for now, could be implemented with historical data)
     const getRandomChange = () => {
       const changes = ['+5%', '+12%', '+8%', '+15%', '+3%', '+20%', '-2%', '+7%'];
       return changes[Math.floor(Math.random() * changes.length)];
     };
 
-    // Build stats object
     const githubStats = user.githubStats;
     const stats = {
       totalCommits: {
@@ -121,10 +113,8 @@ export async function GET(request: NextRequest) {
       }
     };
 
-    // Get recent activity from database and GitHub
     const recentActivity = [];
 
-    // Add database activities
     for (const activity of user.activities) {
       recentActivity.push({
         type: activity.type.toLowerCase(),
@@ -134,7 +124,6 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Add GitHub activity if available
     if (user.githubUsername) {
       try {
         const contributions = await githubService.getUserContributions(user.githubUsername);
@@ -151,14 +140,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Sort by most recent and limit
     recentActivity.sort((a, b) => {
       const timeA = parseTimeAgo(a.time);
       const timeB = parseTimeAgo(b.time);
       return timeA - timeB;
     });
 
-    // Calculate weekly stats
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
 

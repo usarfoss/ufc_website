@@ -3,7 +3,6 @@ import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 
 export async function middleware(request: NextRequest) {
-  // Check if the request is for a dashboard route
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
     const token = request.cookies.get('auth-token')?.value;
 
@@ -21,7 +20,6 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Redirect authenticated users away from auth pages
   if (request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/signup')) {
     const token = request.cookies.get('auth-token')?.value;
 
@@ -31,7 +29,6 @@ export async function middleware(request: NextRequest) {
         await jwtVerify(token, secret);
         return NextResponse.redirect(new URL('/dashboard', request.url));
       } catch (error) {
-        // Invalid token, allow access to auth pages
       }
     }
   }

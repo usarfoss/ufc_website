@@ -15,7 +15,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user in database
     const user = await prisma.user.findUnique({
       where: { email: normalizedEmail }
     });
@@ -27,7 +26,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return NextResponse.json(
@@ -36,13 +34,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update last active timestamp
     await prisma.user.update({
       where: { id: user.id },
       data: { lastActive: new Date() }
     });
 
-    // Create JWT token
     const token = jwt.sign(
       { 
         userId: user.id, 
@@ -54,7 +50,6 @@ export async function POST(request: NextRequest) {
       { expiresIn: '7d' }
     );
 
-    // Create response
     const response = NextResponse.json({
       success: true,
       user: {
@@ -66,7 +61,6 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Set HTTP-only cookie
     const cookieDomain = process.env.COOKIE_DOMAIN;
     response.cookies.set('auth-token', token, {
       httpOnly: true,

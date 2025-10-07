@@ -14,7 +14,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user exists
     const user = await prisma.user.findUnique({
       where: { email: normalizedEmail }
     });
@@ -26,7 +25,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // If newPassword is not provided, just confirm existence
     if (!newPassword) {
       return NextResponse.json({
         success: true,
@@ -41,7 +39,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update password directly (inline reset)
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({
       where: { id: user.id },

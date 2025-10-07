@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 export const Menu = () => {
   const pathname = usePathname();
   
-  // Hide menu on dashboard pages
   if (pathname?.startsWith('/dashboard')) {
     return null;
   }

@@ -4,7 +4,6 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get user from JWT token
     const token = request.cookies.get('auth-token')?.value;
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -18,12 +17,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    // Get query parameters
     const { searchParams } = new URL(request.url);
     const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50);
     const cursor = searchParams.get('cursor');
 
-    // Fetch user activities
     const activities = await prisma.activity.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
@@ -36,7 +33,6 @@ export async function GET(request: NextRequest) {
     const pageItems = activities.slice(0, limit);
     const nextCursor = hasMore ? activities[limit].id : null;
 
-    // Format activities for frontend
     const formattedActivities = activities.map(activity => ({
       id: activity.id,
       type: activity.type.toLowerCase(),
@@ -48,7 +44,6 @@ export async function GET(request: NextRequest) {
       metadata: activity.metadata
     }));
 
-    // Count for UI indicators (lightweight index-backed)
     const totalCount = await prisma.activity.count({ where: { userId } });
 
     return NextResponse.json({

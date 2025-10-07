@@ -4,7 +4,6 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get user from JWT token
     const token = request.cookies.get('auth-token')?.value;
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -18,7 +17,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    // Get user profile with GitHub stats
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
@@ -30,7 +28,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Format profile for frontend
     const profile = {
       id: user.id,
       name: user.name,
@@ -50,10 +47,10 @@ export async function GET(request: NextRequest) {
         contributions: user.githubStats.contributions,
         languages: (() => {
           try {
-            // Parse languages JSON string safely
+            // Parse languages JSON safely
             if (typeof user.githubStats.languages === 'string') {
               const parsed = JSON.parse(user.githubStats.languages);
-              // Validate and clean the data
+              // Validate and clean
               if (parsed && typeof parsed === 'object') {
                 const cleaned: Record<string, number> = {};
                 for (const [lang, value] of Object.entries(parsed)) {

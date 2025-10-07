@@ -114,10 +114,11 @@ export class OrgGitHubService {
         qIssue: `org:${this.org} author:${login} is:issue`,
       };
       const { data } = await this.octokit.request('POST /graphql', { query, variables });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const root: any = (data as any)?.data ?? data;
-      pullRequests = root?.prs?.issueCount ?? 0;
-      issues = root?.issues?.issueCount ?? 0;
+      const root = data as unknown as { data?: { prs?: { issueCount?: number }, issues?: { issueCount?: number } }, prs?: { issueCount?: number }, issues?: { issueCount?: number } };
+      const prsCount = typeof root.data?.prs?.issueCount === 'number' ? root.data.prs.issueCount : (root.prs?.issueCount ?? 0);
+      const issueCount = typeof root.data?.issues?.issueCount === 'number' ? root.data.issues.issueCount : (root.issues?.issueCount ?? 0);
+      pullRequests = prsCount || 0;
+      issues = issueCount || 0;
     } catch (error) {
       console.warn(`Search failed for ${login}:`, error);
     }

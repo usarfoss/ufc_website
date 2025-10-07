@@ -16,7 +16,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user already exists by email
     const existingUserByEmail = await prisma.user.findUnique({
       where: { email: normalizedEmail }
     });
@@ -28,7 +27,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if GitHub username already exists
     const existingUserByGitHub = await prisma.user.findFirst({
       where: { githubUsername: githubUsername }
     });
@@ -40,10 +38,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new user in database
     const newUser = await prisma.user.create({
       data: {
         email: normalizedEmail,
@@ -54,7 +50,6 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Create JWT token
     const token = jwt.sign(
       { 
         userId: newUser.id, 
@@ -66,7 +61,6 @@ export async function POST(request: NextRequest) {
       { expiresIn: '7d' }
     );
 
-    // Create response
     const response = NextResponse.json({
       success: true,
       user: {
@@ -78,7 +72,6 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Set HTTP-only cookie
     const cookieDomain = process.env.COOKIE_DOMAIN;
     response.cookies.set('auth-token', token, {
       httpOnly: true,

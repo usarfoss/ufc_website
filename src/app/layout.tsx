@@ -26,21 +26,15 @@ export const metadata: Metadata = {
   },
   description: "UFC - USAR FOSS Club (University School of Automation & Robotics). Open Source, Open Minds. We build, collaborate, and ship real projects in the USAR/GGSIPU community.",
   keywords: [
-    // Core club and brand
     "UFC", "USAR FOSS Club", "UFC USAR", "UFC IPU", "USAR", "IPU", "GGSIPU",
     "University School of Automation and Robotics", "University School of Automation & Robotics",
-    // FOSS / OSS
     "FOSS", "Free and Open Source Software", "Open Source", "Open-Source", "OSS",
     "Git", "GitHub", "Pull Requests", "Issues", "Commits", "Contributions",
-    // Activities and features
     "Hackathon", "Events", "Workshops", "Meetups", "Leaderboard", "Projects",
     "Repo Sprint", "Git Clash", "Pokemon YAML Showdown", "FOSS FORGE", "Git Gud",
-    // Tech keywords
     "Programming", "JavaScript", "TypeScript", "React", "Next.js", "Node.js", "Tailwind",
     "Web Development", "Software Development", "DevOps", "CI/CD",
-    // Location/context
     "Delhi", "Delhi NCR", "GGSIPU USAR",
-    // SEO helpers
     "USAR FOSS", "IPU FOSS", "USAR Open Source", "IPU Open Source", "University Open Source",
     "Student Developers", "Developer Community", "College Tech Club", "Coding Club"
   ],

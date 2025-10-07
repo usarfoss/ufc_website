@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
-// Reset password endpoint
 export async function POST(request: NextRequest) {
   try {
     const { token, newPassword } = await request.json();
@@ -14,14 +13,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user with valid reset token
     const user = await prisma.user.findFirst({
-      where: {
+      where: ({
         resetToken: token,
         resetTokenExpiry: {
-          gt: new Date() // Token not expired
+          gt: new Date()
         }
-      }
+      } as unknown) as any
     });
 
     if (!user) {
@@ -31,17 +29,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update user password and clear reset token
     await prisma.user.update({
       where: { id: user.id },
-      data: {
+      data: ({
         password: hashedPassword,
         resetToken: null,
         resetTokenExpiry: null
-      }
+      } as unknown) as any
     });
 
     return NextResponse.json({

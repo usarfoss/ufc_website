@@ -7,7 +7,6 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get('sortBy') || 'contributions';
     const limit = parseInt(searchParams.get('limit') || '50');
 
-    // Get all users with their GitHub stats
     const users = await prisma.user.findMany({
       include: {
         githubStats: true
@@ -15,7 +14,6 @@ export async function GET(request: NextRequest) {
       take: limit
     });
 
-    // Calculate points and sort
     const leaderboardUsers = users
       .map(user => {
         const stats = user.githubStats || {
@@ -25,7 +23,6 @@ export async function GET(request: NextRequest) {
           contributions: 0
         };
 
-        // Calculate points (commits: 1pt, PRs: 5pts, issues: 2pts)
         const points = stats.commits * 1 + stats.pullRequests * 5 + stats.issues * 2;
 
         return {
@@ -40,10 +37,10 @@ export async function GET(request: NextRequest) {
             contributions: stats.contributions
           },
           points,
-          rank: 0 // Will be set after sorting
+          rank: 0
         };
       })
-      .filter(user => user.stats.contributions > 0) // Only show users with contributions
+      .filter(user => user.stats.contributions > 0)
       .sort((a, b) => {
         switch (sortBy) {
           case 'commits':

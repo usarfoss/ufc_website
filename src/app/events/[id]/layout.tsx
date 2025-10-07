@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 
 const events = [
-  // Keep minimal mirror of event meta fields to derive OG tags
   {
     id: 1,
     title: 'Git Gud – Introduction to Open Source',

@@ -19,10 +19,8 @@ export function TerminalOverlay() {
 
     if (!command) return;
 
-    // Display the entered command
     setLines((prev) => [...prev, `> ${command}`]);
 
-    // Handle commands
     if (command.startsWith('cd ')) {
       const page = command.split(' ')[1];
 
@@ -61,7 +59,6 @@ export function TerminalOverlay() {
           break;
       }
     } else if (command === 'clear') {
-      // Clear terminal
       setLines([]);
     } else if (command === 'help') {
       setLines((prev) => [

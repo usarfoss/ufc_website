@@ -8,7 +8,6 @@ export interface LevelInfo {
 }
 
 export class GamificationService {
-  // Experience points for different actions
   private static readonly XP_VALUES = {
     COMMIT: 10,
     PULL_REQUEST: 25,
@@ -20,7 +19,6 @@ export class GamificationService {
     ACHIEVEMENT_UNLOCK: 100,
   };
 
-  // Level calculation: exponential growth
   static calculateLevel(experience: number): LevelInfo {
     const baseXP = 100;
     const multiplier = 1.5;
@@ -58,10 +56,8 @@ export class GamificationService {
     const newExperience = user.experience + xpGained;
     const levelInfo = this.calculateLevel(newExperience);
 
-    // Check if user leveled up
     const leveledUp = levelInfo.level > user.level;
 
-    // Update user
     await prisma.user.update({
       where: { id: userId },
       data: {
@@ -70,7 +66,6 @@ export class GamificationService {
       },
     });
 
-    // Create activity record
     await prisma.activity.create({
       data: {
         type: 'ACHIEVEMENT',
@@ -85,7 +80,6 @@ export class GamificationService {
       },
     });
 
-    // If leveled up, create notification
     if (leveledUp) {
       await prisma.notification.create({
         data: {
@@ -97,7 +91,6 @@ export class GamificationService {
         },
       });
 
-      // Check for level-based achievements
       await this.checkLevelAchievements(userId, levelInfo.level);
     }
 
@@ -121,19 +114,15 @@ export class GamificationService {
     let newStreak = user.streak;
 
     if (!lastStreakDate) {
-      // First streak day
       newStreak = 1;
     } else {
       const daysDiff = Math.floor((today.getTime() - lastStreakDate.getTime()) / (1000 * 60 * 60 * 24));
       
       if (daysDiff === 1) {
-        // Consecutive day
         newStreak = user.streak + 1;
       } else if (daysDiff > 1) {
-        // Streak broken
         newStreak = 1;
       }
-      // If daysDiff === 0, same day, no change
     }
 
     if (newStreak !== user.streak) {
@@ -145,12 +134,10 @@ export class GamificationService {
         },
       });
 
-      // Award streak XP
       if (newStreak > user.streak) {
         await this.awardExperience(userId, 'DAILY_STREAK');
       }
 
-      // Check streak achievements
       await this.checkStreakAchievements(userId, newStreak);
     }
 
@@ -215,7 +202,6 @@ export class GamificationService {
 
     if (!achievement) return;
 
-    // Create user achievement
     await prisma.userAchievement.create({
       data: {
         userId,
@@ -223,10 +209,8 @@ export class GamificationService {
       },
     });
 
-    // Award XP
     await this.awardExperience(userId, 'ACHIEVEMENT_UNLOCK', achievement.points);
 
-    // Create notification
     await prisma.notification.create({
       data: {
         userId,
@@ -257,7 +241,6 @@ export class GamificationService {
         });
 
         if (!existingAchievement) {
-          // Create achievement if it doesn't exist
           const achievement = await prisma.achievement.upsert({
             where: { name: achievementName },
             update: {},
