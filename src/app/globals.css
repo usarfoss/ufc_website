@@ -100,7 +100,7 @@ html,body,#__next { height:100%; background:var(--bg); color:var(--fg); font-fam
   }
 }
 
-/* Enhanced Matrix Animation */
+/* Matrix Digital Rain Animation */
 @keyframes matrix-fall {
   0% {
     transform: translateY(-100%);
@@ -117,6 +117,84 @@ html,body,#__next { height:100%; background:var(--bg); color:var(--fg); font-fam
     opacity: 0.1;
   }
 }
+
+.matrix-line {
+  position: absolute;
+  top: -20px;
+  width: 2px;
+  height: 20px;
+  background: linear-gradient(to bottom, transparent, #22c55e, transparent);
+  animation: matrix-fall 2s linear infinite;
+}
+
+/* Progress Scan Line Animation */
+@keyframes progress-scan {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.progress-scan-line {
+  animation: progress-scan 2s ease-in-out infinite;
+}
+
+/* Shadow Glow Effects */
+.shadow-green-glow {
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+}
+
+/* Loading Animation Optimizations */
+.loading-optimized {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Story Step Animations */
+.story-step {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
+}
+
+.story-step-enter {
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+}
+
+.story-step-enter-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Arrow Path Following */
+.arrow-path {
+  transition: none;
+  will-change: transform;
+}
+
+/* Circuit Pattern Animation */
+@keyframes circuit-flow {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -20;
+  }
+}
+
+.circuit-pattern {
+  stroke-dasharray: 2 2;
+  animation: circuit-flow 3s linear infinite;
+}
+
 
 
 /* Enhanced Pulse Animation */
