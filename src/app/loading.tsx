@@ -164,6 +164,9 @@ const LoadingPage = () => {
     // Continue animation if not complete
     if (newProgress < 100 && !isSkippedRef.current) {
       animationFrameRef.current = requestAnimationFrame(animate);
+    } else if (newProgress >= 100 && !isSkippedRef.current) {
+      // Animation completed, hide loading
+      setIsLoading(false);
     }
   }, [currentStep, storySteps.length]);
 
