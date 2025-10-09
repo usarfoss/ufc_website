@@ -29,11 +29,16 @@ export function LoadingProvider({ children }: { children: ReactNode }) {
       }, 10000);
       
       return () => clearTimeout(timer);
-    } else if (!isHomePage) {
-      // Ensure loading is off for all non-home pages
-      setIsLoading(false);
     }
   }, [pathname, hasShownHomeLoading]);
+
+  // Immediately hide loading for non-home pages
+  useEffect(() => {
+    const isHomePage = pathname === '/' || pathname === '/home';
+    if (!isHomePage) {
+      setIsLoading(false);
+    }
+  }, [pathname]);
 
   return (
     <LoadingContext.Provider value={{ isLoading, setIsLoading }}>
