@@ -82,7 +82,10 @@ export async function POST(request: NextRequest) {
       const filtered = existingGlobal.filter(
         (a: any) => a?.user?.githubUsername !== user.githubUsername
       );
-      const merged = [...userActivities, ...filtered].slice(0, 100);
+      // Sort strictly by timestamp desc after merge
+      const merged = [...userActivities, ...filtered]
+        .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, 100);
       await RedisService.setGlobalActivities(merged);
     } catch (mergeError) {
       console.warn('Failed to merge user activities into global cache after sync:', mergeError);

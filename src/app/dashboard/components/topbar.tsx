@@ -50,9 +50,19 @@ export default function Topbar() {
             onClick={() => setShowUserMenu(!showUserMenu)}
             className="flex items-center space-x-3 p-2 rounded-lg hover:bg-[#0B874F]/10 transition-colors"
           >
-            <div className="w-8 h-8 bg-[#0B874F] rounded-full flex items-center justify-center">
-              <User className="w-4 h-4 text-black" />
-            </div>
+            {user?.githubUsername ? (
+              <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#0B874F]/30">
+                <img
+                  src={`https://github.com/${user?.githubUsername}.png`}
+                  alt={user?.name || user?.email || 'User avatar'}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className="w-8 h-8 bg-[#0B874F] rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-black" />
+              </div>
+            )}
             <div className="text-left">
               <div className="text-sm font-medium text-white">{user?.name || user?.email}</div>
               <div className="text-xs text-gray-400 capitalize">{user?.role}</div>

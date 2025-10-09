@@ -26,13 +26,17 @@ export async function GET(request: NextRequest) {
            // Check Redis cache first
            const cachedActivities = await RedisService.getGlobalActivities();
            if (cachedActivities && cachedActivities.length > 0) {
-      const paginatedActivities = cachedActivities.slice(offset, offset + limit);
-      const hasMore = offset + limit < cachedActivities.length;
+             // Ensure strict most-recent-first ordering before paginating
+             const sortedCached = [...cachedActivities].sort((a, b) =>
+               new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+             );
+             const paginatedActivities = sortedCached.slice(offset, offset + limit);
+             const hasMore = offset + limit < sortedCached.length;
       
       return NextResponse.json({
         success: true,
         activities: paginatedActivities,
-        total: cachedActivities.length,
+               total: sortedCached.length,
         hasMore,
         nextCursor: hasMore ? (offset + limit).toString() : null,
         cached: true
