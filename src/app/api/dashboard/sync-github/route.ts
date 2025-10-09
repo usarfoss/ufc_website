@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 import { githubService } from '@/lib/github';
+import { RedisService } from '@/lib/redis';
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,7 +50,43 @@ export async function POST(request: NextRequest) {
     // Sync GitHub data
     const result = await githubService.syncUserStats(userId, user.githubUsername);
 
-    // Note: No internal activity record created - dashboard will show real GitHub activities
+    // Refresh caches without nuking the global feed
+    // 1) Update the user's own cached activities
+    await RedisService.clearUserCache(userId);
+
+    // 2) Merge the user's refreshed activities into the global cache to avoid disappearance
+    try {
+      const contributions = await githubService.getUserContributions(user.githubUsername);
+
+      const userActivities = contributions.recentActivity.map((activity, index) => ({
+        id: `github-${user.id}-${activity.date}-${activity.type}-${activity.repo}-${index}`,
+        type: activity.type.toLowerCase(),
+        message: activity.message,
+        repo: activity.repo,
+        target: activity.repo,
+        time: timeAgo(new Date(activity.date)),
+        timestamp: activity.date,
+        user: {
+          name: user.name || 'Anonymous',
+          githubUsername: user.githubUsername || undefined,
+          avatar: user.avatar || undefined,
+        },
+        metadata: {
+          source: 'github',
+          repo: activity.repo,
+          type: activity.type,
+        },
+      }));
+
+      const existingGlobal = (await RedisService.getGlobalActivities()) || [];
+      const filtered = existingGlobal.filter(
+        (a: any) => a?.user?.githubUsername !== user.githubUsername
+      );
+      const merged = [...userActivities, ...filtered].slice(0, 100);
+      await RedisService.setGlobalActivities(merged);
+    } catch (mergeError) {
+      console.warn('Failed to merge user activities into global cache after sync:', mergeError);
+    }
 
     return NextResponse.json({
       success: true,
@@ -68,4 +105,15 @@ export async function POST(request: NextRequest) {
       error: error instanceof Error ? error.message : 'Failed to sync GitHub data' 
     }, { status: 500 });
   }
+}
+
+function timeAgo(date: Date | string): string {
+  const now = new Date();
+  const targetDate = typeof date === 'string' ? new Date(date) : date;
+  const diff = Math.floor((now.getTime() - targetDate.getTime()) / 1000);
+  if (diff < 60) return 'Just now';
+  if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+  if (diff < 2592000) return `${Math.floor(diff / 86400)} days ago`;
+  return `${Math.floor(diff / 2592000)} months ago`;
 }

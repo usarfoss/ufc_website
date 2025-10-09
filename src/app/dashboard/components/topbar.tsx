@@ -44,14 +44,6 @@ export default function Topbar() {
 
       {/* Right Section */}
       <div className="flex items-center space-x-4">
-        {/* Notifications */}
-        <button className="relative p-2 text-gray-400 hover:text-[#0B874F] transition-colors">
-          <Bell className="w-5 h-5" />
-          <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#0B874F] rounded-full text-xs flex items-center justify-center text-black font-bold">
-            3
-          </span>
-        </button>
-
         {/* User Menu */}
         <div className="relative z-50" ref={dropdownRef}>
           <button

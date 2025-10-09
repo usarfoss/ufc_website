@@ -304,24 +304,24 @@ export class GitHubService {
     }
   }
 
-  private async getRecentActivity(username: string): Promise<Array<{
-    type: string;
-    repo: string;
-    date: string;
-    message: string;
-  }>> {
-    try {
-      // Check cache first
-      const cacheKey = `recent-activity-${username}`;
-      const cachedData = this.getCachedData(cacheKey);
-      if (cachedData) {
-        return cachedData;
-      }
+         private async getRecentActivity(username: string): Promise<Array<{
+           type: string;
+           repo: string;
+           date: string;
+           message: string;
+         }>> {
+           try {
+             // Check cache first
+             const cacheKey = `recent-activity-${username}`;
+             const cachedData = this.getCachedData(cacheKey);
+             if (cachedData) {
+               return cachedData;
+             }
 
-      // Calculate date 7 days ago
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      const sevenDaysAgoISO = sevenDaysAgo.toISOString();
+             // Calculate date 36 hours ago (1.5 days)
+             const thirtySixHoursAgo = new Date();
+             thirtySixHoursAgo.setHours(thirtySixHoursAgo.getHours() - 36);
+             const thirtySixHoursAgoISO = thirtySixHoursAgo.toISOString();
 
       const { data } = await this.octokit.rest.activity.listPublicEventsForUser({
         username,
@@ -336,12 +336,12 @@ export class GitHubService {
         const date = event.created_at || new Date().toISOString();
 
         // Only include events from the last 7 days
-        const eventDate = new Date(date);
-        const cutoffDate = new Date(sevenDaysAgoISO);
-        
-        if (eventDate < cutoffDate) {
-          continue;
-        }
+             const eventDate = new Date(date);
+             const cutoffDate = new Date(thirtySixHoursAgoISO);
+
+             if (eventDate < cutoffDate) {
+               continue;
+             }
 
         if (type === 'PushEvent') {
           const pushPayload = (event as unknown as { 
@@ -464,10 +464,10 @@ export class GitHubService {
         }
       }
 
-      // Sort by date (most recent first) and return up to 20 activities from last 7 days
-      const result = items
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .slice(0, 20);
+             // Sort by date (most recent first) and return up to 30 activities from last 36 hours
+             const result = items
+               .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+               .slice(0, 30);
       
       // Cache the result
       this.setCachedData(cacheKey, result);
