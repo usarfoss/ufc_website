@@ -115,15 +115,7 @@ export async function GET(request: NextRequest) {
 
     const recentActivity = [];
 
-    for (const activity of user.activities) {
-      recentActivity.push({
-        type: activity.type.toLowerCase(),
-        message: activity.description,
-        repo: activity.metadata ? (activity.metadata as any).repo || 'Internal' : 'Internal',
-        time: timeAgo(activity.createdAt)
-      });
-    }
-
+    // Only show GitHub activities, no internal activities
     if (user.githubUsername) {
       try {
         const contributions = await githubService.getUserContributions(user.githubUsername);

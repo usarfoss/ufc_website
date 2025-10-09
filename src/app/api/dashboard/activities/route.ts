@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
+import { githubService } from '@/lib/github';
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,42 +18,68 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50);
-    const cursor = searchParams.get('cursor');
-
-    const activities = await prisma.activity.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-      take: limit + 1,
-      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-      include: { project: true, event: true }
+    // Get user's profile information
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { 
+        githubUsername: true,
+        name: true,
+        email: true
+      }
     });
 
-    const hasMore = activities.length > limit;
-    const pageItems = activities.slice(0, limit);
-    const nextCursor = hasMore ? activities[limit].id : null;
+    if (!user?.githubUsername) {
+      return NextResponse.json({
+        success: true,
+        activities: [],
+        total: 0,
+        hasMore: false,
+        nextCursor: null
+      });
+    }
 
-    const formattedActivities = activities.map(activity => ({
-      id: activity.id,
-      type: activity.type.toLowerCase(),
-      message: activity.description,
-      repo: activity.metadata ? (activity.metadata as any).repo || 'Internal' : 'Internal',
-      target: activity.project?.name || activity.event?.title || 'System',
-      time: timeAgo(activity.createdAt),
-      timestamp: activity.createdAt.toISOString(),
-      metadata: activity.metadata
-    }));
+    try {
+      // Fetch real GitHub activities
+      const githubActivities = await githubService.getUserContributions(user.githubUsername);
+      
+      // Format GitHub activities with repo names and user's profile name
+      const formattedActivities = githubActivities.recentActivity.map((activity, index) => ({
+        id: `github-${index}`,
+        type: activity.type.toLowerCase(),
+        message: activity.message,
+        repo: activity.repo,
+        target: activity.repo,
+        time: timeAgo(new Date(activity.date)),
+        timestamp: activity.date,
+        user: {
+          name: user.name || 'Anonymous',
+          githubUsername: user.githubUsername
+        },
+        metadata: {
+          source: 'github',
+          repo: activity.repo,
+          type: activity.type
+        }
+      }));
 
-    const totalCount = await prisma.activity.count({ where: { userId } });
+      return NextResponse.json({
+        success: true,
+        activities: formattedActivities,
+        total: formattedActivities.length,
+        hasMore: false,
+        nextCursor: null
+      });
 
-    return NextResponse.json({
-      success: true,
-      activities: formattedActivities,
-      total: totalCount,
-      hasMore,
-      nextCursor
-    });
+    } catch (githubError) {
+      // No fallback - only show GitHub activities
+      return NextResponse.json({
+        success: true,
+        activities: [],
+        total: 0,
+        hasMore: false,
+        nextCursor: null
+      });
+    }
 
   } catch (error) {
     console.error('Activities fetch error:', error);

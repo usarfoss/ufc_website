@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Activity, GitCommit, GitPullRequest, Calendar, Users, Filter } from "lucide-react";
+import { Activity, GitCommit, GitPullRequest, Calendar, Users } from "lucide-react";
 
 interface ActivityItem {
   id: string;
@@ -14,6 +14,7 @@ interface ActivityItem {
   user?: {
     name: string;
     githubUsername?: string;
+    avatar?: string;
   };
 }
 
@@ -21,16 +22,33 @@ export default function ActivityPage() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<'all' | 'commits' | 'pull_requests' | 'issues'>('all');
-
   useEffect(() => {
     fetchActivities();
-  }, [filter]);
+  }, []);
 
   const fetchActivities = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/dashboard/activity?filter=${filter}&limit=50`);
+      setError(null);
+      
+      // Add timeout to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
+      // Try cached activities first, fallback to global activities if it fails
+      let response;
+      try {
+        response = await fetch(`/api/dashboard/cached-activities?limit=30`, {
+          signal: controller.signal
+        });
+      } catch (cachedError) {
+        console.log('Cached activities failed, trying global activities...');
+        response = await fetch(`/api/dashboard/global-activities?limit=30`, {
+          signal: controller.signal
+        });
+      }
+      
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         throw new Error('Failed to fetch activities');
@@ -40,7 +58,11 @@ export default function ActivityPage() {
       setActivities(data.activities || []);
     } catch (err) {
       console.error('Error fetching activities:', err);
-      setError('Failed to load activities');
+      if (err instanceof Error && err.name === 'AbortError') {
+        setError('Request timed out. Please try again.');
+      } else {
+        setError('Failed to load activities');
+      }
     } finally {
       setLoading(false);
     }
@@ -131,27 +153,13 @@ export default function ActivityPage() {
           <div>
             <h1 className="text-4xl font-bold text-white mb-2 flex items-center">
               <Activity className="w-10 h-10 mr-4 text-[#0B874F]" />
-              Activity Feed
+              Community Activity
             </h1>
             <p className="text-gray-300 text-lg">
-              Stay updated with the latest community contributions and events
+              See what everyone in the community is working on - commits, PRs, and issues from all members
             </p>
           </div>
           
-          {/* Filter Options */}
-          <div className="flex items-center space-x-4">
-            <Filter className="w-5 h-5 text-gray-400" />
-            <select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value as any)}
-              className="px-4 py-3 bg-black/50 border border-[#0B874F]/30 rounded-xl text-white focus:outline-none focus:border-[#0B874F] font-medium"
-            >
-              <option value="all">All Activity</option>
-              <option value="commits">Commits</option>
-              <option value="pull_requests">Pull Requests</option>
-              <option value="issues">Issues</option>
-            </select>
-          </div>
         </div>
       </div>
 
@@ -165,11 +173,21 @@ export default function ActivityPage() {
               style={{ animationDelay: `${index * 50}ms` }}
             >
               <div className="flex items-start space-x-4">
-                {/* Activity Icon */}
+                {/* User Avatar or Activity Icon */}
                 <div className="flex-shrink-0 mt-1">
-                  <div className="w-10 h-10 bg-black/40 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    {getActivityIcon(activity.type)}
-                  </div>
+                  {activity.user?.avatar ? (
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#0B874F]/30 group-hover:border-[#0B874F] transition-colors duration-300">
+                      <img 
+                        src={activity.user.avatar} 
+                        alt={activity.user.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-10 h-10 bg-black/40 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      {getActivityIcon(activity.type)}
+                    </div>
+                  )}
                 </div>
                 
                 {/* Activity Content */}
@@ -223,10 +241,7 @@ export default function ActivityPage() {
           <Activity className="w-16 h-16 mx-auto mb-4 text-gray-400 opacity-50" />
           <h3 className="text-xl font-bold text-gray-400 mb-2">No Activity Yet</h3>
           <p className="text-gray-500">
-            {filter === 'all' 
-              ? 'Start contributing to see activity here!'
-              : `No ${filter.replace('_', ' ')} activity found.`
-            }
+            Start contributing to see activity here!
           </p>
         </div>
       )}

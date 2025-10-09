@@ -48,11 +48,25 @@ export interface GitHubContributionStats {
 
 export class GitHubService {
   private octokit: Octokit;
+  private cache: Map<string, { data: any; timestamp: number }> = new Map();
+  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
   constructor() {
     this.octokit = new Octokit({
       auth: process.env.GITHUB_TOKEN,
     });
+  }
+
+  private getCachedData(key: string): any | null {
+    const cached = this.cache.get(key);
+    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
+      return cached.data;
+    }
+    return null;
+  }
+
+  private setCachedData(key: string, data: any): void {
+    this.cache.set(key, { data, timestamp: Date.now() });
   }
 
   async getUserProfile(username: string): Promise<GitHubUserStats | null> {
@@ -110,6 +124,14 @@ export class GitHubService {
 
   async getUserContributions(username: string): Promise<GitHubContributionStats> {
     try {
+      // Test basic GitHub API access first
+      try {
+        const { data: userData } = await this.octokit.rest.users.getByUsername({ username });
+      } catch (error) {
+        console.error(`GitHub user not found or API error:`, error);
+        throw error;
+      }
+
       const repos = await this.getUserRepositories(username);
       
       let languagePercentages: Record<string, number> = await this.getTopLanguagesFromReadmeStats(username);
@@ -151,11 +173,12 @@ export class GitHubService {
         }
       }
 
-      const recentActivity = await this.getRecentActivity(username);
+        const recentActivity = await this.getRecentActivity(username);
 
       const totalCommits = await this.getTotalCommits(username, repos.slice(0, 10)); // Limit to avoid rate limits
       const totalPRs = await this.getTotalPullRequests(username);
       const totalIssues = await this.getTotalIssues(username);
+
 
       return {
         totalCommits,
@@ -210,14 +233,12 @@ export class GitHubService {
         const contributionMatch = html.match(/(\d+)\s+contributions?\s+in\s+the\s+last\s+year/i);
         if (contributionMatch) {
           const totalCommits = parseInt(contributionMatch[1]);
-          console.log(`Found ${totalCommits} contributions from GitHub profile for ${username}`);
           return totalCommits;
         }
         
         const totalMatch = html.match(/total\s+contributions?\s*:?\s*(\d+)/i);
         if (totalMatch) {
           const totalCommits = parseInt(totalMatch[1]);
-          console.log(`Found ${totalCommits} total contributions from GitHub profile for ${username}`);
           return totalCommits;
         }
       }
@@ -232,7 +253,6 @@ export class GitHubService {
       });
       
       const totalCommits = data.total_count;
-      console.log(`Found ${totalCommits} total commits via search for ${username}`);
       return totalCommits;
     } catch (error: any) {
       console.warn(`Failed to fetch commits via search for ${username}:`, error.status, error.message);
@@ -291,9 +311,21 @@ export class GitHubService {
     message: string;
   }>> {
     try {
+      // Check cache first
+      const cacheKey = `recent-activity-${username}`;
+      const cachedData = this.getCachedData(cacheKey);
+      if (cachedData) {
+        return cachedData;
+      }
+
+      // Calculate date 7 days ago
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const sevenDaysAgoISO = sevenDaysAgo.toISOString();
+
       const { data } = await this.octokit.rest.activity.listPublicEventsForUser({
         username,
-        per_page: 50,
+        per_page: 50, // Reduced from 100 to 50 for faster loading
       });
 
       const items: Array<{ type: string; repo: string; date: string; message: string }> = [];
@@ -303,57 +335,146 @@ export class GitHubService {
         const repo = event.repo?.name || 'Unknown';
         const date = event.created_at || new Date().toISOString();
 
+        // Only include events from the last 7 days
+        const eventDate = new Date(date);
+        const cutoffDate = new Date(sevenDaysAgoISO);
+        
+        if (eventDate < cutoffDate) {
+          continue;
+        }
+
         if (type === 'PushEvent') {
-          const commits = Array.isArray((event as unknown as { payload?: { commits?: Array<{ message?: string }> } }).payload?.commits)
-            ? ((event as unknown as { payload?: { commits?: Array<{ message?: string }> } }).payload!.commits as Array<{ message?: string }>)
-            : [];
-          for (const c of commits) {
-            items.push({
+          const pushPayload = (event as unknown as { 
+            payload?: { 
+              size?: number, 
+              commits?: Array<{ message?: string, sha?: string }>,
+              head?: string,
+              ref?: string
+            } 
+          }).payload;
+          
+          const commitCount = pushPayload?.size || 1;
+          const headSha = pushPayload?.head;
+          const ref = pushPayload?.ref;
+          
+          // Try to get actual commit messages by fetching commit details
+          if (headSha && ref) {
+            try {
+              // Extract owner and repo from the repo name (e.g., "usarfoss/ufc_website")
+              const [owner, repoName] = repo.split('/');
+              
+              // Fetch the commit details to get the actual commit message
+              const { data: commitData } = await this.octokit.rest.repos.getCommit({
+                owner: owner,
+                repo: repoName,
+                ref: headSha,
+              });
+              
+              const commitMessage = commitData.commit.message.split('\n')[0]?.trim() || 'Pushed commit';
+              const activity = {
+                type: 'Commit',
+                repo,
+                date,
+                message: `${commitMessage} in ${repo}`,
+              };
+              items.push(activity);
+            } catch (commitError) {
+              // Fallback if fetching individual commit fails (e.g., private repo, rate limit)
+              const activity = {
+                type: 'Commit',
+                repo,
+                date,
+                message: `Pushed ${commitCount} commit${commitCount > 1 ? 's' : ''} to ${repo}`,
+              };
+              items.push(activity);
+            }
+          } else if (pushPayload?.commits && pushPayload.commits.length > 0) {
+            // If we have commit data in the payload, use it
+            for (const commit of pushPayload.commits) {
+              const commitMessage = commit.message?.split('\n')[0]?.trim() || 'Pushed commit';
+              const activity = {
+                type: 'Commit',
+                repo,
+                date,
+                message: `${commitMessage} in ${repo}`,
+              };
+              items.push(activity);
+            }
+          } else {
+            // Final fallback to generic message
+            const activity = {
               type: 'Commit',
               repo,
               date,
-              message: (c.message as string) || 'Pushed commit',
-            });
-            if (items.length >= 7) break;
+              message: `Pushed ${commitCount} commit${commitCount > 1 ? 's' : ''} to ${repo}`,
+            };
+            items.push(activity);
           }
         } else if (type === 'PullRequestEvent') {
-          items.push({
+          const prPayload = (event as unknown as { payload?: { pull_request?: { title?: string }, action?: string } }).payload;
+          const action = prPayload?.action || 'updated';
+          const title = prPayload?.pull_request?.title;
+          
+          const activity = {
             type: 'Pull Request',
             repo,
             date,
-            message: (
-              (event as unknown as { payload?: { pull_request?: { title?: string }, action?: string } }).payload?.pull_request?.title as string
-            ) || `${(event as unknown as { payload?: { action?: string } }).payload?.action || 'updated'} PR`,
-          });
+            message: title ? `${action} PR: ${title}` : `${action} pull request in ${repo}`,
+          };
+          items.push(activity);
         } else if (type === 'IssuesEvent') {
-          items.push({
+          const issuePayload = (event as unknown as { payload?: { issue?: { title?: string }, action?: string } }).payload;
+          const action = issuePayload?.action || 'updated';
+          const title = issuePayload?.issue?.title;
+          
+          const activity = {
             type: 'Issue',
             repo,
             date,
-            message: (
-              (event as unknown as { payload?: { issue?: { title?: string }, action?: string } }).payload?.issue?.title as string
-            ) || `${(event as unknown as { payload?: { action?: string } }).payload?.action || 'updated'} issue`,
-          });
+            message: title ? `${action} issue: ${title}` : `${action} issue in ${repo}`,
+          };
+          items.push(activity);
         } else if (type === 'CreateEvent') {
-          items.push({
+          const createPayload = (event as unknown as { payload?: { ref_type?: string } }).payload;
+          const refType = createPayload?.ref_type || 'resource';
+          
+          const activity = {
             type: 'Create',
             repo,
             date,
-            message: `Created ${
-              (event as unknown as { payload?: { ref_type?: string } }).payload?.ref_type || 'resource'
-            }`,
-          });
+            message: `Created ${refType} in ${repo}`,
+          };
+          items.push(activity);
         } else if (type === 'ForkEvent') {
-          items.push({ type: 'Fork', repo, date, message: 'Forked repository' });
+          const activity = { 
+            type: 'Fork', 
+            repo, 
+            date, 
+            message: `Forked ${repo}` 
+          };
+          items.push(activity);
         } else if (type === 'WatchEvent') {
-          items.push({ type: 'Star', repo, date, message: 'Starred repository' });
+          const activity = { 
+            type: 'Star', 
+            repo, 
+            date, 
+            message: `Starred ${repo}` 
+          };
+          items.push(activity);
         }
-
-        if (items.length >= 7) break;
       }
 
-      return items.slice(0, 7);
+      // Sort by date (most recent first) and return up to 20 activities from last 7 days
+      const result = items
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 20);
+      
+      // Cache the result
+      this.setCachedData(cacheKey, result);
+        
+      return result;
     } catch (error) {
+      console.error('Error fetching recent activity:', error);
       return [];
     }
   }
@@ -415,11 +536,11 @@ export class GitHubService {
         },
       });
 
-      // Update user profile with GitHub data
+      // Update user profile with GitHub data (preserve user's signup name)
       await prisma.user.update({
         where: { id: userId },
         data: {
-          name: profile.name,
+          // Don't update name - keep the user's signup name
           avatar: profile.avatar_url,
           location: profile.location,
           bio: profile.bio,

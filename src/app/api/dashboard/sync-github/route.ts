@@ -49,20 +49,7 @@ export async function POST(request: NextRequest) {
     // Sync GitHub data
     const result = await githubService.syncUserStats(userId, user.githubUsername);
 
-    // Create activity record
-    await prisma.activity.create({
-      data: {
-        type: 'MEMBER_JOIN', // Using existing enum value
-        userId,
-        description: 'Synced GitHub statistics',
-        metadata: {
-          action: 'github_sync',
-          commits: result.contributions.totalCommits,
-          pullRequests: result.contributions.totalPRs,
-          issues: result.contributions.totalIssues
-        }
-      }
-    });
+    // Note: No internal activity record created - dashboard will show real GitHub activities
 
     return NextResponse.json({
       success: true,

@@ -45,6 +45,10 @@ interface RecentActivity {
   message: string;
   repo: string;
   time: string;
+  user?: {
+    name: string;
+    githubUsername?: string;
+  };
 }
 
 
@@ -77,7 +81,7 @@ const DashboardPage = React.memo(function DashboardPage() {
       const activitiesData = await activitiesResponse.json();
 
       setStats(statsData.stats);
-      setRecentActivity(statsData.recentActivity || activitiesData.activities || []);
+      setRecentActivity(activitiesData.activities || []);
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
       setError('Failed to load dashboard data');
@@ -223,14 +227,11 @@ const DashboardPage = React.memo(function DashboardPage() {
 
       {/* Recent Activity */}
       <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center mb-6">
             <h2 className="text-xl font-bold text-white flex items-center">
               <Activity className="w-5 h-5 mr-2 text-[#0B874F]" />
               Recent Activity
             </h2>
-            <button className="text-[#0B874F] hover:text-[#0B874F]/80 text-sm">
-              View All
-            </button>
           </div>
           
           <div className="space-y-4">
@@ -263,7 +264,18 @@ const DashboardPage = React.memo(function DashboardPage() {
                     )}
                   </div>
                   <div className="flex-1">
-                    <p className="text-white text-sm">{activity.message}</p>
+                    <p className="text-white text-sm">
+                      {activity.user && (
+                        <span className="font-semibold text-[#0B874F]">
+                          {activity.user.name}
+                          {activity.user.githubUsername && (
+                            <span className="text-gray-400 font-normal"> (@{activity.user.githubUsername})</span>
+                          )}
+                          {' '}
+                        </span>
+                      )}
+                      {activity.message}
+                    </p>
                     <div className="flex items-center space-x-2 mt-1">
                       <span className="text-[#0B874F] text-xs">{activity.repo}</span>
                       <span className="text-gray-400 text-xs">•</span>
