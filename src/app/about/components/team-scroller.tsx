@@ -43,9 +43,9 @@ const defaultMembers: Member[] = [
   },
   { 
     name: "Avish Chaudhary", 
-    role: "Co Tech Lead", 
+    role: "Underpaid Intern", 
     img: "/team-images/avish.jpg",
-    description: "Trying to do better."
+    description: "Proud Member of Kanye's Kool Koderz."
   },
   { 
     name: "Ojaswini Fauzdar", 
