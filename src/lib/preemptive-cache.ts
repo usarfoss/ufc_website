@@ -10,8 +10,8 @@ import { prisma } from './prisma';
 export class PreemptiveCacheService {
   private static isRunning = false;
   private static intervalId: NodeJS.Timeout | null = null;
-  private static readonly REFRESH_INTERVAL = 60 * 60 * 1000; // Check every 1 hour
-  private static readonly CACHE_FRESHNESS = 60 * 60 * 1000; // 1 hour
+  private static readonly REFRESH_INTERVAL = 10 * 60 * 1000; // Check every 10 minutes
+  private static readonly CACHE_FRESHNESS = 10 * 60 * 1000; // 10 minutes
 
   /**
    * Start preemptive cache service
@@ -22,10 +22,10 @@ export class PreemptiveCacheService {
       return;
     }
 
-    console.log('⚡ Starting preemptive cache service (1-hour intervals) for dashboard user...');
+    console.log('⚡ Starting preemptive cache service (10-minute intervals) for dashboard user...');
     this.isRunning = true;
 
-    // Check every 1 hour for stale cache
+    // Check every 10 minutes for stale cache
     this.intervalId = setInterval(async () => {
       await this.checkAndRefreshStaleCache();
     }, this.REFRESH_INTERVAL);
