@@ -244,34 +244,7 @@ export default function ActivityPage() {
            );
          }
 
-         if (error) {
-           return (
-             <div className="space-y-6">
-               <div className="bg-red-900/20 backdrop-blur-sm border border-red-500/30 rounded-lg p-6">
-                 <h2 className="text-xl font-bold text-red-400 mb-2">Error Loading Activity</h2>
-                 <p className="text-gray-400 mb-4">{error}</p>
-                 <div className="flex space-x-3">
-                   <button 
-                     onClick={fetchActivities}
-                     className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-                   >
-                     Retry
-                   </button>
-                   <button 
-                     onClick={() => {
-                       setError(null);
-                       setActivities([]);
-                       fetchActivities();
-                     }}
-                     className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
-                   >
-                     Clear & Retry
-                   </button>
-                 </div>
-               </div>
-             </div>
-           );
-         }
+        // Do not block the page with a full error state; show lightweight warning below the refresh button instead
 
   return (
     <div className="space-y-8">
@@ -312,15 +285,22 @@ export default function ActivityPage() {
                 }
               </span>
             </button>
-            {cooldownTime > 0 && (
-              <div className="text-xs text-gray-400 text-center">
-                <div className="w-16 h-1 bg-gray-700 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-[#0B874F] transition-all duration-1000"
-                    style={{ width: `${((600 - cooldownTime) / 600) * 100}%` }}
-                  />
-                </div>
-                <span>10min cooldown</span>
+            {(cooldownTime > 0 || error) && (
+              <div className="text-xs text-right space-y-1 w-full">
+                {cooldownTime > 0 && (
+                  <div className="text-gray-400">
+                    <div className="w-16 h-1 bg-gray-700 rounded-full overflow-hidden ml-auto">
+                      <div 
+                        className="h-full bg-[#0B874F] transition-all duration-1000"
+                        style={{ width: `${((600 - cooldownTime) / 600) * 100}%` }}
+                      />
+                    </div>
+                    <span>10min cooldown</span>
+                  </div>
+                )}
+                {error && (
+                  <div className="text-[11px] text-red-400/90">{error}</div>
+                )}
               </div>
             )}
             {showSuccess && (
