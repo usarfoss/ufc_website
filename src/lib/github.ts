@@ -1,8 +1,5 @@
 import { Octokit } from '@octokit/rest';
-
-const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN,
-});
+import { tokenManager } from './token-load-balancer';
 
 export interface GitHubUserStats {
   username: string;
@@ -49,12 +46,140 @@ export interface GitHubContributionStats {
 export class GitHubService {
   private octokit: Octokit;
   private cache: Map<string, { data: any; timestamp: number }> = new Map();
-  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+  private readonly CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
   constructor() {
-    this.octokit = new Octokit({
-      auth: process.env.GITHUB_TOKEN,
+    // Use primary token for initialization with fallback
+    try {
+      const primaryToken = tokenManager.getTokenForPurpose('user');
+      this.octokit = new Octokit({
+        auth: primaryToken,
+      });
+    } catch (error) {
+      console.warn('Load balancer failed, using primary token:', error);
+      // Fallback to primary token
+      this.octokit = new Octokit({
+        auth: process.env.GITHUB_TOKEN,
+      });
+    }
+  }
+
+  /**
+   * Get Octokit instance with specific token
+   */
+  private getOctokitWithToken(purpose: 'user' | 'community' | 'heavy' | 'background' = 'user'): Octokit {
+    try {
+      const token = tokenManager.getTokenForPurpose(purpose);
+      return new Octokit({ auth: token });
+    } catch (error) {
+      console.warn(`Load balancer failed for ${purpose}, using primary token:`, error);
+      // Fallback to primary token
+      return new Octokit({ auth: process.env.GITHUB_TOKEN });
+    }
+  }
+
+  /**
+   * Batch fetch activities for multiple users using load balancer
+   */
+  async getBatchUserActivities(users: Array<{ id: string; name: string | null; githubUsername: string | null; avatar?: string | null }>): Promise<Array<{
+    id: string;
+    type: string;
+    message: string;
+    repo: string;
+    target: string;
+    time: string;
+    timestamp: string;
+    user: {
+      name: string;
+      githubUsername?: string;
+      avatar?: string;
+    };
+    metadata: {
+      source: string;
+      repo: string;
+      type: string;
+    };
+  }>> {
+    console.log(`🔄 Processing ${users.length} users with batch processing...`);
+    const tokenCount = tokenManager.getTokenCount();
+    const batchSize = Math.ceil(users.length / tokenCount);
+    
+    console.log(`📊 Token count: ${tokenCount}, Batch size: ${batchSize}`);
+    
+    // Distribute users across tokens
+    const userBatches = [];
+    for (let i = 0; i < users.length; i += batchSize) {
+      userBatches.push(users.slice(i, i + batchSize));
+    }
+    
+    console.log(`📦 Created ${userBatches.length} batches for processing`);
+
+    // Process each batch with different tokens (use all 5 tokens)
+    const batchPromises = userBatches.map(async (batch, batchIndex) => {
+      const purposes: Array<'user' | 'community' | 'heavy' | 'background'> = ['user', 'community', 'heavy', 'background'];
+      const purpose = purposes[batchIndex % purposes.length];
+      console.log(`🔄 Processing batch ${batchIndex + 1}/${userBatches.length} with ${batch.length} users using ${purpose} token`);
+      const octokit = this.getOctokitWithToken(purpose);
+      
+      const batchActivities = await Promise.allSettled(
+        batch.map(async (user) => {
+          if (!user.githubUsername) return [];
+          
+          try {
+            // Use different purposes for different users to distribute load
+            const purposes: Array<'user' | 'community' | 'heavy' | 'background'> = ['user', 'community', 'heavy', 'background'];
+            const purpose = purposes[batchIndex % purposes.length];
+            const githubActivities = await this.getUserContributions(user.githubUsername, purpose);
+            const activities = githubActivities.recentActivity.map((activity, index) => ({
+              id: `github-${user.id}-${activity.date}-${activity.type}-${activity.repo}-${index}`,
+              type: activity.type.toLowerCase(),
+              message: activity.message,
+              repo: activity.repo,
+              target: activity.repo,
+              time: this.timeAgo(new Date(activity.date)),
+              timestamp: activity.date,
+              user: {
+                name: user.name || 'Anonymous',
+                githubUsername: user.githubUsername || undefined,
+                avatar: user.avatar || undefined
+              },
+              metadata: {
+                source: 'github',
+                repo: activity.repo,
+                type: activity.type
+              }
+            }));
+            
+            console.log(`✅ Fetched ${activities.length} activities for user ${user.githubUsername}`);
+            return activities;
+          } catch (error) {
+            console.warn(`Failed to fetch activities for user ${user.githubUsername}:`, error);
+            return [];
+          }
+        })
+      );
+
+      return batchActivities.flatMap(result => 
+        result.status === 'fulfilled' ? result.value : []
+      );
     });
+
+    const batchResults = await Promise.all(batchPromises);
+    const allActivities = batchResults.flat();
+    console.log(`🎉 Batch processing complete: ${allActivities.length} total activities from ${users.length} users`);
+    return allActivities;
+  }
+
+  private timeAgo(date: Date | string): string {
+    const now = new Date();
+    const targetDate = typeof date === 'string' ? new Date(date) : date;
+    const diff = Math.floor((now.getTime() - targetDate.getTime()) / 1000);
+    
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+    if (diff < 2592000) return `${Math.floor(diff / 86400)} days ago`;
+    return `${Math.floor(diff / 2592000)} months ago`;
   }
 
   private getCachedData(key: string): any | null {
@@ -95,13 +220,14 @@ export class GitHubService {
     }
   }
 
-  async getUserRepositories(username: string): Promise<GitHubRepoStats[]> {
+  async getUserRepositories(username: string, purpose: 'user' | 'community' | 'heavy' | 'background' = 'user'): Promise<GitHubRepoStats[]> {
     try {
-      const data = await this.octokit.paginate(this.octokit.rest.repos.listForUser, {
+      const octokit = this.getOctokitWithToken(purpose);
+      const data = await octokit.paginate(octokit.rest.repos.listForUser, {
         username,
-        type: 'all',
+        type: 'all', // Fetch all repositories (public and private)
         sort: 'updated',
-        per_page: 100,
+        per_page: 50, // Reduced from 100 to avoid rate limits
       });
 
       return data.map((repo: any) => ({
@@ -122,17 +248,20 @@ export class GitHubService {
     }
   }
 
-  async getUserContributions(username: string): Promise<GitHubContributionStats> {
+  async getUserContributions(username: string, purpose: 'user' | 'community' | 'heavy' | 'background' = 'user'): Promise<GitHubContributionStats> {
     try {
+      // Use load balancer to get appropriate token
+      const octokit = this.getOctokitWithToken(purpose);
+      
       // Test basic GitHub API access first
       try {
-        const { data: userData } = await this.octokit.rest.users.getByUsername({ username });
+        const { data: userData } = await octokit.rest.users.getByUsername({ username });
       } catch (error) {
         console.error(`GitHub user not found or API error:`, error);
         throw error;
       }
 
-      const repos = await this.getUserRepositories(username);
+      const repos = await this.getUserRepositories(username, purpose);
       
       let languagePercentages: Record<string, number> = await this.getTopLanguagesFromReadmeStats(username);
 
@@ -140,16 +269,34 @@ export class GitHubService {
         const languages: Record<string, number> = {};
         let totalSize = 0;
 
+        // Filter repositories to avoid 404 errors
+        const validRepos = repos.filter(repo => 
+          repo.name && 
+          repo.name.length > 0 && 
+          !repo.name.includes(' ') && 
+          !repo.name.includes('%20') && // Avoid URL encoded spaces
+          repo.name.length < 100 // Avoid extremely long names
+        );
+        
         const results = await Promise.allSettled(
-          repos.map(async (repo) => {
+          validRepos.slice(0, 10).map(async (repo) => { // Limit to first 10 repos to avoid rate limits
             try {
+              // Add timeout to prevent hanging requests
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+              
               const { data: langData } = await this.octokit.rest.repos.listLanguages({
                 owner: username,
                 repo: repo.name,
               });
+              
+              clearTimeout(timeoutId);
               return langData as Record<string, number>;
             } catch (error: any) {
-              console.warn(`Failed to fetch languages for ${username}/${repo.name}:`, error.status, error.message);
+              // Only log non-404 errors to reduce console spam
+              if (error.status !== 404 && error.name !== 'AbortError') {
+                console.warn(`Failed to fetch languages for ${username}/${repo.name}:`, error.status, error.message);
+              }
               return {} as Record<string, number>;
             }
           })
@@ -173,7 +320,7 @@ export class GitHubService {
         }
       }
 
-        const recentActivity = await this.getRecentActivity(username);
+        const recentActivity = await this.getRecentActivity(username, purpose);
 
       const totalCommits = await this.getTotalCommits(username, repos.slice(0, 10)); // Limit to avoid rate limits
       const totalPRs = await this.getTotalPullRequests(username);
@@ -304,7 +451,7 @@ export class GitHubService {
     }
   }
 
-         private async getRecentActivity(username: string): Promise<Array<{
+         private async getRecentActivity(username: string, purpose: 'user' | 'community' | 'heavy' | 'background' = 'user'): Promise<Array<{
            type: string;
            repo: string;
            date: string;
@@ -323,23 +470,28 @@ export class GitHubService {
              thirtySixHoursAgo.setHours(thirtySixHoursAgo.getHours() - 36);
              const thirtySixHoursAgoISO = thirtySixHoursAgo.toISOString();
 
-      const { data } = await this.octokit.rest.activity.listPublicEventsForUser({
-        username,
-        per_page: 50, // Reduced from 100 to 50 for faster loading
-      });
+             const octokit = this.getOctokitWithToken(purpose);
+             const { data } = await octokit.rest.activity.listPublicEventsForUser({
+               username,
+               per_page: 50, // Reduced from 100 to 50 for faster loading
+             });
 
       const items: Array<{ type: string; repo: string; date: string; message: string }> = [];
+      let totalEvents = 0;
+      let filteredEvents = 0;
 
       for (const event of data) {
+        totalEvents++;
         const type = event.type || 'unknown';
         const repo = event.repo?.name || 'Unknown';
         const date = event.created_at || new Date().toISOString();
 
-        // Only include events from the last 7 days
+        // Only include events from the last 36 hours
              const eventDate = new Date(date);
              const cutoffDate = new Date(thirtySixHoursAgoISO);
 
              if (eventDate < cutoffDate) {
+               filteredEvents++;
                continue;
              }
 
@@ -363,6 +515,8 @@ export class GitHubService {
               // Extract owner and repo from the repo name (e.g., "usarfoss/ufc_website")
               const [owner, repoName] = repo.split('/');
               
+              console.log(`🔍 Fetching commit details for ${repo} (${headSha})`);
+              
               // Fetch the commit details to get the actual commit message
               const { data: commitData } = await this.octokit.rest.repos.getCommit({
                 owner: owner,
@@ -371,6 +525,8 @@ export class GitHubService {
               });
               
               const commitMessage = commitData.commit.message.split('\n')[0]?.trim() || 'Pushed commit';
+              console.log(`✅ Got commit message: "${commitMessage}"`);
+              
               const activity = {
                 type: 'Commit',
                 repo,
@@ -379,6 +535,7 @@ export class GitHubService {
               };
               items.push(activity);
             } catch (commitError) {
+              console.warn(`⚠️ Failed to fetch commit details for ${repo}:`, commitError);
               // Fallback if fetching individual commit fails (e.g., private repo, rate limit)
               const activity = {
                 type: 'Commit',
@@ -390,8 +547,10 @@ export class GitHubService {
             }
           } else if (pushPayload?.commits && pushPayload.commits.length > 0) {
             // If we have commit data in the payload, use it
+            console.log(`📝 Using payload commits for ${repo}:`, pushPayload.commits.length);
             for (const commit of pushPayload.commits) {
               const commitMessage = commit.message?.split('\n')[0]?.trim() || 'Pushed commit';
+              console.log(`✅ Payload commit message: "${commitMessage}"`);
               const activity = {
                 type: 'Commit',
                 repo,
@@ -402,6 +561,7 @@ export class GitHubService {
             }
           } else {
             // Final fallback to generic message
+            console.log(`⚠️ Using fallback message for ${repo} - no commit details available`);
             const activity = {
               type: 'Commit',
               repo,
@@ -468,6 +628,8 @@ export class GitHubService {
              const result = items
                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                .slice(0, 30);
+      
+      console.log(`📊 User ${username}: ${totalEvents} total events, ${filteredEvents} filtered out (older than 36h), ${result.length} activities returned`);
       
       // Cache the result
       this.setCachedData(cacheKey, result);

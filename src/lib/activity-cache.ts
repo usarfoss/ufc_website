@@ -16,7 +16,7 @@ const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_RE
 export class RedisService {
   private static readonly CACHE_PREFIX = 'github_activities:';
   private static readonly CACHE_TTL = 10 * 60; // 10 minutes in seconds (longer for 36-hour data)
-  private static readonly MEMORY_CACHE_TTL = 10 * 60 * 1000; // 10 minutes in milliseconds
+  private static readonly MEMORY_CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
   private static readonly GLOBAL_BUILD_LOCK_KEY = 'global_github_activities_build_lock';
   private static readonly GLOBAL_META_KEY = 'global_github_activities_meta';
   
@@ -126,22 +126,14 @@ export class RedisService {
     }
   }
 
-  static async getGlobalActivities(forceRefresh: boolean = false): Promise<any[] | null> {
+  static async getGlobalActivities(): Promise<any[] | null> {
     const memoryKey = 'global';
     
-    // Check if we should force refresh or if data is stale
-    if (!forceRefresh) {
-      const memoryCached = this.getFromMemoryCache(memoryKey);
-      if (memoryCached) {
-        // Check if data is fresh (less than 10 minutes old)
-        const cacheAge = Date.now() - (memoryCached._cacheTimestamp || 0);
-        if (cacheAge < 10 * 60 * 1000) { // 10 minutes
-          console.log('Memory cache hit for global activities (fresh data)');
-          return memoryCached;
-        } else {
-          console.log('Memory cache hit but data is stale, will refresh from GitHub API');
-        }
-      }
+    // Check memory cache first (fastest)
+    const memoryCached = this.getFromMemoryCache(memoryKey);
+    if (memoryCached) {
+      console.log('Memory cache hit for global activities');
+      return memoryCached;
     }
     
     if (!redis) {
@@ -173,14 +165,8 @@ export class RedisService {
         return null;
       }
       
-      // Add timestamp to data for freshness checking
-      const dataWithTimestamp = {
-        ...data,
-        _cacheTimestamp: Date.now()
-      };
-      
       // Store in memory cache for faster subsequent access
-      this.setMemoryCache(memoryKey, dataWithTimestamp);
+      this.setMemoryCache(memoryKey, data);
       console.log('Redis cache hit for global activities');
       return data;
     } catch (error) {
@@ -339,34 +325,6 @@ export class RedisService {
     } catch (error) {
       console.warn('Redis get global meta error:', error);
       return null;
-    }
-  }
-
-  /**
-   * Get value from Redis with error handling
-   */
-  static async getFromRedis(key: string): Promise<string | null> {
-    if (!redis) return null;
-    
-    try {
-      const result = await redis.get(key);
-      return result as string | null;
-    } catch (error) {
-      console.warn('Redis get error:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Set value in Redis with TTL
-   */
-  static async setInRedis(key: string, value: string, ttlSeconds: number): Promise<void> {
-    if (!redis) return;
-    
-    try {
-      await redis.setex(key, ttlSeconds, value);
-    } catch (error) {
-      console.warn('Redis set error:', error);
     }
   }
 }

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { Bell, Search, LogOut, User, Settings } from "lucide-react";
+import { LogOut, User, Settings } from "lucide-react";
 
 export default function Topbar() {
   const { user, logout } = useAuth();
@@ -29,19 +29,7 @@ export default function Topbar() {
   }, []);
 
   return (
-    <header className="h-16 bg-black/60 backdrop-blur-sm border-b border-[#0B874F]/30 flex items-center justify-between px-6 relative z-50">
-      {/* Search */}
-      <div className="flex-1 max-w-md">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search projects, members..."
-            className="w-full pl-10 pr-4 py-2 bg-black/50 border border-[#0B874F]/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#0B874F] transition-colors"
-          />
-        </div>
-      </div>
-
+    <header className="h-16 bg-black/60 backdrop-blur-sm border-b border-[#0B874F]/30 flex items-center justify-end px-6 relative z-50">
       {/* Right Section */}
       <div className="flex items-center space-x-4">
         {/* User Menu */}

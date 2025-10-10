@@ -35,8 +35,8 @@ export const Menu = () => {
             </Link>
           </li>
           <li>
-            <Link href="/login" className="hover:text-[#0B874F] transition px-1.5 sm:px-2 py-1 rounded text-center min-w-[44px]">
-              Login
+            <Link href="/profile" className="hover:text-[#0B874F] transition px-1.5 sm:px-2 py-1 rounded text-center min-w-[44px]">
+              Profile
             </Link>
           </li>
         </ul>

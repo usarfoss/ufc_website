@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Activity, GitCommit, GitPullRequest, Calendar, Users } from "lucide-react";
+import { Activity, GitCommit, GitPullRequest, Calendar, Users, RefreshCw } from "lucide-react";
 
 interface ActivityItem {
   id: string;
@@ -22,9 +22,90 @@ export default function ActivityPage() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<number>(0);
+  const [cooldownTime, setCooldownTime] = useState<number>(0);
+  const [showSuccess, setShowSuccess] = useState(false);
   useEffect(() => {
     fetchActivities();
+    
+    // Load last refresh time from localStorage
+    const savedLastRefresh = localStorage.getItem('activity-last-refresh');
+    if (savedLastRefresh) {
+      const lastRefreshTime = parseInt(savedLastRefresh);
+      const now = Date.now();
+      const timeSinceLastRefresh = now - lastRefreshTime;
+      const COOLDOWN_DURATION = 600000; // 10 minutes
+      
+      if (timeSinceLastRefresh < COOLDOWN_DURATION) {
+        const remainingTime = Math.ceil((COOLDOWN_DURATION - timeSinceLastRefresh) / 1000);
+        setLastRefresh(lastRefreshTime);
+        setCooldownTime(remainingTime);
+      }
+    }
   }, []);
+
+  // Cooldown timer effect
+  useEffect(() => {
+    if (cooldownTime > 0) {
+      const timer = setTimeout(() => {
+        const newCooldownTime = Math.max(0, cooldownTime - 1);
+        setCooldownTime(newCooldownTime);
+        
+        // Update localStorage with remaining time
+        if (newCooldownTime > 0) {
+          const remainingTime = newCooldownTime * 1000;
+          const newLastRefresh = Date.now() - (600000 - remainingTime);
+          localStorage.setItem('activity-last-refresh', newLastRefresh.toString());
+        } else {
+          // Cooldown finished, remove from localStorage
+          localStorage.removeItem('activity-last-refresh');
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldownTime]);
+
+  const handleRefresh = async () => {
+    const now = Date.now();
+    
+    // Server-side rate limiting will handle cooldown
+    setRefreshing(true);
+    setError(null);
+    
+    try {
+      // Force refresh from GitHub API
+      const response = await fetch(`/api/dashboard/global-activities?limit=50&offset=0&refresh=true`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setActivities(data.activities || []);
+        setLastRefresh(now);
+        setCooldownTime(0);
+        setShowSuccess(true);
+        
+        // Save last refresh time to localStorage for UI consistency
+        localStorage.setItem('activity-last-refresh', now.toString());
+        
+        setTimeout(() => setShowSuccess(false), 3000); // Hide success message after 3 seconds
+      } else if (response.status === 429 && data.rateLimited) {
+        // Server-side rate limiting
+        const remainingTime = data.remainingTime || 0;
+        setCooldownTime(remainingTime);
+        setLastRefresh(now - (600 - remainingTime) * 1000); // Calculate last refresh time
+        setError(`Rate limited: ${data.message}`);
+        
+        // Update localStorage to match server state
+        localStorage.setItem('activity-last-refresh', (now - (600 - remainingTime) * 1000).toString());
+      } else {
+        setError(data.message || 'Failed to refresh activities');
+      }
+    } catch (err) {
+      setError('Failed to refresh activities');
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
          const fetchActivities = async () => {
            try {
@@ -205,6 +286,48 @@ export default function ActivityPage() {
                    <p className="text-gray-300 text-lg">
                      See what everyone in the community is working on - commits, PRs, and issues
                    </p>
+          </div>
+          <div className="flex flex-col items-end space-y-2">
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing || cooldownTime > 0}
+              className={`
+                flex items-center space-x-2 px-6 py-3 font-bold rounded-xl transition-all duration-300 
+                transform hover:scale-105 active:scale-95 shadow-lg
+                ${refreshing || cooldownTime > 0 
+                  ? 'bg-gray-600 text-gray-300 cursor-not-allowed opacity-60' 
+                  : 'bg-gradient-to-r from-[#0B874F] to-[#0a6b3f] text-white hover:from-[#0a6b3f] hover:to-[#0B874F] hover:shadow-[0_0_20px_rgba(11,135,79,0.4)]'
+                }
+              `}
+            >
+              <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+              <span className="text-sm">
+                {refreshing 
+                  ? 'Refreshing...' 
+                  : cooldownTime > 0 
+                    ? cooldownTime >= 60 
+                      ? `Wait ${Math.floor(cooldownTime / 60)}m ${cooldownTime % 60}s`
+                      : `Wait ${cooldownTime}s`
+                    : 'Refresh'
+                }
+              </span>
+            </button>
+            {cooldownTime > 0 && (
+              <div className="text-xs text-gray-400 text-center">
+                <div className="w-16 h-1 bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-[#0B874F] transition-all duration-1000"
+                    style={{ width: `${((600 - cooldownTime) / 600) * 100}%` }}
+                  />
+                </div>
+                <span>10min cooldown</span>
+              </div>
+            )}
+            {showSuccess && (
+              <div className="text-xs text-green-400 text-center animate-pulse">
+                ✓ Refreshed successfully
+              </div>
+            )}
           </div>
           
         </div>

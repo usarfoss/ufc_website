@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 import { githubService } from '@/lib/github';
 import { RedisService } from '@/lib/redis';
+import { PreemptiveCacheService } from '../../../../lib/preemptive-cache';
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,16 +24,53 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-           // Check Redis cache first
-           const cachedActivities = await RedisService.getGlobalActivities();
-           if (cachedActivities && cachedActivities.length > 0) {
-             // Ensure strict most-recent-first ordering before paginating
-             const sortedCached = [...cachedActivities].sort((a, b) =>
-               new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-             );
-             const paginatedActivities = sortedCached.slice(offset, offset + limit);
-             const hasMore = offset + limit < sortedCached.length;
+    // Check for force refresh parameter
+    const forceRefresh = searchParams.get('refresh') === 'true';
+    
+    // Server-side rate limiting for refresh requests
+    if (forceRefresh) {
+      const rateLimitKey = `refresh_rate_limit:${userId}`;
+      const now = Date.now();
+      const RATE_LIMIT_DURATION = 10 * 60 * 1000; // 10 minutes
       
+      try {
+        // Check if user has refreshed recently
+        const lastRefresh = await RedisService.getFromRedis(rateLimitKey);
+        if (lastRefresh) {
+          const timeSinceLastRefresh = now - parseInt(lastRefresh);
+          if (timeSinceLastRefresh < RATE_LIMIT_DURATION) {
+            const remainingTime = Math.ceil((RATE_LIMIT_DURATION - timeSinceLastRefresh) / 1000);
+            return NextResponse.json({ 
+              error: 'Rate limited', 
+              message: `Please wait ${Math.floor(remainingTime / 60)}m ${remainingTime % 60}s before refreshing again`,
+              remainingTime,
+              rateLimited: true
+            }, { status: 429 });
+          }
+        }
+        
+        // Set new refresh timestamp
+        await RedisService.setInRedis(rateLimitKey, now.toString(), 10 * 60); // 10 minutes TTL
+        
+        console.log('🔄 Force refresh requested, clearing all caches and fetching fresh data...');
+        await RedisService.clearGlobalCache();
+        PreemptiveCacheService.forceRefresh();
+      } catch (error) {
+        console.warn('Rate limiting check failed, proceeding with refresh:', error);
+        // Continue with refresh if rate limiting fails
+      }
+    }
+    
+    // Check Redis cache first (with freshness check)
+    const cachedActivities = await RedisService.getGlobalActivities(forceRefresh);
+    if (cachedActivities && cachedActivities.length > 0 && !forceRefresh) {
+      // Ensure strict most-recent-first ordering before paginating
+      const sortedCached = [...cachedActivities].sort((a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+      const paginatedActivities = sortedCached.slice(offset, offset + limit);
+      const hasMore = offset + limit < sortedCached.length;
+ 
       return NextResponse.json({
         success: true,
         activities: paginatedActivities,
@@ -43,68 +81,10 @@ export async function GET(request: NextRequest) {
       });
     }
 
-           // If no cache, start a full background rebuild covering ALL users
-           // Respond quickly with a partial build for UX, but kick off full build with a lock
-           const acquired = await RedisService.tryAcquireGlobalBuildLock(180);
-           if (acquired) {
-             (async () => {
-               try {
-                 const allUsers = await prisma.user.findMany({
-                   where: { githubUsername: { not: null } },
-                   select: { id: true, name: true, githubUsername: true, avatar: true }
-                 });
+    // Note: Preemptive cache service is now started from dashboard layout
 
-                 const allActivities: any[] = [];
-                 const batchSize = 8; // larger batch for faster total build
-                 const maxConcurrent = 8;
-                 
-                 for (let i = 0; i < allUsers.length; i += batchSize) {
-                   const batch = allUsers.slice(i, i + batchSize);
-                   const batchPromises = batch.map(async (user) => {
-                     if (!user.githubUsername) return [];
-                     try {
-                       const githubActivities = await githubService.getUserContributions(user.githubUsername);
-                       return githubActivities.recentActivity.map((activity, index) => ({
-                         id: `github-${user.id}-${index}`,
-                         type: activity.type.toLowerCase(),
-                         message: activity.message,
-                         repo: activity.repo,
-                         target: activity.repo,
-                         time: timeAgo(new Date(activity.date)),
-                         timestamp: activity.date,
-                         user: {
-                           name: user.name || 'Anonymous',
-                           githubUsername: user.githubUsername || undefined,
-                           avatar: user.avatar || undefined
-                         },
-                         metadata: {
-                           source: 'github',
-                           repo: activity.repo,
-                           type: activity.type
-                         }
-                       }));
-                     } catch (error) {
-                       console.warn(`Rebuild failed for user ${user.githubUsername}:`, error);
-                       return [];
-                     }
-                   });
-                   const batchResults = await Promise.all(batchPromises);
-                   allActivities.push(...batchResults.flat());
-                 }
-
-                 const sortedActivities = allActivities.sort((a, b) =>
-                   new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-                 );
-
-                 await RedisService.setGlobalActivities(sortedActivities);
-                 await RedisService.setGlobalMeta({ builtAt: Date.now(), total: sortedActivities.length });
-               } catch (e) {
-                 console.warn('Global rebuild failed:', e);
-               } finally {
-                 await RedisService.releaseGlobalBuildLock();
-               }
-             })();
-           }
+    // If no cache, fetch data immediately and cache it
+    console.log('No cached activities found, fetching fresh data with load balancer...');
 
     // Get all users with GitHub usernames
     const users = await prisma.user.findMany({
@@ -131,145 +111,53 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Limit to first 10 users to avoid too many API calls
-    const limitedUsers = users.slice(0, 10);
-    
-           // Fetch GitHub activities for users in parallel (but with concurrency limit)
-           const allActivities: Array<{
-             id: string;
-             type: string;
-             message: string;
-             repo: string;
-             target: string;
-             time: string;
-             timestamp: string;
-             user: {
-               name: string;
-               githubUsername?: string;
-               avatar?: string;
-             };
-             metadata: {
-               source: string;
-               repo: string;
-               type: string;
-             };
-           }> = [];
-
-           // Process users in batches of 5 for faster loading (increased from 3)
-           const batchSize = 5;
-           const maxUsers = Math.min(limitedUsers.length, 8); // Limit to 8 users max for speed
-           
-           for (let i = 0; i < maxUsers; i += batchSize) {
-             const batch = limitedUsers.slice(i, i + batchSize);
-             
-             const batchPromises = batch.map(async (user) => {
-               if (!user.githubUsername) return [];
-
-               try {
-                 // Use timeout to prevent hanging
-                 const controller = new AbortController();
-                 const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout per user
-                 
-                 const githubActivities = await githubService.getUserContributions(user.githubUsername);
-                 clearTimeout(timeoutId);
-                 
-                 return githubActivities.recentActivity.map((activity, index) => ({
-                   id: `github-${user.id}-${activity.date}-${activity.type}-${activity.repo}-${index}`,
-                   type: activity.type.toLowerCase(),
-                   message: activity.message,
-                   repo: activity.repo,
-                   target: activity.repo,
-                   time: timeAgo(new Date(activity.date)),
-                   timestamp: activity.date,
-                   user: {
-                     name: user.name || 'Anonymous',
-                     githubUsername: user.githubUsername || undefined,
-                     avatar: user.avatar || undefined
-                   },
-                   metadata: {
-                     source: 'github',
-                     repo: activity.repo,
-                     type: activity.type
-                   }
-                 }));
-               } catch (error) {
-                 if (error instanceof Error && error.name === 'AbortError') {
-                   console.warn(`Timeout fetching activities for user ${user.githubUsername}`);
-                 } else {
-                   console.error(`Failed to fetch activities for user ${user.githubUsername}:`, error);
-                 }
-                 return [];
-               }
-             });
-
-             const batchResults = await Promise.all(batchPromises);
-             allActivities.push(...batchResults.flat());
-           }
+    // Use batch processing with load balancer for all users
+    console.log(`🚀 Fetching activities for ${users.length} users using 5-token load balancer...`);
+    const allActivities = await githubService.getBatchUserActivities(users);
 
     // Sort all activities by timestamp (most recent first)
     const sortedActivities = allActivities.sort((a, b) => 
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
 
-           // Cache the results in Redis with compression
-           await RedisService.setGlobalActivities(sortedActivities);
-           
-           // Start background prefetching for next request
-           setTimeout(async () => {
-             try {
-               await RedisService.prefetchGlobalActivities(async () => {
-                 // Re-fetch fresh data in background
-                 const freshUsers = await prisma.user.findMany({
-                   where: { githubUsername: { not: null } },
-                   select: { id: true, name: true, githubUsername: true, avatar: true }
-                 });
-                 
-                 const freshActivities: any[] = [];
-                 const batchSize = 3;
-                 
-                 for (let i = 0; i < Math.min(freshUsers.length, 10); i += batchSize) {
-                   const batch = freshUsers.slice(i, i + batchSize);
-                   const batchPromises = batch.map(async (user) => {
-                     if (!user.githubUsername) return [];
-                     try {
-                       const githubActivities = await githubService.getUserContributions(user.githubUsername);
-                       return githubActivities.recentActivity.map((activity, index) => ({
-                         id: `github-${user.id}-${activity.date}-${activity.type}-${activity.repo}-${index}`,
-                         type: activity.type.toLowerCase(),
-                         message: activity.message,
-                         repo: activity.repo,
-                         target: activity.repo,
-                         time: timeAgo(new Date(activity.date)),
-                         timestamp: activity.date,
-                         user: {
-                           name: user.name || 'Anonymous',
-                           githubUsername: user.githubUsername || undefined,
-                           avatar: user.avatar || undefined
-                         },
-                         metadata: {
-                           source: 'github',
-                           repo: activity.repo,
-                           type: activity.type
-                         }
-                       }));
-                     } catch (error) {
-                       console.error(`Background prefetch failed for user ${user.githubUsername}:`, error);
-                       return [];
-                     }
-                   });
-                   
-                   const batchResults = await Promise.all(batchPromises);
-                   freshActivities.push(...batchResults.flat());
-                 }
-                 
-                 return freshActivities.sort((a, b) => 
-                   new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-                 );
-               });
-             } catch (error) {
-               console.warn('Background prefetch failed:', error);
-             }
-           }, 1000); // Start after 1 second
+    // Cache the results in Redis immediately with timestamp
+    const activitiesWithTimestamp = sortedActivities.map(activity => ({
+      ...activity,
+      _cacheTimestamp: Date.now()
+    }));
+    await RedisService.setGlobalActivities(activitiesWithTimestamp);
+    console.log(`Cached ${sortedActivities.length} activities in Redis with timestamp`);
+
+    // Start background refresh for additional users (non-blocking)
+    setTimeout(async () => {
+      try {
+        const allUsers = await prisma.user.findMany({
+          where: { githubUsername: { not: null } },
+          select: { id: true, name: true, githubUsername: true, avatar: true }
+        });
+
+        // Only refresh if we have more users than what we initially fetched
+        if (allUsers.length > users.length) {
+          console.log('🔄 Starting background refresh for additional users...');
+          const additionalUsers = allUsers.slice(users.length);
+          
+          // Use batch processing for additional users
+          const additionalActivities = await githubService.getBatchUserActivities(additionalUsers);
+          
+          // Merge with existing cache
+          const existingCache = await RedisService.getGlobalActivities();
+          const mergedActivities = [...(existingCache || []), ...additionalActivities];
+          const sortedMerged = mergedActivities.sort((a, b) => 
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          );
+          
+          await RedisService.setGlobalActivities(sortedMerged);
+          console.log(`✅ Background refresh completed. Total activities: ${sortedMerged.length}`);
+        }
+      } catch (error) {
+        console.warn('⚠️ Background refresh failed:', error);
+      }
+    }, 2000); // Start after 2 seconds
 
     // Apply pagination
     const paginatedActivities = sortedActivities.slice(offset, offset + limit);

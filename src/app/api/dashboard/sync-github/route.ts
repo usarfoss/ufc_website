@@ -47,7 +47,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Sync GitHub data
+    // Sync GitHub data using load balancer
+    console.log('🔄 Syncing GitHub data with load balancer...');
     const result = await githubService.syncUserStats(userId, user.githubUsername);
 
     // Refresh caches without nuking the global feed

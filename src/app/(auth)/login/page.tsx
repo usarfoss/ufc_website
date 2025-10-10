@@ -194,10 +194,23 @@ export default function LoginPage() {
       </div>
 
       {/* Signup Link */}
-      <p className="text-center text-xs md:text-sm" style={{ color: "#fff" }}>
-        Don't have an account?{" "}Can't do much<br/>
-        Core members only
-      </p>
+      <div className="text-center">
+        <p className="text-xs md:text-sm mb-3" style={{ color: "#fff" }}>
+          Don't have an account?
+        </p>
+        <Link 
+          href="/signup" 
+          className="inline-block py-2 md:py-3 px-4 md:px-6 font-bold border transition-all duration-300 hover:scale-105 hover:shadow-[0_0_15px_#F5A623] text-sm md:text-base"
+          style={{
+            backgroundColor: "transparent",
+            color: "#F5A623",
+            borderColor: "#F5A623",
+            boxShadow: "4px 4px 0px #F5A623",
+          }}
+        >
+          SIGNUP →
+        </Link>
+      </div>
     </>
   );
 }

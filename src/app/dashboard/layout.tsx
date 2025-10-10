@@ -5,29 +5,44 @@ import { useRouter } from "next/navigation";
 import { useEffect, ReactNode, Suspense } from "react";
 import Sidebar from "./components/sidebar";
 import Topbar from "./components/topbar";
+import { PreemptiveCacheService } from "../../lib/preemptive-cache";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  // Preload common routes for faster navigation
+  // Start background processing only when user is on dashboard
   useEffect(() => {
-    const preloadRoutes = async () => {
-      try {
-        await Promise.all([
-          router.prefetch('/dashboard/leaderboard'),
-          router.prefetch('/dashboard/projects'),
-          router.prefetch('/dashboard/events'),
-          router.prefetch('/dashboard/members'),
-        ]);
-      } catch (error) {
-        // Silently fail preloading
-      }
-    };
-    
     if (user) {
+      console.log('🚀 User entered dashboard - starting background processing...');
+      PreemptiveCacheService.start();
+      
+      // Preload common routes for faster navigation
+      const preloadRoutes = async () => {
+        try {
+          await Promise.all([
+            router.prefetch('/dashboard/leaderboard'),
+            router.prefetch('/dashboard/projects'),
+            router.prefetch('/dashboard/events'),
+            router.prefetch('/dashboard/members'),
+          ]);
+        } catch (error) {
+          // Silently fail preloading
+        }
+      };
+      
       preloadRoutes();
+    } else {
+      // If no user, ensure background processing is stopped
+      console.log('🛑 No user - ensuring background processing is stopped...');
+      PreemptiveCacheService.stop();
     }
+    
+    // Cleanup when user leaves dashboard
+    return () => {
+      console.log('🛑 User left dashboard - stopping background processing...');
+      PreemptiveCacheService.stop();
+    };
   }, [user, router]);
 
   useEffect(() => {

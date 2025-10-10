@@ -86,6 +86,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
       setUser(null);
+      
+      // Stop all background services when user logs out
+      try {
+        const { PreemptiveCacheService } = await import('./preemptive-cache');
+        PreemptiveCacheService.forceStop();
+      } catch (error) {
+        console.warn('Failed to stop background services:', error);
+      }
     } catch (error) {
       console.error('Logout failed:', error);
     }
