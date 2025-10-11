@@ -18,11 +18,9 @@ export class PreemptiveCacheService {
    */
   static start(): void {
     if (this.isRunning) {
-      console.log('🔄 Preemptive cache service already running');
       return;
     }
 
-    console.log('⚡ Starting preemptive cache service (10-minute intervals) for dashboard user...');
     this.isRunning = true;
 
     // Check every 10 minutes for stale cache
@@ -43,14 +41,12 @@ export class PreemptiveCacheService {
       this.intervalId = null;
     }
     this.isRunning = false;
-    console.log('⏹️ Preemptive cache service stopped (user left dashboard)');
   }
 
   /**
    * Force stop all background services (emergency stop)
    */
   static forceStop(): void {
-    console.log('🛑 Force stopping all background services...');
     this.stop();
   }
 
@@ -59,27 +55,22 @@ export class PreemptiveCacheService {
    */
   private static async checkAndRefreshStaleCache(): Promise<void> {
     try {
-      console.log('🔍 Checking cache freshness...');
       
       // Check if we have cached data
       const cachedActivities = await RedisService.getGlobalActivities(false);
       if (!cachedActivities || cachedActivities.length === 0) {
-        console.log('📊 No cached activities found, skipping preemptive refresh');
         return;
       }
 
       // Check if data is stale
       const cacheAge = Date.now() - (cachedActivities[0]?._cacheTimestamp || 0);
       if (cacheAge < this.CACHE_FRESHNESS) {
-        console.log(`✅ Cache is fresh (${Math.round(cacheAge / 60000)} minutes old), no refresh needed`);
         return;
       }
 
-      console.log(`🔄 Cache is stale (${Math.round(cacheAge / 60000)} minutes old), refreshing from GitHub API...`);
       await this.refreshCacheFromGitHub();
       
     } catch (error) {
-      console.warn('⚠️ Preemptive cache check failed:', error);
     }
   }
 
@@ -88,7 +79,6 @@ export class PreemptiveCacheService {
    */
   private static async refreshCacheFromGitHub(): Promise<void> {
     try {
-      console.log('🚀 Preemptive refresh: Fetching fresh data from GitHub API...');
 
       // Get all users with GitHub usernames
       const users = await prisma.user.findMany({
@@ -97,7 +87,6 @@ export class PreemptiveCacheService {
       });
 
       if (users.length === 0) {
-        console.log('📊 No users found for preemptive refresh');
         return;
       }
 
@@ -116,10 +105,8 @@ export class PreemptiveCacheService {
       }));
 
       await RedisService.setGlobalActivities(activitiesWithTimestamp);
-      console.log(`✅ Preemptive refresh complete: ${sortedActivities.length} fresh activities cached`);
       
     } catch (error) {
-      console.error('❌ Preemptive cache refresh failed:', error);
     }
   }
 
@@ -127,7 +114,6 @@ export class PreemptiveCacheService {
    * Force immediate cache refresh
    */
   static async forceRefresh(): Promise<void> {
-    console.log('🔄 Force refresh requested...');
     await this.refreshCacheFromGitHub();
   }
 

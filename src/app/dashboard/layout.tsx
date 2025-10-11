@@ -14,7 +14,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   // Start background processing only when user is on dashboard
   useEffect(() => {
     if (user) {
-      console.log('🚀 User entered dashboard - starting background processing...');
       PreemptiveCacheService.start();
       
       // Preload common routes for faster navigation
@@ -34,13 +33,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       preloadRoutes();
     } else {
       // If no user, ensure background processing is stopped
-      console.log('🛑 No user - ensuring background processing is stopped...');
       PreemptiveCacheService.stop();
     }
     
     // Cleanup when user leaves dashboard
     return () => {
-      console.log('🛑 User left dashboard - stopping background processing...');
       PreemptiveCacheService.stop();
     };
   }, [user, router]);
