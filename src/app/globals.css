@@ -127,6 +127,27 @@ html,body,#__next { height:100%; background:var(--bg); color:var(--fg); font-fam
   animation: matrix-fall 2s linear infinite;
 }
 
+/* Responsive matrix animation for mobile */
+@media (max-width: 640px) {
+  .matrix-line {
+    width: 1px;
+    height: 15px;
+    animation: matrix-fall-mobile 1.5s linear infinite;
+  }
+}
+
+/* Mobile matrix animation keyframes */
+@keyframes matrix-fall-mobile {
+  0% {
+    transform: translateY(-15px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100%);
+    opacity: 0.1;
+  }
+}
+
 /* Progress Scan Line Animation */
 @keyframes progress-scan {
   0% {

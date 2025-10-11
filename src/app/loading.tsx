@@ -224,16 +224,15 @@ const LoadingPage = () => {
 
   return (
     <div className="fixed inset-0 bg-black flex flex-col justify-between overflow-hidden z-50">
-      {/* Main Content Area with 10vw margins */}
-        {/* Skip Button */}
+      {/* Skip Button - Responsive positioning */}
         <button
           onClick={handleSkip}
-          className="absolute top-4 right-4 z-50 px-4 py-2 bg-gray-800 text-green-400 border border-green-400 rounded hover:bg-green-700 transition-colors text-sm font-mono">
+          className="absolute top-2 right-2 sm:top-4 sm:right-4 z-50 px-2 py-1 sm:px-4 sm:py-2 bg-gray-800 text-green-400 border border-green-400 rounded hover:bg-green-700 transition-colors text-xs sm:text-sm font-mono">
           Skip
         </button>
 
-      <div className="relative flex-1 flex items-center justify-center px-8 py-16">
-        <div className="absolute inset-0 mx-[10vw] my-8">
+      <div className="relative flex-1 flex items-center justify-center px-4 sm:px-8 py-8 sm:py-16">
+        <div className="absolute inset-0 mx-[5vw] sm:mx-[10vw] my-4 sm:my-8">
           {/* SVG Container for Path and Arrow */}
           <svg
             className="absolute inset-0 w-full h-full pointer-events-none"
@@ -288,7 +287,7 @@ const LoadingPage = () => {
             </g>
           </svg>
 
-          {/* Story Content Positioned at Path Points */}
+          {/* Story Content Positioned at Path Points - Responsive */}
           {storySteps.map((step, index) => (
             <div
               key={step.id}
@@ -301,11 +300,11 @@ const LoadingPage = () => {
                 transform: 'translate(-50%, -50%)'
               }}
             >
-              <div className="flex items-center space-x-2 px-3 py-2 bg-gray-900/80 rounded-lg backdrop-blur-sm border border-green-400/30">
-                <div className="text-green-400 flex-shrink-0">
+              <div className="flex items-center space-x-1 sm:space-x-2 px-2 py-1 sm:px-3 sm:py-2 bg-gray-900/80 rounded-lg backdrop-blur-sm border border-green-400/30">
+                <div className="text-green-400 flex-shrink-0 w-3 h-3 sm:w-4 sm:h-4">
                   {step.icon}
                 </div>
-                <p className="text-green-300 text-xs md:text-sm font-medium whitespace-nowrap max-w-[180px] md:max-w-xs">
+                <p className="text-green-300 text-xs sm:text-sm font-medium whitespace-nowrap max-w-[120px] sm:max-w-[180px] md:max-w-xs">
                   {step.text}
                 </p>
               </div>
@@ -314,16 +313,16 @@ const LoadingPage = () => {
         </div>
       </div>
 
-      {/* Optimized Matrix-Style Loader */}
-      <div className="p-8 space-y-6">
+      {/* Optimized Matrix-Style Loader - Responsive */}
+      <div className="p-4 sm:p-8 space-y-4 sm:space-y-6">
         <div className="max-w-2xl mx-auto">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-green-400 text-sm font-mono">INITIALIZING SYSTEM</span>
-            <span className="text-green-400 text-sm font-mono">{Math.round(progress)}%</span>
+          <div className="flex justify-between items-center mb-2 sm:mb-4">
+            <span className="text-green-400 text-xs sm:text-sm font-mono">INITIALIZING SYSTEM</span>
+            <span className="text-green-400 text-xs sm:text-sm font-mono">{Math.round(progress)}%</span>
           </div>
           
-          {/* Matrix-Style Loader */}
-          <div className="relative h-16 bg-gray-900 rounded-lg overflow-hidden border border-green-500/30">
+          {/* Matrix-Style Loader - Responsive height */}
+          <div className="relative h-12 sm:h-16 bg-gray-900 rounded-lg overflow-hidden border border-green-500/30">
             {/* Background Grid */}
             <div className="absolute inset-0 opacity-20">
               {Array.from({ length: 20 }).map((_, i) => (
@@ -335,15 +334,15 @@ const LoadingPage = () => {
               ))}
             </div>
             
-            {/* Optimized Digital Rain Effect - Reduced for better performance */}
+            {/* Optimized Digital Rain Effect - Responsive count */}
             <div className="absolute inset-0 overflow-hidden">
-              {Array.from({ length: 8 }).map((_, i) => (
+              {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
                   className="matrix-line"
                   style={{
-                    left: `${(i / 8) * 100}%`,
-                    animationDelay: `${(i % 4) * 0.4}s`,
+                    left: `${(i / 6) * 100}%`,
+                    animationDelay: `${(i % 3) * 0.4}s`,
                   }}
                 />
               ))}
@@ -380,12 +379,12 @@ const LoadingPage = () => {
               <div className="absolute right-0 top-0 w-0.5 h-full bg-white opacity-90 progress-scan-line" />
             </div>
             
-            {/* Simplified Hexagonal Progress Indicators */}
-            <div className="absolute inset-0 flex items-center justify-between px-2">
+            {/* Simplified Hexagonal Progress Indicators - Responsive */}
+            <div className="absolute inset-0 flex items-center justify-between px-1 sm:px-2">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div
                   key={i}
-                  className={`w-3 h-3 border border-green-400 transform rotate-45 transition-all duration-300 will-change-transform ${
+                  className={`w-2 h-2 sm:w-3 sm:h-3 border border-green-400 transform rotate-45 transition-all duration-300 will-change-transform ${
                     progress > (i / 5) * 100 ? 'bg-green-400 shadow-green-glow' : 'bg-transparent'
                   }`}
                 />
@@ -393,9 +392,9 @@ const LoadingPage = () => {
             </div>
           </div>
 
-          {/* Dynamic Status */}
-          <div className="mt-4 text-center">
-            <p className="text-green-500 text-xs font-mono">
+          {/* Dynamic Status - Responsive text */}
+          <div className="mt-2 sm:mt-4 text-center">
+            <p className="text-green-500 text-xs sm:text-sm font-mono">
               {progress < 30 ? 'LOADING CORE MODULES...' :
                progress < 60 ? 'ESTABLISHING CONNECTIONS...' :
                progress < 90 ? 'FINALIZING PROTOCOLS...' :
@@ -404,14 +403,14 @@ const LoadingPage = () => {
           </div>
         </div>
 
-        {/* GitHub Pro Tip */}
+        {/* GitHub Pro Tip - Responsive */}
         <div className="max-w-2xl mx-auto">
-          <div className="bg-gray-900/50 border border-blue-500/30 rounded-lg p-4">
+          <div className="bg-gray-900/50 border border-blue-500/30 rounded-lg p-3 sm:p-4">
             <div className="flex items-center space-x-2 mb-2">
-              <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-yellow-400 rounded-full animate-pulse"></div>
               <span className="text-yellow-400 text-xs font-mono">PRO TIP</span>
             </div>
-            <p className="text-gray-300 text-sm font-mono">
+            <p className="text-gray-300 text-xs sm:text-sm font-mono">
               {currentTip}
             </p>
           </div>
