@@ -77,8 +77,13 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    const userRank = allUsers.findIndex(u => u.id === userId) + 1;
-    const totalUsers = allUsers.length;
+    // Filter users with contributions > 0 to match leaderboard logic
+    const usersWithContributions = allUsers.filter(user => 
+      user.githubStats && user.githubStats.contributions > 0
+    );
+
+    const userRank = usersWithContributions.findIndex(u => u.id === userId) + 1;
+    const totalUsers = usersWithContributions.length;
 
     const getRandomChange = () => {
       const changes = ['+5%', '+12%', '+8%', '+15%', '+3%', '+20%', '-2%', '+7%'];
