@@ -148,6 +148,48 @@ html,body,#__next { height:100%; background:var(--bg); color:var(--fg); font-fam
   }
 }
 
+/* Loading screen story card responsive styles */
+.story-card {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Ensure text truncation works properly on all screen sizes */
+.story-card p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mobile-specific adjustments for very small screens */
+@media (max-width: 480px) {
+  .story-card {
+    max-width: 80px !important;
+    font-size: 8px !important;
+    line-height: 1.1 !important;
+    padding: 2px 4px !important;
+  }
+  
+  .story-card p {
+    font-size: 8px !important;
+    line-height: 1.1 !important;
+  }
+}
+
+/* Small mobile adjustments */
+@media (max-width: 640px) and (min-width: 481px) {
+  .story-card {
+    max-width: 100px;
+    font-size: 9px;
+    line-height: 1.2;
+  }
+  
+  .story-card p {
+    font-size: 9px;
+    line-height: 1.2;
+  }
+}
+
 /* Progress Scan Line Animation */
 @keyframes progress-scan {
   0% {

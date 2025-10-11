@@ -44,29 +44,29 @@ const LoadingPage = () => {
     "git reset --soft HEAD~1 - Undo last commit but keep changes staged"
   ];
 
-  // Story content positioned at zig-zag path edges
+  // Story content positioned at zig-zag path edges - Mobile optimized
   const storySteps: StoryStep[] = [
     {
       id: 1,
-      text: "Open Source is not just a term...",
+      text: "Open Source...",
       icon: <Code className="w-4 h-4" />,
       position: { x: 15, y: 20 }
     },
     {
       id: 2,
-      text: "It's a philosophy of collaboration",
+      text: "Philosophy of collaboration",
       icon: <Users className="w-4 h-4" />,
       position: { x: 85, y: 35 }
     },
     {
       id: 3,
-      text: "Where innovation knows no boundaries",
+      text: "Innovation knows no boundaries",
       icon: <Globe className="w-4 h-4" />,
       position: { x: 15, y: 50 }
     },
     {
       id: 4,
-      text: "Communities build the impossible",
+      text: "Communities build impossible",
       icon: <Globe className="w-4 h-4" />,
       position: { x: 85, y: 65 }
     },
@@ -300,14 +300,14 @@ const LoadingPage = () => {
                 transform: 'translate(-50%, -50%)'
               }}
             >
-              <div className="flex items-center space-x-1 sm:space-x-2 px-2 py-1 sm:px-3 sm:py-2 bg-gray-900/80 rounded-lg backdrop-blur-sm border border-green-400/30">
-                <div className="text-green-400 flex-shrink-0 w-3 h-3 sm:w-4 sm:h-4">
-                  {step.icon}
-                </div>
-                <p className="text-green-300 text-xs sm:text-sm font-medium whitespace-nowrap max-w-[120px] sm:max-w-[180px] md:max-w-xs">
-                  {step.text}
-                </p>
-              </div>
+               <div className="story-card flex items-center space-x-1 sm:space-x-2 px-2 py-1 sm:px-3 sm:py-2 bg-gray-900/80 rounded-lg backdrop-blur-sm border border-green-400/30 max-w-[100px] sm:max-w-[140px] md:max-w-[180px] lg:max-w-xs">
+                 <div className="text-green-400 flex-shrink-0 w-3 h-3 sm:w-4 sm:h-4">
+                   {step.icon}
+                 </div>
+                 <p className="text-green-300 text-xs sm:text-sm font-medium truncate">
+                   {step.text}
+                 </p>
+               </div>
             </div>
           ))}
         </div>
