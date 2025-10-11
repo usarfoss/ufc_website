@@ -26,6 +26,14 @@ export default function ActivityPage() {
   const [lastRefresh, setLastRefresh] = useState<number>(0);
   const [cooldownTime, setCooldownTime] = useState<number>(0);
   const [showSuccess, setShowSuccess] = useState(false);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalActivities, setTotalActivities] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  
+  const ITEMS_PER_PAGE = 20;
   useEffect(() => {
     fetchActivities();
     
@@ -43,7 +51,7 @@ export default function ActivityPage() {
         setCooldownTime(remainingTime);
       }
     }
-  }, []);
+  }, [currentPage]);
 
   // Cooldown timer effect
   useEffect(() => {
@@ -75,11 +83,14 @@ export default function ActivityPage() {
     
     try {
       // Force refresh from GitHub API
-      const response = await fetch(`/api/dashboard/global-activities?limit=50&offset=0&refresh=true`);
+      const response = await fetch(`/api/dashboard/global-activities?limit=${ITEMS_PER_PAGE}&offset=0&refresh=true`);
       const data = await response.json();
       
       if (response.ok) {
         setActivities(data.activities || []);
+        setTotalActivities(data.total || 0);
+        setTotalPages(Math.ceil((data.total || 0) / ITEMS_PER_PAGE));
+        setCurrentPage(1); // Reset to first page after refresh
         setLastRefresh(now);
         setCooldownTime(0);
         setShowSuccess(true);
@@ -112,32 +123,13 @@ export default function ActivityPage() {
              setLoading(true);
              setError(null);
              
-             // Progressive loading: start with cached data if available
-             try {
-               const cachedResponse = await fetch(`/api/dashboard/global-activities?limit=20&offset=0`, {
-                 signal: AbortSignal.timeout(5000) // 5 second timeout for cached data
-               });
-               
-               if (cachedResponse.ok) {
-                 const cachedData = await cachedResponse.json();
-                 if (cachedData.activities && cachedData.activities.length > 0) {
-                   setActivities(cachedData.activities);
-                   setLoading(false); // Show cached data immediately
-                   
-                   // Continue loading more data in background
-                   fetchMoreActivities(20);
-                   return;
-                 }
-               }
-             } catch (cachedError) {
-               console.log('No cached data available, proceeding with fresh fetch');
-             }
+             const offset = (currentPage - 1) * ITEMS_PER_PAGE;
              
              // Fresh data fetch with timeout
              const controller = new AbortController();
              const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 second timeout
              
-             const response = await fetch(`/api/dashboard/global-activities?limit=30`, {
+             const response = await fetch(`/api/dashboard/global-activities?limit=${ITEMS_PER_PAGE}&offset=${offset}`, {
                signal: controller.signal
              });
              
@@ -149,6 +141,9 @@ export default function ActivityPage() {
 
              const data = await response.json();
              setActivities(data.activities || []);
+             setTotalActivities(data.total || 0);
+             setTotalPages(Math.ceil((data.total || 0) / ITEMS_PER_PAGE));
+             setHasMore(data.hasMore || false);
            } catch (err) {
              console.error('Error fetching activities:', err);
              if (err instanceof Error && err.name === 'AbortError') {
@@ -161,22 +156,6 @@ export default function ActivityPage() {
            }
          };
 
-         const fetchMoreActivities = async (offset: number) => {
-           try {
-             const response = await fetch(`/api/dashboard/global-activities?limit=20&offset=${offset}`, {
-               signal: AbortSignal.timeout(15000) // 15 second timeout
-             });
-             
-             if (response.ok) {
-               const data = await response.json();
-               if (data.activities && data.activities.length > 0) {
-                 setActivities(prev => [...prev, ...data.activities]);
-               }
-             }
-           } catch (error) {
-             console.warn('Failed to fetch more activities:', error);
-           }
-         };
 
   const getActivityIcon = (type: string) => {
     switch (type.toLowerCase()) {
@@ -401,6 +380,66 @@ export default function ActivityPage() {
           <p className="text-gray-500">
             Start contributing to see activity here!
           </p>
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center space-x-2 mt-8">
+          {/* Previous Button */}
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-black/40 border border-[#0B874F]/30 rounded-lg text-[#0B874F] hover:bg-[#0B874F]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+
+          {/* Page Numbers */}
+          <div className="flex items-center space-x-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum;
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`px-3 py-2 rounded-lg transition-colors ${
+                    currentPage === pageNum
+                      ? 'bg-[#0B874F] text-black font-bold'
+                      : 'bg-black/40 border border-[#0B874F]/30 text-[#0B874F] hover:bg-[#0B874F]/20'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Next Button */}
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-black/40 border border-[#0B874F]/30 rounded-lg text-[#0B874F] hover:bg-[#0B874F]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      {/* Pagination Info */}
+      {totalActivities > 0 && (
+        <div className="text-center mt-4 text-gray-400 text-sm">
+          Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, totalActivities)} of {totalActivities} activities
         </div>
       )}
     </div>

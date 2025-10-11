@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { Settings, Bell, Shield, Github, Save, RefreshCw } from "lucide-react";
 
@@ -8,6 +8,8 @@ export default function SettingsPage() {
   const { user, logout } = useAuth();
   const [saving, setSaving] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [cooldownTime, setCooldownTime] = useState(0);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [settings, setSettings] = useState({
     notifications: {
       email: true,
@@ -45,24 +47,88 @@ export default function SettingsPage() {
     }
   };
 
+  // Check for existing cooldown on page load
+  useEffect(() => {
+    const lastSync = localStorage.getItem('lastGitHubSync');
+    if (lastSync) {
+      const timeSinceLastSync = Date.now() - parseInt(lastSync);
+      const cooldownDuration = 10 * 60 * 1000; // 10 minutes
+      
+      if (timeSinceLastSync < cooldownDuration) {
+        const remaining = Math.ceil((cooldownDuration - timeSinceLastSync) / 1000);
+        setCooldownTime(remaining);
+        
+        // Start countdown
+        const interval = setInterval(() => {
+          setCooldownTime(prev => {
+            if (prev <= 1) {
+              clearInterval(interval);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        
+        return () => clearInterval(interval);
+      }
+    }
+  }, []);
+
   const handleSyncGitHub = async () => {
     if (!user?.githubUsername) {
       alert('No GitHub username configured. Please update your profile first.');
       return;
     }
 
+    if (cooldownTime > 0) {
+      return; // Button should be disabled
+    }
+
     try {
       setSyncing(true);
+      setShowSuccess(false);
+      
       const response = await fetch('/api/dashboard/sync-github', {
         method: 'POST'
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to sync GitHub data');
+        
+        if (errorData.rateLimited) {
+          setCooldownTime(errorData.remainingTime);
+          // Start countdown
+          const interval = setInterval(() => {
+            setCooldownTime(prev => {
+              if (prev <= 1) {
+                clearInterval(interval);
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+        }
+        
+        throw new Error(errorData.message || errorData.error || 'Failed to sync GitHub data');
       }
 
-      alert('GitHub data synced successfully!');
+      // Success - set cooldown
+      localStorage.setItem('lastGitHubSync', Date.now().toString());
+      setCooldownTime(600); // 10 minutes
+      setShowSuccess(true);
+      
+      // Start countdown
+      const interval = setInterval(() => {
+        setCooldownTime(prev => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            setShowSuccess(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      
     } catch (err) {
       console.error('Error syncing GitHub:', err);
       alert(err instanceof Error ? err.message : 'Failed to sync GitHub data');
@@ -260,12 +326,30 @@ export default function SettingsPage() {
                 <div className="space-y-3">
                   <button
                     onClick={handleSyncGitHub}
-                    disabled={syncing}
+                    disabled={syncing || cooldownTime > 0}
                     className="w-full flex items-center justify-center px-4 py-2 bg-[#0B874F]/10 border border-[#0B874F]/30 rounded-lg text-[#0B874F] hover:bg-[#0B874F]/20 transition-colors disabled:opacity-50"
                   >
                     <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
-                    {syncing ? 'Syncing...' : 'Sync GitHub Data'}
+                    {syncing ? 'Syncing...' : cooldownTime > 0 ? `Wait ${Math.floor(cooldownTime / 60)}m ${cooldownTime % 60}s` : 'Sync GitHub Data'}
                   </button>
+                  
+                  {cooldownTime > 0 && (
+                    <div className="text-xs text-gray-400 text-center">
+                      <div className="w-full bg-gray-700 rounded-full h-1 mb-1">
+                        <div 
+                          className="bg-[#0B874F] h-1 rounded-full transition-all duration-1000"
+                          style={{ width: `${((600 - cooldownTime) / 600) * 100}%` }}
+                        />
+                      </div>
+                      <span>10min cooldown</span>
+                    </div>
+                  )}
+                  
+                  {showSuccess && (
+                    <div className="text-xs text-green-400 text-center animate-pulse">
+                      ✓ Synced successfully
+                    </div>
+                  )}
                   
                   <p className="text-xs text-gray-500">
                     Last sync updates your commits, PRs, and contribution stats

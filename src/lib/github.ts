@@ -152,8 +152,11 @@ export class GitHubService {
             
             console.log(`✅ Fetched ${activities.length} activities for user ${user.githubUsername}`);
             return activities;
-          } catch (error) {
-            console.warn(`Failed to fetch activities for user ${user.githubUsername}:`, error);
+          } catch (error: any) {
+            // Only log non-404 errors to reduce noise
+            if (error.status !== 404) {
+              console.warn(`Failed to fetch activities for user ${user.githubUsername}:`, error);
+            }
             return [];
           }
         })
@@ -256,8 +259,21 @@ export class GitHubService {
       // Test basic GitHub API access first
       try {
         const { data: userData } = await octokit.rest.users.getByUsername({ username });
-      } catch (error) {
-        console.error(`GitHub user not found or API error:`, error);
+      } catch (error: any) {
+        // Handle 404 (user not found) gracefully
+        if (error.status === 404) {
+          console.warn(`GitHub user '${username}' not found, skipping...`);
+          return {
+            totalCommits: 0,
+            totalPRs: 0,
+            totalIssues: 0,
+            totalReviews: 0,
+            languages: {},
+            recentActivity: []
+          };
+        }
+        // For other errors, still throw
+        console.error(`GitHub API error for user '${username}':`, error);
         throw error;
       }
 
@@ -717,4 +733,32 @@ export class GitHubService {
   }
 }
 
-export const githubService = new GitHubService();
+// Lazy-loaded singleton to avoid client-side instantiation
+let _githubService: GitHubService | null = null;
+
+export const githubService = {
+  getUserProfile: async (username: string) => {
+    if (!_githubService) _githubService = new GitHubService();
+    return _githubService.getUserProfile(username);
+  },
+  getUserRepositories: async (username: string) => {
+    if (!_githubService) _githubService = new GitHubService();
+    return _githubService.getUserRepositories(username);
+  },
+  getUserContributions: async (username: string) => {
+    if (!_githubService) _githubService = new GitHubService();
+    return _githubService.getUserContributions(username);
+  },
+  getRecentActivity: async (username: string) => {
+    if (!_githubService) _githubService = new GitHubService();
+    return _githubService.getUserContributions(username);
+  },
+  getBatchUserActivities: async (users: any[]) => {
+    if (!_githubService) _githubService = new GitHubService();
+    return _githubService.getBatchUserActivities(users);
+  },
+  syncUserStats: async (userId: string, username: string) => {
+    if (!_githubService) _githubService = new GitHubService();
+    return _githubService.syncUserStats(userId, username);
+  },
+};

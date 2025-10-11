@@ -34,22 +34,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No GitHub username configured' }, { status: 400 });
     }
 
-    // Check rate limiting (allow sync once every 5 minutes)
-    if (user.githubStats && user.githubStats.lastSynced) {
-      const timeSinceLastSync = Date.now() - user.githubStats.lastSynced.getTime();
-      const fiveMinutes = 5 * 60 * 1000;
-      
-      if (timeSinceLastSync < fiveMinutes) {
-        const remainingTime = Math.ceil((fiveMinutes - timeSinceLastSync) / 1000 / 60);
-        return NextResponse.json({ 
-          error: `Please wait ${remainingTime} minutes before syncing again` 
-        }, { status: 429 });
+    // Server-side rate limiting for GitHub sync (10 minutes)
+    const syncRateLimitKey = `github_sync_rate_limit:${userId}`;
+    const now = Date.now();
+    const SYNC_RATE_LIMIT_DURATION = 10 * 60 * 1000; // 10 minutes
+    
+    try {
+      // Check if user has synced recently
+      const lastSync = await RedisService.getFromRedis(syncRateLimitKey);
+      if (lastSync) {
+        const timeSinceLastSync = now - parseInt(lastSync);
+        if (timeSinceLastSync < SYNC_RATE_LIMIT_DURATION) {
+          const remainingTime = Math.ceil((SYNC_RATE_LIMIT_DURATION - timeSinceLastSync) / 1000);
+          return NextResponse.json({ 
+            error: 'Rate limited', 
+            message: `Please wait ${Math.floor(remainingTime / 60)}m ${remainingTime % 60}s before syncing again`,
+            remainingTime,
+            rateLimited: true
+          }, { status: 429 });
+        }
       }
+    } catch (error) {
+      console.warn('Rate limiting check failed, proceeding with sync:', error);
+      // Continue with sync if rate limiting fails
     }
 
     // Sync GitHub data using load balancer
     console.log('🔄 Syncing GitHub data with load balancer...');
     const result = await githubService.syncUserStats(userId, user.githubUsername);
+    
+    // Set sync rate limit timestamp
+    await RedisService.setInRedis(syncRateLimitKey, now.toString(), 10 * 60); // 10 minutes TTL
 
     // Refresh caches without nuking the global feed
     // 1) Update the user's own cached activities

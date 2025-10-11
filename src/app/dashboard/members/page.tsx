@@ -12,6 +12,8 @@ interface Member {
   bio?: string;
   avatar?: string;
   joinedAt: string;
+  rank: number;
+  points: number;
   githubStats?: {
     commits: number;
     pullRequests: number;
@@ -25,15 +27,23 @@ export default function MembersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalMembers, setTotalMembers] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const ITEMS_PER_PAGE = 20;
 
   useEffect(() => {
     fetchMembers();
-  }, []);
+  }, [currentPage, searchTerm]);
 
   const fetchMembers = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/dashboard/members');
+      const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+      const searchParam = searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : '';
+      
+      const response = await fetch(`/api/dashboard/members?limit=${ITEMS_PER_PAGE}&offset=${offset}${searchParam}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch members');
@@ -41,6 +51,9 @@ export default function MembersPage() {
 
       const data = await response.json();
       setMembers(data.members || []);
+      setTotalMembers(data.total || 0);
+      setTotalPages(data.totalPages || 0);
+      setHasMore(data.hasMore || false);
     } catch (err) {
       console.error('Error fetching members:', err);
       setError('Failed to load members');
@@ -49,11 +62,10 @@ export default function MembersPage() {
     }
   };
 
-  const filteredMembers = members.filter(member =>
-    member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.githubUsername?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
 
   if (loading) {
     return (
@@ -107,7 +119,7 @@ export default function MembersPage() {
               Community Members
             </h1>
             <p className="text-gray-400">
-              Connect with {members.length} developers in our community
+              Connect with {totalMembers} developers in our community
             </p>
           </div>
         </div>
@@ -119,16 +131,16 @@ export default function MembersPage() {
             type="text"
             placeholder="Search members..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-black/50 border border-[#0B874F]/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#0B874F] transition-colors"
           />
         </div>
       </div>
 
       {/* Members Grid */}
-      {filteredMembers.length > 0 ? (
+      {members.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredMembers.map((member) => (
+          {members.map((member) => (
             <div
               key={member.id}
               className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6 hover:border-[#0B874F]/50 transition-all duration-200"
@@ -218,6 +230,73 @@ export default function MembersPage() {
               : 'Be the first to join our community!'
             }
           </p>
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center space-x-2 mt-8">
+          {/* Previous Button */}
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-black/40 border border-[#0B874F]/30 rounded-lg text-[#0B874F] hover:bg-[#0B874F]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+
+          {/* Page Numbers */}
+          <div className="flex items-center space-x-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum;
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`px-3 py-2 rounded-lg transition-colors ${
+                    currentPage === pageNum
+                      ? 'bg-[#0B874F] text-black font-bold'
+                      : 'bg-black/40 border border-[#0B874F]/30 text-[#0B874F] hover:bg-[#0B874F]/20'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Next Button */}
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-black/40 border border-[#0B874F]/30 rounded-lg text-[#0B874F] hover:bg-[#0B874F]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      {/* Pagination Info */}
+      {totalMembers > 0 && (
+        <div className="text-center mt-4 text-gray-400 text-sm">
+          {searchTerm ? (
+            <>
+              Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, totalMembers)} of {totalMembers} members
+              {searchTerm && <span className="block mt-1">Search results for "{searchTerm}"</span>}
+            </>
+          ) : (
+            `Showing ${((currentPage - 1) * ITEMS_PER_PAGE) + 1} to ${Math.min(currentPage * ITEMS_PER_PAGE, totalMembers)} of ${totalMembers} members`
+          )}
         </div>
       )}
     </div>

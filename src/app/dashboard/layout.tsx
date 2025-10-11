@@ -5,18 +5,14 @@ import { useRouter } from "next/navigation";
 import { useEffect, ReactNode, Suspense } from "react";
 import Sidebar from "./components/sidebar";
 import Topbar from "./components/topbar";
-import { PreemptiveCacheService } from "../../lib/preemptive-cache";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  // Start background processing only when user is on dashboard
+  // Preload common routes for faster navigation
   useEffect(() => {
     if (user) {
-      PreemptiveCacheService.start();
-      
-      // Preload common routes for faster navigation
       const preloadRoutes = async () => {
         try {
           await Promise.all([
@@ -31,15 +27,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       };
       
       preloadRoutes();
-    } else {
-      // If no user, ensure background processing is stopped
-      PreemptiveCacheService.stop();
     }
-    
-    // Cleanup when user leaves dashboard
-    return () => {
-      PreemptiveCacheService.stop();
-    };
   }, [user, router]);
 
   useEffect(() => {

@@ -3,7 +3,6 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 import { githubService } from '@/lib/github';
 import { RedisService } from '@/lib/redis';
-import { PreemptiveCacheService } from '../../../../lib/preemptive-cache';
 
 export async function GET(request: NextRequest) {
   try {
@@ -54,7 +53,6 @@ export async function GET(request: NextRequest) {
         
         console.log('🔄 Force refresh requested, clearing all caches and fetching fresh data...');
         await RedisService.clearGlobalCache();
-        PreemptiveCacheService.forceRefresh();
       } catch (error) {
         console.warn('Rate limiting check failed, proceeding with refresh:', error);
         // Continue with refresh if rate limiting fails
@@ -81,7 +79,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Note: Preemptive cache service is now started from dashboard layout
+    // Note: Background refresh is handled inline below
 
     // If no cache, fetch data immediately and cache it
     console.log('No cached activities found, fetching fresh data with load balancer...');

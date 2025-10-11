@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+
     const profile = {
       id: user.id,
       name: user.name,

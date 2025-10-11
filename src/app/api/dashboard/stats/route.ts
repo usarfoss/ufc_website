@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 import { githubService } from '@/lib/github';
+import { RedisService } from '@/lib/redis';
 
 export async function GET(request: NextRequest) {
   try {
@@ -49,7 +50,48 @@ export async function GET(request: NextRequest) {
 
       if (shouldSync) {
         try {
+          console.log(`🔄 Auto-syncing GitHub data for user ${user.githubUsername} on dashboard visit...`);
+          
+          // Sync user stats
           await githubService.syncUserStats(userId, user.githubUsername);
+          
+          // Clear user's individual cache to ensure fresh data
+          await RedisService.clearUserCache(userId);
+          
+          // Update global activities cache with user's fresh activities
+          try {
+            const userActivities = await githubService.getBatchUserActivities([{
+              id: user.id,
+              name: user.name,
+              githubUsername: user.githubUsername,
+              avatar: user.avatar
+            }]);
+            
+            if (userActivities.length > 0) {
+              // Get existing global cache
+              const existingCache = await RedisService.getGlobalActivities();
+              
+              // Remove old activities for this user
+              const filteredCache = (existingCache || []).filter(activity => 
+                activity.user?.githubUsername !== user.githubUsername
+              );
+              
+              // Add new activities
+              const updatedCache = [...filteredCache, ...userActivities];
+              
+              // Sort by timestamp and cache
+              const sortedCache = updatedCache.sort((a, b) => 
+                new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+              );
+              
+              await RedisService.setGlobalActivities(sortedCache);
+              console.log(`📊 Updated global cache with ${userActivities.length} fresh activities from ${user.githubUsername}`);
+            }
+          } catch (cacheError) {
+            console.warn('Failed to update global cache:', cacheError);
+          }
+          
+          // Fetch updated user data
           const updatedUser = await prisma.user.findUnique({
             where: { id: userId },
             include: {
@@ -62,6 +104,8 @@ export async function GET(request: NextRequest) {
           if (updatedUser) {
             Object.assign(user, updatedUser);
           }
+          
+          console.log(`✅ Auto-sync completed for user ${user.githubUsername}`);
         } catch (error) {
           console.error('Failed to sync GitHub stats:', error);
         }
@@ -69,18 +113,23 @@ export async function GET(request: NextRequest) {
     }
 
     const allUsers = await prisma.user.findMany({
-      include: { githubStats: true },
-      orderBy: {
-        githubStats: {
-          contributions: 'desc'
-        }
-      }
+      include: { githubStats: true }
     });
 
-    // Filter users with contributions > 0 to match leaderboard logic
-    const usersWithContributions = allUsers.filter(user => 
-      user.githubStats && user.githubStats.contributions > 0
-    );
+    // Calculate points and filter users with contributions > 0 to match leaderboard logic
+    const usersWithContributions = allUsers
+      .filter(user => user.githubStats && user.githubStats.contributions > 0)
+      .map(user => {
+        const stats = user.githubStats || {
+          commits: 0,
+          pullRequests: 0,
+          issues: 0,
+          contributions: 0
+        };
+        const points = stats.commits * 1 + stats.pullRequests * 5 + stats.issues * 2;
+        return { ...user, points };
+      })
+      .sort((a, b) => b.points - a.points); // Sort by points like leaderboard
 
     const userRank = usersWithContributions.findIndex(u => u.id === userId) + 1;
     const totalUsers = usersWithContributions.length;
