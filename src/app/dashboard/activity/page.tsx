@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Activity, GitCommit, GitPullRequest, Calendar, Users, RefreshCw } from "lucide-react";
+import AdvancedPagination from '@/components/ui/advanced-pagination';
 
 interface ActivityItem {
   id: string;
@@ -383,56 +384,16 @@ export default function ActivityPage() {
         </div>
       )}
 
-      {/* Pagination Controls */}
+      {/* Advanced Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center space-x-2 mt-8">
-          {/* Previous Button */}
-          <button
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-            className="px-4 py-2 bg-black/40 border border-[#0B874F]/30 rounded-lg text-[#0B874F] hover:bg-[#0B874F]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Previous
-          </button>
-
-          {/* Page Numbers */}
-          <div className="flex items-center space-x-1">
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
-
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={`px-3 py-2 rounded-lg transition-colors ${
-                    currentPage === pageNum
-                      ? 'bg-[#0B874F] text-black font-bold'
-                      : 'bg-black/40 border border-[#0B874F]/30 text-[#0B874F] hover:bg-[#0B874F]/20'
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Next Button */}
-          <button
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-            disabled={currentPage === totalPages}
-            className="px-4 py-2 bg-black/40 border border-[#0B874F]/30 rounded-lg text-[#0B874F] hover:bg-[#0B874F]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Next
-          </button>
+        <div className="mt-8">
+          <AdvancedPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            showQuickJump={true}
+            maxVisiblePages={5}
+          />
         </div>
       )}
 
