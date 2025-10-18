@@ -61,6 +61,21 @@ export async function POST(request: NextRequest) {
       { expiresIn: '7d' }
     );
 
+    // Clear leaderboard caches when new user joins
+    try {
+      // Clear gamification leaderboard cache
+      await prisma.leaderboard.deleteMany({
+        where: {
+          type: {
+            in: ['CONTRIBUTIONS', 'COMMITS', 'PULL_REQUESTS', 'ISSUES', 'EXPERIENCE', 'STREAK']
+          }
+        }
+      });
+      console.log('🧹 Cleared leaderboard caches for new user');
+    } catch (cacheError) {
+      console.warn('Failed to clear leaderboard caches:', cacheError);
+    }
+
     const response = NextResponse.json({
       success: true,
       user: {

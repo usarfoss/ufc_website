@@ -25,9 +25,15 @@ export async function GET(request: NextRequest) {
       where: searchConditions
     });
 
-    // Get all members first to calculate rankings
+    // Optimized: Get members with smart ordering to reduce API calls
     const allMembers = await prisma.user.findMany({
-      where: searchConditions,
+      where: {
+        ...searchConditions,
+        // Only get users with GitHub stats for ranking
+        githubStats: {
+          isNot: null
+        }
+      },
       select: {
         id: true,
         name: true,
@@ -44,6 +50,12 @@ export async function GET(request: NextRequest) {
             issues: true,
             contributions: true
           }
+        }
+      },
+      // Pre-order by contributions to get top performers first
+      orderBy: {
+        githubStats: {
+          contributions: 'desc'
         }
       }
     });

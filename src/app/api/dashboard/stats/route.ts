@@ -106,6 +106,32 @@ export async function GET(request: NextRequest) {
           }
           
           console.log(`✅ Auto-sync completed for user ${user.githubUsername}`);
+          
+          // Only clear leaderboard caches if this was a significant sync (not just a refresh)
+          try {
+            // Check if user had significant activity in the last sync
+            const recentActivities = await prisma.activity.findMany({
+              where: {
+                userId,
+                createdAt: {
+                  gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours
+                }
+              }
+            });
+            
+            if (recentActivities.length > 0) {
+              await prisma.leaderboard.deleteMany({
+                where: {
+                  type: {
+                    in: ['CONTRIBUTIONS', 'COMMITS', 'PULL_REQUESTS', 'ISSUES']
+                  }
+                }
+              });
+              console.log('🧹 Cleared leaderboard caches after significant auto-sync');
+            }
+          } catch (cacheError) {
+            console.warn('Failed to clear leaderboard caches:', cacheError);
+          }
         } catch (error) {
           console.error('Failed to sync GitHub stats:', error);
         }

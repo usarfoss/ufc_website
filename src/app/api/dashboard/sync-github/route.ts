@@ -107,6 +107,26 @@ export async function POST(request: NextRequest) {
       console.warn('Failed to merge user activities into global cache after sync:', mergeError);
     }
 
+    // Only clear leaderboard caches if stats changed significantly
+    try {
+      const statsChanged = result.contributions.totalCommits > 0 || 
+                          result.contributions.totalPRs > 0 || 
+                          result.contributions.totalIssues > 0;
+      
+      if (statsChanged) {
+        await prisma.leaderboard.deleteMany({
+          where: {
+            type: {
+              in: ['CONTRIBUTIONS', 'COMMITS', 'PULL_REQUESTS', 'ISSUES']
+            }
+          }
+        });
+        console.log('🧹 Cleared leaderboard caches after significant stats change');
+      }
+    } catch (cacheError) {
+      console.warn('Failed to clear leaderboard caches:', cacheError);
+    }
+
     return NextResponse.json({
       success: true,
       message: 'GitHub data synced successfully',

@@ -18,9 +18,9 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // If cache is recent (less than 1 hour old), return it
+    // If cache is recent (less than 2 hours old), return it
     if (cachedLeaderboard && 
-        (new Date().getTime() - new Date(cachedLeaderboard.updatedAt).getTime()) < 60 * 60 * 1000) {
+        (new Date().getTime() - new Date(cachedLeaderboard.updatedAt).getTime()) < 2 * 60 * 60 * 1000) {
       return NextResponse.json({
         leaderboard: JSON.parse(cachedLeaderboard.data as string),
         type,
