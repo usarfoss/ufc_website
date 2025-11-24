@@ -18,6 +18,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
+    // Get pagination parameters
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const offset = parseInt(searchParams.get('offset') || '0');
+
     // Get user's profile information
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -62,12 +67,17 @@ export async function GET(request: NextRequest) {
         }
       }));
 
+      // Apply pagination
+      const total = formattedActivities.length;
+      const paginatedActivities = formattedActivities.slice(offset, offset + limit);
+      const hasMore = offset + limit < total;
+
       return NextResponse.json({
         success: true,
-        activities: formattedActivities,
-        total: formattedActivities.length,
-        hasMore: false,
-        nextCursor: null
+        activities: paginatedActivities,
+        total: total,
+        hasMore: hasMore,
+        nextCursor: hasMore ? offset + limit : null
       });
 
     } catch (githubError) {
