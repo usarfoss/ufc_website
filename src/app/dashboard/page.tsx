@@ -12,6 +12,7 @@ import {
   Trophy
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import AdvancedPagination from '@/components/ui/advanced-pagination';
 
 interface DashboardStats {
   totalCommits: {
@@ -51,42 +52,83 @@ interface RecentActivity {
   };
 }
 
+interface ProfileData {
+  name?: string;
+  avatar?: string;
+  githubUsername?: string;
+  githubStats?: {
+    languages: Record<string, number>;
+  };
+}
+
 
 const DashboardPage = React.memo(function DashboardPage() {
   const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalActivities, setTotalActivities] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  useEffect(() => {
+    fetchActivities();
+  }, [currentPage]);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const [statsResponse, activitiesResponse] = await Promise.all([
+      const [statsResponse, profileResponse] = await Promise.all([
         fetch('/api/dashboard/stats'),
-        fetch('/api/dashboard/activities?limit=5')
+        fetch('/api/dashboard/profile')
       ]);
 
-      if (!statsResponse.ok || !activitiesResponse.ok) {
+      if (!statsResponse.ok) {
         throw new Error('Failed to fetch dashboard data');
       }
 
       const statsData = await statsResponse.json();
-      const activitiesData = await activitiesResponse.json();
+      
+      if (profileResponse.ok) {
+        const profileData = await profileResponse.json();
+        setProfile(profileData.profile);
+      }
 
       setStats(statsData.stats);
-      setRecentActivity(activitiesData.activities || []);
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
       setError('Failed to load dashboard data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchActivities = async () => {
+    try {
+      const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+      const activitiesResponse = await fetch(`/api/dashboard/activities?limit=${ITEMS_PER_PAGE}&offset=${offset}`);
+
+      if (!activitiesResponse.ok) {
+        throw new Error('Failed to fetch activities');
+      }
+
+      const activitiesData = await activitiesResponse.json();
+      setRecentActivity(activitiesData.activities || []);
+      setTotalActivities(activitiesData.total || 0);
+      setTotalPages(Math.ceil((activitiesData.total || 0) / ITEMS_PER_PAGE));
+    } catch (err) {
+      console.error('Error fetching activities:', err);
     }
   };
 
@@ -99,6 +141,26 @@ const DashboardPage = React.memo(function DashboardPage() {
       case 'Star': return Star;
       default: return Activity;
     }
+  };
+
+  const getTopLanguages = () => {
+    if (!profile?.githubStats?.languages) return [];
+    
+    // Filter out invalid language names and ensure they're strings
+    const validLanguages = Object.entries(profile.githubStats.languages)
+      .filter(([language, percentage]) => {
+        // Check if language is a valid string and percentage is a number
+        return typeof language === 'string' && 
+               language.length > 0 && 
+               language.length < 50 && // Reasonable length limit
+               !language.includes('%') && // Remove entries with % in name
+               typeof percentage === 'number' && 
+               percentage >= 0;
+      })
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5);
+    
+    return validLanguages;
   };
 
   if (loading) {
@@ -165,23 +227,25 @@ const DashboardPage = React.memo(function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-black/60 to-[#0B874F]/10 backdrop-blur-sm border border-[#0B874F]/30 rounded-xl p-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-white mb-2">
-              Welcome back, <span className="text-[#0B874F]">{user?.name?.split(' ')[0] || 'Developer'}</span>! 👋
-            </h1>
-            <p className="text-gray-300 text-lg">
-              Here's what's happening with your projects and contributions.
-            </p>
-          </div>
-          {user?.githubUsername && (
-            <div className="text-right">
-              <p className="text-sm text-gray-400">Connected as</p>
-              <p className="text-[#0B874F] font-medium">@{user.githubUsername}</p>
-            </div>
+      <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6 text-center">
+        <div className="w-24 h-24 mx-auto mb-4 bg-[#0B874F]/20 rounded-full flex items-center justify-center overflow-hidden">
+          {profile?.avatar ? (
+            <img src={profile.avatar} alt={profile.name || 'User'} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-[#0B874F] text-3xl font-bold">
+              {profile?.name?.charAt(0) || user?.name?.charAt(0) || user?.email?.charAt(0) || 'D'}
+            </span>
           )}
         </div>
+        <h1 className="text-4xl font-bold text-white mb-2">
+          Welcome back, <span className="text-[#0B874F]">{user?.name?.split(' ')[0] || 'Developer'}</span>! 👋
+        </h1>
+        <p className="text-gray-300 text-lg mb-2">
+          Here's what's happening with your contributions.
+        </p>
+        {profile?.githubUsername && (
+          <p className="text-gray-400">@{profile.githubUsername}</p>
+        )}
       </div>
 
       {/* Stats Grid */}
@@ -214,7 +278,48 @@ const DashboardPage = React.memo(function DashboardPage() {
         })}
       </div>
 
-        {/* Recent Activity */}
+      {/* Top Languages */}
+      {profile?.githubStats?.languages && (
+        <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
+          <h2 className="text-xl font-bold text-white mb-4 flex items-center">
+            <Activity className="w-5 h-5 mr-2 text-[#0B874F]" />
+            Top Languages
+          </h2>
+          {getTopLanguages().length > 0 ? (
+            <div className="space-y-2">
+              {getTopLanguages().map(([language, percentage]) => {
+                // Additional safety checks
+                const safeLanguage = typeof language === 'string' ? language : 'Unknown';
+                const safePercentage = typeof percentage === 'number' ? Math.round(percentage) : 0;
+                
+                return (
+                  <div key={safeLanguage} className="flex items-center gap-3">
+                    <span className="text-gray-400 text-sm min-w-0 flex-shrink-0" title={safeLanguage}>
+                      {safeLanguage}
+                    </span>
+                    <div className="flex items-center gap-2 flex-1">
+                      <div className="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-[#0B874F] rounded-full transition-all duration-300"
+                          style={{ width: `${Math.min(safePercentage, 100)}%` }}
+                        />
+                      </div>
+                      <span className="text-sm text-gray-400 w-8 text-right">{safePercentage}%</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-4 text-gray-400">
+              <p className="text-sm">No language data available</p>
+              <p className="text-xs mt-1">Sync your GitHub to see language statistics</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Recent Activity */}
       <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
           <div className="flex items-center mb-6">
             <h2 className="text-xl font-bold text-white flex items-center">
@@ -281,6 +386,26 @@ const DashboardPage = React.memo(function DashboardPage() {
             </div>
           )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-6">
+            <AdvancedPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              showQuickJump={true}
+              maxVisiblePages={5}
+            />
+          </div>
+        )}
+
+        {/* Pagination Info */}
+        {totalActivities > 0 && (
+          <div className="text-center mt-4 text-gray-400 text-sm">
+            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, totalActivities)} of {totalActivities} activities
+          </div>
+        )}
       </div>
     </div>
   );

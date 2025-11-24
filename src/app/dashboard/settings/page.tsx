@@ -33,7 +33,7 @@ export default function SettingsPage() {
         }, 1000);
         
         return () => clearInterval(interval);
-      }
+    }
     }
   }, []);
 
@@ -114,31 +114,31 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
-        <h2 className="text-xl font-bold text-white mb-4 flex items-center">
-          <Github className="w-5 h-5 mr-2" />
-          GitHub Integration
-        </h2>
-        
-        <div className="space-y-4">
-          <div>
-            <p className="text-gray-400 mb-4">
-              {user?.githubUsername 
-                ? `Connected as @${user.githubUsername}`
-                : 'No GitHub account connected'
-              }
-            </p>
-            
-            {user?.githubUsername ? (
-              <div className="space-y-3">
-                <button
-                  onClick={handleSyncGitHub}
+        <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
+          <h2 className="text-xl font-bold text-white mb-4 flex items-center">
+            <Github className="w-5 h-5 mr-2" />
+            GitHub Integration
+          </h2>
+          
+          <div className="space-y-4">
+            <div>
+              <p className="text-gray-400 mb-4">
+                {user?.githubUsername 
+                  ? `Connected as @${user.githubUsername}`
+                  : 'No GitHub account connected'
+                }
+              </p>
+              
+              {user?.githubUsername ? (
+                <div className="space-y-3">
+                  <button
+                    onClick={handleSyncGitHub}
                   disabled={syncing || cooldownTime > 0}
-                  className="w-full flex items-center justify-center px-4 py-2 bg-[#0B874F]/10 border border-[#0B874F]/30 rounded-lg text-[#0B874F] hover:bg-[#0B874F]/20 transition-colors disabled:opacity-50"
-                >
-                  <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+                    className="w-full flex items-center justify-center px-4 py-2 bg-[#0B874F]/10 border border-[#0B874F]/30 rounded-lg text-[#0B874F] hover:bg-[#0B874F]/20 transition-colors disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
                   {syncing ? 'Syncing...' : cooldownTime > 0 ? `Wait ${Math.floor(cooldownTime / 60)}m ${cooldownTime % 60}s` : 'Sync GitHub Data'}
-                </button>
+                  </button>
                 
                 {cooldownTime > 0 && (
                   <div className="text-xs text-gray-400 text-center">
@@ -157,24 +157,24 @@ export default function SettingsPage() {
                     ✓ Synced successfully
                   </div>
                 )}
-                
-                <p className="text-xs text-gray-500">
-                  Last sync updates your commits, PRs, and contribution stats
-                </p>
-              </div>
-            ) : (
-              <div>
-                <button
-                  onClick={() => window.location.href = '/dashboard/profile'}
-                  className="w-full px-4 py-2 bg-[#0B874F] text-black rounded-lg hover:bg-[#0B874F]/80 transition-colors font-medium"
-                >
-                  Connect GitHub Account
-                </button>
-                <p className="text-xs text-gray-500 mt-2">
-                  Add your GitHub username in your profile to enable sync
-                </p>
-              </div>
-            )}
+                  
+                  <p className="text-xs text-gray-500">
+                    Last sync updates your commits, PRs, and contribution stats
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <button
+                    onClick={() => window.location.href = '/dashboard/profile'}
+                    className="w-full px-4 py-2 bg-[#0B874F] text-black rounded-lg hover:bg-[#0B874F]/80 transition-colors font-medium"
+                  >
+                    Connect GitHub Account
+                  </button>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Add your GitHub username in your profile to enable sync
+                  </p>
+                </div>
+              )}
           </div>
         </div>
       </div>

@@ -20,7 +20,6 @@ export class GitHubTokenManager {
     ].filter(Boolean) as string[];
 
     console.log(`🔑 Loaded ${this.tokens.length} GitHub tokens`);
-    
     if (this.tokens.length === 0) {
       console.error('❌ No GitHub tokens found in environment variables');
       console.error('Available env vars:', Object.keys(process.env).filter(key => key.includes('GITHUB')));
