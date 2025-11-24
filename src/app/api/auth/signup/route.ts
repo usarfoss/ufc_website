@@ -102,10 +102,10 @@ export async function POST(request: NextRequest) {
     console.error('Signup error:', error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
-        return NextResponse.json(
+    return NextResponse.json(
           { error: 'User already exists' },
           { status: 409 }
-        );
+    );
       }
     }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
