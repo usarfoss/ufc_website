@@ -75,6 +75,8 @@ export default function ProjectsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [selectedProject, setSelectedProject] = useState<number | null>(null)
   const [hologramActive, setHologramActive] = useState(false)
+  const [apiProjects, setApiProjects] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const { scrollYProgress } = useScroll({
@@ -84,12 +86,64 @@ export default function ProjectsPage() {
 
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"])
 
-  const filteredProjects = projects.filter((project) => {
+  // Fetch approved projects from API
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch('/api/projects')
+        if (response.ok) {
+          const data = await response.json()
+          // Transform API projects to match the expected format
+          const transformed = data.projects.map((p: any, index: number) => ({
+            id: index + 100, // Offset to avoid conflicts with hardcoded projects
+            title: p.name,
+            description: p.description,
+            longDescription: p.description,
+            category: "Web Development",
+            status: p.status,
+            difficulty: "Intermediate",
+            tech: [p.language],
+            github: p.repoUrl || "",
+            demo: "",
+            image: "/project-images/default.jpg",
+            contributors: p.collaborators?.length || 1,
+            stars: 0,
+            forks: 0,
+            lastUpdate: new Date(p.createdAt).toISOString().split('T')[0],
+            featured: false,
+            collaborators: p.collaborators || [],
+            creator: p.creator,
+            hologramData: {
+              components: ["Frontend", "Backend", "Database"],
+              connections: []
+            },
+            features: [],
+            stats: [
+              { label: "Contributors", value: String(p.collaborators?.length || 1), color: "text-blue-400" },
+              { label: "Language", value: p.language, color: "text-green-400" },
+              { label: "Status", value: p.status, color: "text-purple-400" }
+            ]
+          }))
+          setApiProjects(transformed)
+        }
+      } catch (error) {
+        console.error('Error fetching projects:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProjects()
+  }, [])
+
+  // Combine hardcoded featured projects with API projects
+  const allProjects = [...projects, ...apiProjects]
+
+  const filteredProjects = allProjects.filter((project) => {
     return selectedCategory === "All" || project.category === selectedCategory
   })
 
-  const ongoingProjects = projects.filter((project) => project.status === "ongoing")
-  const completedProjects = projects.filter((project) => project.status === "completed")
+  const ongoingProjects = allProjects.filter((project) => project.status === "ongoing")
+  const completedProjects = allProjects.filter((project) => project.status === "completed")
 
   return (
     <PageTransition>
@@ -549,6 +603,31 @@ function HologramProjectCard({ project, index, isSelected, onSelect, isCompact =
                 {project.title}
               </h3>
               <p className="text-gray-300 text-sm mb-4">{project.description}</p>
+              
+              {/* Collaborators */}
+              {project.collaborators && project.collaborators.length > 0 && (
+                <div className="mb-3">
+                  <div className="text-xs text-gray-400 mb-1">Team:</div>
+                  <div className="flex flex-wrap gap-1">
+                    {project.creator && (
+                      <span className="px-2 py-0.5 bg-green-500/20 text-green-400 rounded text-xs border border-green-500/30">
+                        {project.creator.name} {project.creator.githubUsername && `(@${project.creator.githubUsername})`}
+                      </span>
+                    )}
+                    {project.collaborators.slice(0, 3).map((collab: any, idx: number) => (
+                      <span key={idx} className="px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs border border-blue-500/30">
+                        {collab.name} {collab.githubUsername && `(@${collab.githubUsername})`}
+                      </span>
+                    ))}
+                    {project.collaborators.length > 3 && (
+                      <span className="px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded text-xs">
+                        +{project.collaborators.length - 3} more
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+              
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4 text-xs text-gray-400">
                   <div className="flex items-center gap-1">

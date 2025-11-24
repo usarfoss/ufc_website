@@ -28,26 +28,26 @@ interface LeaderboardUser {
 }
 
 export default function LeaderboardPage() {
-  const [users, setUsers] = useState<LeaderboardUser[]>([]);
+  const [allUsers, setAllUsers] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'totalPoints' | 'commits' | 'pullRequests' | 'leetcode' | 'github'>('totalPoints');
 
   useEffect(() => {
     fetchLeaderboard();
-  }, [sortBy]);
+  }, []); // Only fetch once on mount
 
   const fetchLeaderboard = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/dashboard/leaderboard?sortBy=${sortBy}`);
+      const response = await fetch(`/api/dashboard/leaderboard?sortBy=totalPoints`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch leaderboard');
       }
 
       const data = await response.json();
-      setUsers(data.users || []);
+      setAllUsers(data.users || []);
     } catch (err) {
       console.error('Error fetching leaderboard:', err);
       setError('Failed to load leaderboard');
@@ -55,6 +55,31 @@ export default function LeaderboardPage() {
       setLoading(false);
     }
   };
+
+  // Sort users based on selected filter (client-side)
+  const users = React.useMemo(() => {
+    const sorted = [...allUsers].sort((a, b) => {
+      switch (sortBy) {
+        case 'github':
+          return b.githubPoints - a.githubPoints;
+        case 'leetcode':
+          return b.leetcodePoints - a.leetcodePoints;
+        case 'commits':
+          return b.stats.commits - a.stats.commits;
+        case 'pullRequests':
+          return b.stats.pullRequests - a.stats.pullRequests;
+        case 'totalPoints':
+        default:
+          return b.points - a.points;
+      }
+    });
+
+    // Re-assign ranks based on current sort
+    return sorted.map((user, index) => ({
+      ...user,
+      rank: index + 1
+    }));
+  }, [allUsers, sortBy]);
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -264,23 +289,42 @@ export default function LeaderboardPage() {
                 
                 {/* Stats */}
                 <div className="flex items-center space-x-4 flex-wrap gap-y-2">
-                  {/* GitHub Stats */}
-                  <div className="text-center">
-                    <div className="text-xl font-bold text-[#0B874F]">{user.stats.commits}</div>
-                    <div className="text-xs text-gray-400">Commits</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-xl font-bold text-[#F5A623]">{user.stats.pullRequests}</div>
-                    <div className="text-xs text-gray-400">PRs</div>
-                  </div>
+                  {/* Show GitHub Stats when Combined or GitHub is selected */}
+                  {(sortBy === 'totalPoints' || sortBy === 'github') && (
+                    <>
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-[#0B874F]">{user.stats.commits}</div>
+                        <div className="text-xs text-gray-400">Commits</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-[#F5A623]">{user.stats.pullRequests}</div>
+                        <div className="text-xs text-gray-400">PRs</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-[#E74C3C]">{user.stats.issues}</div>
+                        <div className="text-xs text-gray-400">Issues</div>
+                      </div>
+                      
+                      {/* Show GitHub Points when GitHub is selected */}
+                      {sortBy === 'github' && (
+                        <>
+                          <div className="h-8 w-px bg-gray-600"></div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-white">{user.githubPoints}</div>
+                            <div className="text-xs text-gray-400">GitHub Points</div>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
                   
-                  {/* Divider */}
-                  {user.leetcodeStats && (
+                  {/* Divider between GitHub and LeetCode when both shown */}
+                  {sortBy === 'totalPoints' && user.leetcodeStats && (
                     <div className="h-8 w-px bg-gray-600"></div>
                   )}
                   
-                  {/* LeetCode Stats */}
-                  {user.leetcodeStats && (
+                  {/* Show LeetCode Stats when Combined or LeetCode is selected */}
+                  {(sortBy === 'totalPoints' || sortBy === 'leetcode') && user.leetcodeStats && (
                     <>
                       <div className="text-center">
                         <div className="text-xl font-bold text-green-500">{user.leetcodeStats.easySolved}</div>
@@ -294,17 +338,30 @@ export default function LeaderboardPage() {
                         <div className="text-xl font-bold text-red-500">{user.leetcodeStats.hardSolved}</div>
                         <div className="text-xs text-gray-400">Hard</div>
                       </div>
+                      
+                      {/* Show LeetCode Points when LeetCode is selected */}
+                      {sortBy === 'leetcode' && (
+                        <>
+                          <div className="h-8 w-px bg-gray-600"></div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-white">{user.leetcodePoints}</div>
+                            <div className="text-xs text-gray-400">LeetCode Points</div>
+                          </div>
+                        </>
+                      )}
                     </>
                   )}
                   
-                  {/* Divider */}
-                  <div className="h-8 w-px bg-gray-600"></div>
-                  
-                  {/* Total Points */}
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-white">{user.points}</div>
-                    <div className="text-xs text-gray-400">Total</div>
-                  </div>
+                  {/* Show Total Points only when Combined is selected */}
+                  {sortBy === 'totalPoints' && (
+                    <>
+                      <div className="h-8 w-px bg-gray-600"></div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-white">{user.points}</div>
+                        <div className="text-xs text-gray-400">Total</div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
