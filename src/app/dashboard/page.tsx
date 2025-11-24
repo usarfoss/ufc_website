@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import AdvancedPagination from '@/components/ui/advanced-pagination';
+import GitCommandsLoader from '@/components/ui/git-commands-loader';
 
 interface DashboardStats {
   totalCommits: {
@@ -56,9 +57,6 @@ interface ProfileData {
   name?: string;
   avatar?: string;
   githubUsername?: string;
-  githubStats?: {
-    languages: Record<string, number>;
-  };
 }
 
 
@@ -68,6 +66,7 @@ const DashboardPage = React.memo(function DashboardPage() {
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activitiesLoading, setActivitiesLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   // Pagination state
@@ -100,6 +99,7 @@ const DashboardPage = React.memo(function DashboardPage() {
 
       const statsData = await statsResponse.json();
       
+      // Fetch profile data (name, avatar, etc.)
       if (profileResponse.ok) {
         const profileData = await profileResponse.json();
         setProfile(profileData.profile);
@@ -116,6 +116,7 @@ const DashboardPage = React.memo(function DashboardPage() {
 
   const fetchActivities = async () => {
     try {
+      setActivitiesLoading(true);
       const offset = (currentPage - 1) * ITEMS_PER_PAGE;
       const activitiesResponse = await fetch(`/api/dashboard/activities?limit=${ITEMS_PER_PAGE}&offset=${offset}`);
 
@@ -129,6 +130,8 @@ const DashboardPage = React.memo(function DashboardPage() {
       setTotalPages(Math.ceil((activitiesData.total || 0) / ITEMS_PER_PAGE));
     } catch (err) {
       console.error('Error fetching activities:', err);
+    } finally {
+      setActivitiesLoading(false);
     }
   };
 
@@ -143,47 +146,9 @@ const DashboardPage = React.memo(function DashboardPage() {
     }
   };
 
-  const getTopLanguages = () => {
-    if (!profile?.githubStats?.languages) return [];
-    
-    // Filter out invalid language names and ensure they're strings
-    const validLanguages = Object.entries(profile.githubStats.languages)
-      .filter(([language, percentage]) => {
-        // Check if language is a valid string and percentage is a number
-        return typeof language === 'string' && 
-               language.length > 0 && 
-               language.length < 50 && // Reasonable length limit
-               !language.includes('%') && // Remove entries with % in name
-               typeof percentage === 'number' && 
-               percentage >= 0;
-      })
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 5);
-    
-    return validLanguages;
-  };
 
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-700 rounded w-1/3 mb-2"></div>
-            <div className="h-4 bg-gray-700 rounded w-1/2"></div>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
-              <div className="animate-pulse">
-                <div className="h-8 bg-gray-700 rounded w-1/2 mb-4"></div>
-                <div className="h-6 bg-gray-700 rounded w-1/3"></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+    return <GitCommandsLoader />;
   }
 
   if (error) {
@@ -278,47 +243,6 @@ const DashboardPage = React.memo(function DashboardPage() {
         })}
       </div>
 
-      {/* Top Languages */}
-      {profile?.githubStats?.languages && (
-        <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
-          <h2 className="text-xl font-bold text-white mb-4 flex items-center">
-            <Activity className="w-5 h-5 mr-2 text-[#0B874F]" />
-            Top Languages
-          </h2>
-          {getTopLanguages().length > 0 ? (
-            <div className="space-y-2">
-              {getTopLanguages().map(([language, percentage]) => {
-                // Additional safety checks
-                const safeLanguage = typeof language === 'string' ? language : 'Unknown';
-                const safePercentage = typeof percentage === 'number' ? Math.round(percentage) : 0;
-                
-                return (
-                  <div key={safeLanguage} className="flex items-center gap-3">
-                    <span className="text-gray-400 text-sm min-w-0 flex-shrink-0" title={safeLanguage}>
-                      {safeLanguage}
-                    </span>
-                    <div className="flex items-center gap-2 flex-1">
-                      <div className="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-[#0B874F] rounded-full transition-all duration-300"
-                          style={{ width: `${Math.min(safePercentage, 100)}%` }}
-                        />
-                      </div>
-                      <span className="text-sm text-gray-400 w-8 text-right">{safePercentage}%</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-4 text-gray-400">
-              <p className="text-sm">No language data available</p>
-              <p className="text-xs mt-1">Sync your GitHub to see language statistics</p>
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Recent Activity */}
       <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
           <div className="flex items-center mb-6">
@@ -328,8 +252,13 @@ const DashboardPage = React.memo(function DashboardPage() {
             </h2>
           </div>
           
-          <div className="space-y-4">
-            {recentActivity.length > 0 ? (
+          {activitiesLoading ? (
+            <div className="py-12">
+              <GitCommandsLoader />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {recentActivity.length > 0 ? (
               recentActivity.map((activity, index) => (
                 <div
                   key={index}
@@ -385,10 +314,11 @@ const DashboardPage = React.memo(function DashboardPage() {
                 <p className="text-sm">Start contributing to see your activity here!</p>
             </div>
           )}
-        </div>
+            </div>
+          )}
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {!activitiesLoading && totalPages > 1 && (
           <div className="mt-6">
             <AdvancedPagination
               currentPage={currentPage}
@@ -401,7 +331,7 @@ const DashboardPage = React.memo(function DashboardPage() {
         )}
 
         {/* Pagination Info */}
-        {totalActivities > 0 && (
+        {!activitiesLoading && totalActivities > 0 && (
           <div className="text-center mt-4 text-gray-400 text-sm">
             Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, totalActivities)} of {totalActivities} activities
           </div>

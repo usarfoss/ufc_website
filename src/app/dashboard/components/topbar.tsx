@@ -47,9 +47,9 @@ export default function Topbar() {
                 />
               </div>
             ) : (
-              <div className="w-8 h-8 bg-[#0B874F] rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-black" />
-              </div>
+            <div className="w-8 h-8 bg-[#0B874F] rounded-full flex items-center justify-center">
+              <User className="w-4 h-4 text-black" />
+            </div>
             )}
             <div className="text-left">
               <div className="text-sm font-medium text-white">{user?.name || user?.email}</div>

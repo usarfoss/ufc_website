@@ -364,7 +364,7 @@ export class GitHubService {
     }
   }
 
-  private async getTopLanguagesFromReadmeStats(username: string): Promise<Record<string, number>> {
+  async getTopLanguagesFromReadmeStats(username: string): Promise<Record<string, number>> {
     try {
       const url = `https://github-readme-stats.vercel.app/api/top-langs/?username=${encodeURIComponent(username)}&theme=dark&hide_border=false&include_all_commits=false&count_private=false&layout=compact`;
       const res = await fetch(url, { next: { revalidate: 300 } });
@@ -760,5 +760,9 @@ export const githubService = {
   syncUserStats: async (userId: string, username: string) => {
     if (!_githubService) _githubService = new GitHubService();
     return _githubService.syncUserStats(userId, username);
+  },
+  getTopLanguagesFromReadmeStats: async (username: string) => {
+    if (!_githubService) _githubService = new GitHubService();
+    return _githubService.getTopLanguagesFromReadmeStats(username);
   },
 };
