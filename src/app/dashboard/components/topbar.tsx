@@ -3,9 +3,12 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { LogOut, User, Settings } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Topbar() {
   const { user, logout } = useAuth();
+  const pathname = usePathname();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -29,7 +32,43 @@ export default function Topbar() {
   }, []);
 
   return (
-    <header className="h-16 bg-black/60 backdrop-blur-sm border-b border-[#0B874F]/30 flex items-center justify-end px-6 relative z-50">
+    <header className="h-16 bg-black/60 backdrop-blur-sm border-b border-[#0B874F]/30 flex items-center justify-between px-6 relative z-50">
+      {/* Left Section - Navigation Links */}
+      <nav className="flex items-center space-x-4">
+        <Link 
+          href="/" 
+          className={`text-sm font-medium transition-colors px-3 py-1 rounded ${
+            pathname === '/' ? 'text-[#0B874F]' : 'text-gray-300 hover:text-[#0B874F]'
+          }`}
+        >
+          Home
+        </Link>
+        <Link 
+          href="/about" 
+          className={`text-sm font-medium transition-colors px-3 py-1 rounded ${
+            pathname === '/about' ? 'text-[#0B874F]' : 'text-gray-300 hover:text-[#0B874F]'
+          }`}
+        >
+          About
+        </Link>
+        <Link 
+          href="/projects" 
+          className={`text-sm font-medium transition-colors px-3 py-1 rounded ${
+            pathname?.startsWith('/projects') ? 'text-[#0B874F]' : 'text-gray-300 hover:text-[#0B874F]'
+          }`}
+        >
+          Projects
+        </Link>
+        <Link 
+          href="/events" 
+          className={`text-sm font-medium transition-colors px-3 py-1 rounded ${
+            pathname?.startsWith('/events') ? 'text-[#0B874F]' : 'text-gray-300 hover:text-[#0B874F]'
+          }`}
+        >
+          Events
+        </Link>
+      </nav>
+
       {/* Right Section */}
       <div className="flex items-center space-x-4">
         {/* User Menu */}
@@ -47,9 +86,9 @@ export default function Topbar() {
                 />
               </div>
             ) : (
-              <div className="w-8 h-8 bg-[#0B874F] rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-black" />
-              </div>
+            <div className="w-8 h-8 bg-[#0B874F] rounded-full flex items-center justify-center">
+              <User className="w-4 h-4 text-black" />
+            </div>
             )}
             <div className="text-left">
               <div className="text-sm font-medium text-white">{user?.name || user?.email}</div>

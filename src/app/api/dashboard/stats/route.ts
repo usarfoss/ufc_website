@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
 
     if (user.githubUsername) {
       const shouldSync = !user.githubStats || 
-        (new Date().getTime() - user.githubStats.lastSynced.getTime()) > 30 * 60 * 1000; // 30 minutes
+        (new Date().getTime() - user.githubStats.lastSynced.getTime()) > 10 * 60 * 1000; // 10 minutes
 
       if (shouldSync) {
         try {
@@ -193,30 +193,10 @@ export async function GET(request: NextRequest) {
       }
     };
 
-    const recentActivity = [];
-
-    // Only show GitHub activities, no internal activities
-    if (user.githubUsername) {
-      try {
-        const contributions = await githubService.getUserContributions(user.githubUsername);
-        for (const activity of contributions.recentActivity.slice(0, 5)) {
-          recentActivity.push({
-            type: activity.type.toLowerCase().replace('event', ''),
-            message: activity.message,
-            repo: activity.repo,
-            time: timeAgo(new Date(activity.date))
-          });
-        }
-      } catch (error) {
-        console.error('Failed to fetch GitHub activity:', error);
-      }
-    }
-
-    recentActivity.sort((a, b) => {
-      const timeA = parseTimeAgo(a.time);
-      const timeB = parseTimeAgo(b.time);
-      return timeA - timeB;
-    });
+    // Don't call GitHub API here - recent activities are fetched separately via /api/dashboard/activities
+    // This endpoint only returns stats, not activities, to avoid unnecessary API calls
+    // Activities are cached in Redis and fetched on-demand by the activities endpoint
+    const recentActivity: any[] = [];
 
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
