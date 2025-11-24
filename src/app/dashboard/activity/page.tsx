@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Activity, GitCommit, GitPullRequest, Calendar, Users, RefreshCw } from "lucide-react";
 import AdvancedPagination from '@/components/ui/advanced-pagination';
+import GitCommandsLoader from '@/components/ui/git-commands-loader';
 
 interface ActivityItem {
   id: string;
@@ -120,21 +121,27 @@ export default function ActivityPage() {
   };
 
   const fetchActivities = async () => {
+    let controller: AbortController | null = null;
+    let timeoutId: NodeJS.Timeout | null = null;
+    
     try {
       setLoading(true);
-             setError(null);
-             
-             const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-             
-             // Fresh data fetch with timeout
-             const controller = new AbortController();
-             const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 second timeout
-             
-             const response = await fetch(`/api/dashboard/global-activities?limit=${ITEMS_PER_PAGE}&offset=${offset}`, {
-               signal: controller.signal
-             });
-             
-             clearTimeout(timeoutId);
+      setError(null);
+      
+      const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+      
+      // Fresh data fetch with timeout
+      controller = new AbortController();
+      timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
+      const response = await fetch(`/api/dashboard/global-activities?limit=${ITEMS_PER_PAGE}&offset=${offset}`, {
+        signal: controller.signal
+      });
+      
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
       
       if (!response.ok) {
         throw new Error('Failed to fetch activities');
@@ -142,17 +149,23 @@ export default function ActivityPage() {
 
       const data = await response.json();
       setActivities(data.activities || []);
-             setTotalActivities(data.total || 0);
-             setTotalPages(Math.ceil((data.total || 0) / ITEMS_PER_PAGE));
-             setHasMore(data.hasMore || false);
+      setTotalActivities(data.total || 0);
+      setTotalPages(Math.ceil((data.total || 0) / ITEMS_PER_PAGE));
+      setHasMore(data.hasMore || false);
     } catch (err) {
+      // Handle abort error silently (timeout)
+      if (err instanceof Error && err.name === 'AbortError') {
+        setError('Request timed out. Please try again.');
+        return;
+      }
+      
+      // Only log non-abort errors
       console.error('Error fetching activities:', err);
-             if (err instanceof Error && err.name === 'AbortError') {
-               setError('Request timed out. Please try again.');
-             } else {
       setError('Failed to load activities');
-             }
     } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       setLoading(false);
     }
   };
@@ -193,35 +206,7 @@ export default function ActivityPage() {
   };
 
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-700 rounded w-1/3 mb-2"></div>
-            <div className="h-4 bg-gray-700 rounded w-1/2"></div>
-          </div>
-        </div>
-        <div className="space-y-4">
-                 {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-4">
-              <div className="animate-pulse flex items-center space-x-4">
-                <div className="w-8 h-8 bg-gray-700 rounded-full"></div>
-                <div className="flex-1">
-                  <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 bg-gray-700 rounded w-1/2"></div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-               <div className="text-center py-4">
-                 <div className="inline-flex items-center space-x-2 text-[#0B874F]">
-                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#0B874F]"></div>
-                   <span className="text-sm">Loading activities from last 36 hours...</span>
-      </div>
-        </div>
-      </div>
-    );
+    return <GitCommandsLoader />;
   }
 
         // Do not block the page with a full error state; show lightweight warning below the refresh button instead

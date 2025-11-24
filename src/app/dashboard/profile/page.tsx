@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { User, Github, MapPin, Calendar, Mail, Edit, Save, X } from "lucide-react";
+import { User, Github, MapPin, Calendar, Mail, Edit, Save, X, Activity } from "lucide-react";
+import GitCommandsLoader from '@/components/ui/git-commands-loader';
 
 interface UserProfile {
   id: string;
@@ -37,6 +38,7 @@ export default function ProfilePage() {
     bio: ''
   });
   const [saving, setSaving] = useState(false);
+  const [languages, setLanguages] = useState<Record<string, number>>({});
 
   useEffect(() => {
     fetchProfile();
@@ -45,21 +47,32 @@ export default function ProfilePage() {
   const fetchProfile = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/dashboard/profile');
+      const [profileResponse, languagesResponse] = await Promise.all([
+        fetch('/api/dashboard/profile'),
+        fetch('/api/dashboard/top-languages')
+      ]);
       
-      if (!response.ok) {
+      if (!profileResponse.ok) {
         throw new Error('Failed to fetch profile');
       }
 
-      const data = await response.json();
-      setProfile(data.profile);
+      const profileData = await profileResponse.json();
+      setProfile(profileData.profile);
+      
+      // Fetch languages using getTopLanguagesFromReadmeStats method
+      if (languagesResponse.ok) {
+        const languagesData = await languagesResponse.json();
+        if (languagesData.languages) {
+          setLanguages(languagesData.languages);
+        }
+      }
       
       // Initialize edit form
       setEditForm({
-        name: data.profile.name || '',
-        githubUsername: data.profile.githubUsername || '',
-        location: data.profile.location || '',
-        bio: data.profile.bio || ''
+        name: profileData.profile.name || '',
+        githubUsername: profileData.profile.githubUsername || '',
+        location: profileData.profile.location || '',
+        bio: profileData.profile.bio || ''
       });
     } catch (err) {
       console.error('Error fetching profile:', err);
@@ -101,17 +114,28 @@ export default function ProfilePage() {
     setEditing(false);
   };
 
+  const getTopLanguages = () => {
+    if (!languages || Object.keys(languages).length === 0) return [];
+    
+    // Filter out invalid language names and ensure they're strings
+    const validLanguages = Object.entries(languages)
+      .filter(([language, percentage]) => {
+        // Check if language is a valid string and percentage is a number
+        return typeof language === 'string' && 
+               language.length > 0 && 
+               language.length < 50 && // Reasonable length limit
+               !language.includes('%') && // Remove entries with % in name
+               typeof percentage === 'number' && 
+               percentage >= 0;
+      })
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5);
+    
+    return validLanguages;
+  };
+
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-700 rounded w-1/3 mb-2"></div>
-            <div className="h-4 bg-gray-700 rounded w-1/2"></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <GitCommandsLoader />;
   }
 
   if (!profile) {
@@ -273,6 +297,45 @@ export default function ProfilePage() {
                   <div className="text-2xl font-bold text-[#9B59B6]">{profile.githubStats.repositories}</div>
                   <div className="text-sm text-gray-400">Repositories</div>
                 </div>
+              </div>
+
+              {/* Top Languages */}
+              <div>
+                <h3 className="text-lg font-bold text-white mb-3 flex items-center">
+                  <Activity className="w-5 h-5 mr-2 text-[#0B874F]" />
+                  Top Languages
+                </h3>
+                {getTopLanguages().length > 0 ? (
+                  <div className="space-y-2">
+                    {getTopLanguages().map(([language, percentage]) => {
+                      // Additional safety checks
+                      const safeLanguage = typeof language === 'string' ? language : 'Unknown';
+                      const safePercentage = typeof percentage === 'number' ? Math.round(percentage) : 0;
+                      
+                      return (
+                        <div key={safeLanguage} className="flex items-center gap-3">
+                          <span className="text-gray-400 text-sm min-w-0 flex-shrink-0" title={safeLanguage}>
+                            {safeLanguage}
+                          </span>
+                          <div className="flex items-center gap-2 flex-1">
+                            <div className="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-[#0B874F] rounded-full transition-all duration-300"
+                                style={{ width: `${Math.min(safePercentage, 100)}%` }}
+                              />
+                            </div>
+                            <span className="text-sm text-gray-400 w-8 text-right">{safePercentage}%</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-4 text-gray-400">
+                    <p className="text-sm">No language data available</p>
+                    <p className="text-xs mt-1">Sync your GitHub to see language statistics</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
