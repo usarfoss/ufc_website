@@ -119,9 +119,9 @@ export default function ActivityPage() {
     }
   };
 
-         const fetchActivities = async () => {
-           try {
-             setLoading(true);
+  const fetchActivities = async () => {
+    try {
+      setLoading(true);
              setError(null);
              
              const offset = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -135,27 +135,27 @@ export default function ActivityPage() {
              });
              
              clearTimeout(timeoutId);
-             
-             if (!response.ok) {
-               throw new Error('Failed to fetch activities');
-             }
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch activities');
+      }
 
-             const data = await response.json();
-             setActivities(data.activities || []);
+      const data = await response.json();
+      setActivities(data.activities || []);
              setTotalActivities(data.total || 0);
              setTotalPages(Math.ceil((data.total || 0) / ITEMS_PER_PAGE));
              setHasMore(data.hasMore || false);
-           } catch (err) {
-             console.error('Error fetching activities:', err);
+    } catch (err) {
+      console.error('Error fetching activities:', err);
              if (err instanceof Error && err.name === 'AbortError') {
                setError('Request timed out. Please try again.');
              } else {
-               setError('Failed to load activities');
+      setError('Failed to load activities');
              }
-           } finally {
-             setLoading(false);
-           }
-         };
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   const getActivityIcon = (type: string) => {
@@ -192,37 +192,37 @@ export default function ActivityPage() {
     }
   };
 
-         if (loading) {
-           return (
-             <div className="space-y-6">
-               <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
-                 <div className="animate-pulse">
-                   <div className="h-8 bg-gray-700 rounded w-1/3 mb-2"></div>
-                   <div className="h-4 bg-gray-700 rounded w-1/2"></div>
-                 </div>
-               </div>
-               <div className="space-y-4">
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-700 rounded w-1/3 mb-2"></div>
+            <div className="h-4 bg-gray-700 rounded w-1/2"></div>
+          </div>
+        </div>
+        <div className="space-y-4">
                  {[...Array(6)].map((_, i) => (
-                   <div key={i} className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-4">
-                     <div className="animate-pulse flex items-center space-x-4">
-                       <div className="w-8 h-8 bg-gray-700 rounded-full"></div>
-                       <div className="flex-1">
-                         <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
-                         <div className="h-3 bg-gray-700 rounded w-1/2"></div>
-                       </div>
-                     </div>
-                   </div>
-                 ))}
-               </div>
+            <div key={i} className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-4">
+              <div className="animate-pulse flex items-center space-x-4">
+                <div className="w-8 h-8 bg-gray-700 rounded-full"></div>
+                <div className="flex-1">
+                  <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
+                  <div className="h-3 bg-gray-700 rounded w-1/2"></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
                <div className="text-center py-4">
                  <div className="inline-flex items-center space-x-2 text-[#0B874F]">
                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#0B874F]"></div>
                    <span className="text-sm">Loading activities from last 36 hours...</span>
-                 </div>
-               </div>
-             </div>
-           );
-         }
+      </div>
+        </div>
+      </div>
+    );
+  }
 
         // Do not block the page with a full error state; show lightweight warning below the refresh button instead
 
@@ -236,9 +236,9 @@ export default function ActivityPage() {
               <Activity className="w-10 h-10 mr-4 text-[#0B874F]" />
               Community Activity
             </h1>
-                   <p className="text-gray-300 text-lg">
+            <p className="text-gray-300 text-lg">
                      See what everyone in the community is working on - commits, PRs, and issues
-                   </p>
+            </p>
           </div>
           <div className="flex flex-col items-end space-y-2">
             <button
@@ -296,8 +296,8 @@ export default function ActivityPage() {
       {/* Activity Feed */}
       {activities.length > 0 ? (
         <div className="space-y-4">
-                {activities.map((activity, index) => (
-                  <div
+          {activities.map((activity, index) => (
+            <div
                     key={`${activity.id || 'act'}-${activity.timestamp || 't'}-${index}`}
               className={`group bg-gradient-to-r from-black/60 to-black/40 backdrop-blur-sm border rounded-xl p-6 hover:border-[#0B874F]/60 hover:shadow-lg hover:shadow-[#0B874F]/10 transition-all duration-300 hover:scale-[1.02] ${getActivityColor(activity.type)}`}
               style={{ animationDelay: `${index * 50}ms` }}
@@ -322,9 +322,9 @@ export default function ActivityPage() {
                       />
                     </div>
                   ) : (
-                    <div className="w-10 h-10 bg-black/40 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                      {getActivityIcon(activity.type)}
-                    </div>
+                  <div className="w-10 h-10 bg-black/40 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    {getActivityIcon(activity.type)}
+                  </div>
                   )}
                 </div>
                 
