@@ -110,8 +110,8 @@ const DashboardPage = React.memo(function DashboardPage() {
             <div className="h-4 bg-gray-700 rounded w-1/2"></div>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => (
             <div key={i} className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
               <div className="animate-pulse">
                 <div className="h-8 bg-gray-700 rounded w-1/2 mb-4"></div>
@@ -159,8 +159,7 @@ const DashboardPage = React.memo(function DashboardPage() {
   const statsArray = [
     stats.totalCommits,
     stats.pullRequests,
-    stats.leaderboardRank,
-    stats.activeProjects
+    stats.leaderboardRank
   ];
 
   return (
@@ -186,7 +185,7 @@ const DashboardPage = React.memo(function DashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {statsArray.map((stat, index) => {
           const Icon = getIconComponent(stat.icon);
           return (
@@ -194,23 +193,13 @@ const DashboardPage = React.memo(function DashboardPage() {
               key={index}
               className="group bg-gradient-to-br from-black/60 to-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-xl p-6 hover:border-[#0B874F]/60 hover:shadow-lg hover:shadow-[#0B874F]/20 transition-all duration-300 hover:scale-105"
             >
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center mb-4">
                 <div
                   className="p-3 rounded-xl group-hover:scale-110 transition-transform duration-300"
                   style={{ backgroundColor: `${stat.color}20` }}
                 >
                   <Icon className="w-6 h-6" style={{ color: stat.color }} />
                 </div>
-                <span
-                  className="text-sm font-medium px-3 py-1 rounded-full border"
-                  style={{ 
-                    backgroundColor: `${stat.color}15`,
-                    color: stat.color,
-                    borderColor: `${stat.color}40`
-                  }}
-                >
-                  {stat.change}
-                </span>
               </div>
               <div>
                 <div className="text-3xl font-bold text-white mb-1 group-hover:text-[#0B874F] transition-colors duration-300">
@@ -225,7 +214,7 @@ const DashboardPage = React.memo(function DashboardPage() {
         })}
       </div>
 
-      {/* Recent Activity */}
+        {/* Recent Activity */}
       <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
           <div className="flex items-center mb-6">
             <h2 className="text-xl font-bold text-white flex items-center">
@@ -289,10 +278,10 @@ const DashboardPage = React.memo(function DashboardPage() {
                 <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>No recent activity</p>
                 <p className="text-sm">Start contributing to see your activity here!</p>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
+      </div>
     </div>
   );
 });
