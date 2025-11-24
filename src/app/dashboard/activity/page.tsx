@@ -121,7 +121,6 @@ export default function ActivityPage() {
   };
 
   const fetchActivities = async () => {
-    let controller: AbortController | null = null;
     let timeoutId: NodeJS.Timeout | null = null;
     
     try {
@@ -131,7 +130,7 @@ export default function ActivityPage() {
       const offset = (currentPage - 1) * ITEMS_PER_PAGE;
       
       // Fresh data fetch with timeout
-      controller = new AbortController();
+      const controller = new AbortController();
       timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
       
       const response = await fetch(`/api/dashboard/global-activities?limit=${ITEMS_PER_PAGE}&offset=${offset}`, {
