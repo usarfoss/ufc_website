@@ -17,6 +17,7 @@ model User {
   password        String
   role            Role     @default(MEMBER)
   githubUsername  String?
+  leetcodeUsername String?
   location        String?
   bio             String?
   avatar          String?
@@ -38,6 +39,7 @@ model User {
   events          EventAttendee[]
   activities      Activity[]
   githubStats     GitHubStats?
+  leetcodeStats   LeetCodeStats?
   createdProjects Project[] @relation("ProjectCreator")
   approvedProjects Project[] @relation("ProjectApprover")
   createdEvents   Event[]   @relation("EventCreator")
@@ -153,6 +155,26 @@ model GitHubStats {
   @@index([lastSynced])
 }
 
+model LeetCodeStats {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  leetcodeUsername  String
+  totalSolved       Int      @default(0)
+  easySolved        Int      @default(0)
+  mediumSolved      Int      @default(0)
+  hardSolved        Int      @default(0)
+  ranking           Int?
+  reputation        Int      @default(0)
+  acceptanceRate    Float?
+  lastSynced        DateTime @default(now())
+  
+  // Relations
+  user              User @relation(fields: [userId], references: [id])
+  
+  @@map("leetcode_stats")
+  @@index([lastSynced])
+}
+
 model Activity {
   id          String       @id @default(cuid())
   type        ActivityType
@@ -221,6 +243,9 @@ enum ActivityType {
   PROJECT_REJECTED
   EVENT_APPROVED
   EVENT_REJECTED
+  LEETCODE_EASY
+  LEETCODE_MEDIUM
+  LEETCODE_HARD
 }
 
 enum ApprovalStatus {
@@ -327,6 +352,7 @@ enum AchievementCategory {
   SOCIAL
   STREAK
   SPECIAL
+  LEETCODE
 }
 
 enum BadgeRarity {
@@ -344,6 +370,8 @@ enum LeaderboardType {
   CONTRIBUTIONS
   EXPERIENCE
   STREAK
+  LEETCODE_PROBLEMS
+  TOTAL_POINTS
 }
 
 enum NotificationType {

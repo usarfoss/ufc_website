@@ -4,58 +4,80 @@ import { prisma } from '@/lib/prisma';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const sortBy = searchParams.get('sortBy') || 'contributions';
+    const sortBy = searchParams.get('sortBy') || 'totalPoints';
     const limit = parseInt(searchParams.get('limit') || '50');
 
-    // Smart approach: Get users with GitHub stats only (more efficient)
+    // Get all users with either GitHub or LeetCode stats
     const usersWithStats = await prisma.user.findMany({
       where: {
-        githubStats: {
-          isNot: null
-        }
+        OR: [
+          { githubStats: { isNot: null } },
+          { leetcodeStats: { isNot: null } }
+        ]
       },
       include: {
-        githubStats: true
-      },
-      // Order by the relevant stat to get top performers first
-      orderBy: sortBy === 'commits' 
-        ? { githubStats: { commits: 'desc' } }
-        : sortBy === 'pullRequests'
-        ? { githubStats: { pullRequests: 'desc' } }
-        : { githubStats: { contributions: 'desc' } }
+        githubStats: true,
+        leetcodeStats: true
+      }
     });
 
-    // Calculate points and filter users with contributions > 0
+    // Calculate points for each user
     const usersWithRankings = usersWithStats
       .map(user => {
-        const stats = user.githubStats!;
-        const points = stats.commits * 1 + stats.pullRequests * 5 + stats.issues * 2;
-        return { ...user, points };
+        const githubPoints = user.githubStats 
+          ? (user.githubStats.commits * 1 + user.githubStats.pullRequests * 5 + user.githubStats.issues * 2)
+          : 0;
+        
+        const leetcodePoints = user.leetcodeStats
+          ? (user.leetcodeStats.easySolved * 2 + user.leetcodeStats.mediumSolved * 4 + user.leetcodeStats.hardSolved * 6)
+          : 0;
+
+        const totalPoints = githubPoints + leetcodePoints;
+
+        return { 
+          ...user, 
+          githubPoints,
+          leetcodePoints,
+          totalPoints 
+        };
       })
-      .filter(user => user.githubStats!.contributions > 0)
+      .filter(user => user.totalPoints > 0)
       .sort((a, b) => {
         switch (sortBy) {
           case 'commits':
-            return b.githubStats!.commits - a.githubStats!.commits;
+            return (b.githubStats?.commits || 0) - (a.githubStats?.commits || 0);
           case 'pullRequests':
-            return b.githubStats!.pullRequests - a.githubStats!.pullRequests;
-          case 'contributions':
+            return (b.githubStats?.pullRequests || 0) - (a.githubStats?.pullRequests || 0);
+          case 'leetcode':
+            return b.leetcodePoints - a.leetcodePoints;
+          case 'github':
+            return b.githubPoints - a.githubPoints;
+          case 'totalPoints':
           default:
-            return b.points - a.points;
+            return b.totalPoints - a.totalPoints;
         }
       })
       .map((user, index) => ({
         id: user.id,
         name: user.name || user.email,
         githubUsername: user.githubUsername,
+        leetcodeUsername: user.leetcodeUsername,
         avatar: user.avatar,
         stats: {
-          commits: user.githubStats!.commits,
-          pullRequests: user.githubStats!.pullRequests,
-          issues: user.githubStats!.issues,
-          contributions: user.githubStats!.contributions
+          commits: user.githubStats?.commits || 0,
+          pullRequests: user.githubStats?.pullRequests || 0,
+          issues: user.githubStats?.issues || 0,
+          contributions: user.githubStats?.contributions || 0
         },
-        points: user.points,
+        leetcodeStats: user.leetcodeStats ? {
+          totalSolved: user.leetcodeStats.totalSolved,
+          easySolved: user.leetcodeStats.easySolved,
+          mediumSolved: user.leetcodeStats.mediumSolved,
+          hardSolved: user.leetcodeStats.hardSolved
+        } : null,
+        githubPoints: user.githubPoints,
+        leetcodePoints: user.leetcodePoints,
+        points: user.totalPoints,
         rank: index + 1
       }));
 
