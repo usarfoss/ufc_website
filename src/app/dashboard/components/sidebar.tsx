@@ -14,7 +14,8 @@ import {
   Users,
   Activity,
   Shield,
-  Target
+  Target,
+  Globe
 } from "lucide-react";
 
 const navigation = [
@@ -26,6 +27,7 @@ const navigation = [
   { name: "Members", href: "/dashboard/members", icon: Users, roles: [] },
   { name: "Activity", href: "/dashboard/activity", icon: Activity, roles: [] },
   { name: "Profile", href: "/dashboard/profile", icon: User, roles: [] },
+  { name: "Portfolio", href: "/dashboard/portfolio-settings", icon: Globe, roles: [] },
   { name: "Settings", href: "/dashboard/settings", icon: Settings, roles: [] },
 ];
 

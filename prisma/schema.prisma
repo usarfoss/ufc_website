@@ -34,6 +34,17 @@ model User {
   streak          Int      @default(0)
   lastStreakDate  DateTime?
   
+  // Portfolio fields
+  portfolioSlug   String?  @unique
+  portfolioPublic Boolean  @default(false)
+  tagline         String?
+  techStack       Json?    // Array of technologies
+  resumeUrl       String?
+  websiteUrl      String?
+  linkedinUrl     String?
+  twitterUrl      String?
+  portfolioTheme  String?  @default("default")
+  
   // Relations
   projects        ProjectMember[]
   events          EventAttendee[]
