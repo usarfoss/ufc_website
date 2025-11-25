@@ -47,6 +47,8 @@ model User {
   achievements    UserAchievement[]
   badges          UserBadge[]
   notifications   Notification[]
+  createdBootcamps Bootcamp[] @relation("BootcampCreator")
+  bootcampParticipations BootcampParticipant[]
   
   @@map("users")
   @@index([joinedAt])
@@ -382,4 +384,82 @@ enum NotificationType {
   PROJECT_UPDATE
   MENTION
   SYSTEM
+}
+
+// Bootcamp Competition Models
+model Bootcamp {
+  id              String          @id @default(cuid())
+  name            String
+  description     String
+  type            BootcampType
+  status          BootcampStatus  @default(UPCOMING)
+  startDate       DateTime
+  endDate         DateTime
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  createdById     String
+  
+  // Relations
+  creator         User            @relation("BootcampCreator", fields: [createdById], references: [id])
+  participants    BootcampParticipant[]
+  snapshots       BootcampSnapshot[]
+  
+  @@map("bootcamps")
+  @@index([status, startDate])
+  @@index([endDate])
+}
+
+model BootcampParticipant {
+  id              String   @id @default(cuid())
+  bootcampId      String
+  userId          String
+  registeredAt    DateTime @default(now())
+  
+  // Baseline stats (at registration)
+  baselineStats   Json
+  
+  // Current progress
+  currentStats    Json?
+  progressStats   Json?
+  
+  // Final results
+  finalRank       Int?
+  finalPoints     Int      @default(0)
+  
+  // Relations
+  bootcamp        Bootcamp @relation(fields: [bootcampId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([bootcampId, userId])
+  @@map("bootcamp_participants")
+  @@index([bootcampId, finalPoints])
+}
+
+model BootcampSnapshot {
+  id              String   @id @default(cuid())
+  bootcampId      String
+  participantId   String
+  stats           Json
+  points          Int      @default(0)
+  rank            Int?
+  capturedAt      DateTime @default(now())
+  
+  // Relations
+  bootcamp        Bootcamp @relation(fields: [bootcampId], references: [id], onDelete: Cascade)
+  
+  @@map("bootcamp_snapshots")
+  @@index([bootcampId, capturedAt])
+  @@index([participantId, capturedAt])
+}
+
+enum BootcampType {
+  LEETCODE
+  GITHUB
+}
+
+enum BootcampStatus {
+  UPCOMING
+  ACTIVE
+  COMPLETED
+  CANCELLED
 }

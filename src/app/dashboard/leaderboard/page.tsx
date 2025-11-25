@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { Trophy, Medal, Award, TrendingUp, GitCommit, GitPullRequest, Star, BarChart3, Crown, Github } from "lucide-react";
-import { Trophy, Medal, Award, TrendingUp, GitCommit, GitPullRequest, Star, BarChart3, Crown } from "lucide-react";
 import GitCommandsLoader from '@/components/ui/git-commands-loader';
 
 interface LeaderboardUser {
