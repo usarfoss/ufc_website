@@ -45,6 +45,19 @@ model User {
   twitterUrl      String?
   portfolioTheme  String?  @default("default")
   
+  // Extended portfolio customization
+  portfolioTitle  String?  // Custom title instead of name
+  portfolioSubtitle String? // Subtitle/role
+  showEmail       Boolean  @default(false)
+  showLocation    Boolean  @default(true)
+  showJoinDate    Boolean  @default(true)
+  showGithubStats Boolean  @default(true)
+  showLeetcodeStats Boolean @default(true)
+  showProjects    Boolean  @default(true)
+  showBootcamps   Boolean  @default(true)
+  showAchievements Boolean @default(true)
+  customSections  Json?    // Custom sections data
+  
   // Relations
   projects        ProjectMember[]
   events          EventAttendee[]

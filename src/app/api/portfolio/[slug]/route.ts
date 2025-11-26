@@ -94,11 +94,13 @@ export async function GET(
       user: {
         id: user.id,
         name: user.name,
-        email: isOwner ? user.email : undefined, // Only show email to owner
+        email: (isOwner || user.showEmail) ? user.email : undefined,
         avatar: user.avatar,
         location: user.location,
         bio: user.bio,
         tagline: user.tagline,
+        portfolioTitle: user.portfolioTitle,
+        portfolioSubtitle: user.portfolioSubtitle,
         githubUsername: user.githubUsername,
         leetcodeUsername: user.leetcodeUsername,
         websiteUrl: user.websiteUrl,
@@ -106,7 +108,15 @@ export async function GET(
         twitterUrl: user.twitterUrl,
         resumeUrl: user.resumeUrl,
         techStack,
-        joinedAt: user.joinedAt.toISOString()
+        joinedAt: user.joinedAt.toISOString(),
+        showEmail: user.showEmail ?? false,
+        showLocation: user.showLocation ?? true,
+        showJoinDate: user.showJoinDate ?? true,
+        showGithubStats: user.showGithubStats ?? true,
+        showLeetcodeStats: user.showLeetcodeStats ?? true,
+        showProjects: user.showProjects ?? true,
+        showBootcamps: user.showBootcamps ?? true,
+        showAchievements: user.showAchievements ?? true
       },
       githubStats: user.githubStats ? {
         commits: user.githubStats.commits,

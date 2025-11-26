@@ -21,12 +21,22 @@ export async function GET(request: NextRequest) {
       select: {
         portfolioSlug: true,
         portfolioPublic: true,
+        portfolioTitle: true,
+        portfolioSubtitle: true,
         tagline: true,
         techStack: true,
         resumeUrl: true,
         websiteUrl: true,
         linkedinUrl: true,
-        twitterUrl: true
+        twitterUrl: true,
+        showEmail: true,
+        showLocation: true,
+        showJoinDate: true,
+        showGithubStats: true,
+        showLeetcodeStats: true,
+        showProjects: true,
+        showBootcamps: true,
+        showAchievements: true
       }
     });
 
@@ -47,12 +57,22 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       portfolioSlug: user.portfolioSlug,
       portfolioPublic: user.portfolioPublic,
+      portfolioTitle: user.portfolioTitle,
+      portfolioSubtitle: user.portfolioSubtitle,
       tagline: user.tagline,
       techStack,
       resumeUrl: user.resumeUrl,
       websiteUrl: user.websiteUrl,
       linkedinUrl: user.linkedinUrl,
-      twitterUrl: user.twitterUrl
+      twitterUrl: user.twitterUrl,
+      showEmail: user.showEmail,
+      showLocation: user.showLocation,
+      showJoinDate: user.showJoinDate,
+      showGithubStats: user.showGithubStats,
+      showLeetcodeStats: user.showLeetcodeStats,
+      showProjects: user.showProjects,
+      showBootcamps: user.showBootcamps,
+      showAchievements: user.showAchievements
     });
   } catch (error) {
     console.error('Portfolio settings fetch error:', error);
@@ -83,12 +103,22 @@ export async function PUT(request: NextRequest) {
     const {
       portfolioSlug,
       portfolioPublic,
+      portfolioTitle,
+      portfolioSubtitle,
       tagline,
       techStack,
       resumeUrl,
       websiteUrl,
       linkedinUrl,
-      twitterUrl
+      twitterUrl,
+      showEmail,
+      showLocation,
+      showJoinDate,
+      showGithubStats,
+      showLeetcodeStats,
+      showProjects,
+      showBootcamps,
+      showAchievements
     } = body;
 
     // Validate slug format
@@ -119,12 +149,22 @@ export async function PUT(request: NextRequest) {
       data: {
         portfolioSlug: portfolioSlug || null,
         portfolioPublic: portfolioPublic || false,
+        portfolioTitle: portfolioTitle || null,
+        portfolioSubtitle: portfolioSubtitle || null,
         tagline: tagline || null,
         techStack: techStack ? JSON.stringify(techStack) : null,
         resumeUrl: resumeUrl || null,
         websiteUrl: websiteUrl || null,
         linkedinUrl: linkedinUrl || null,
-        twitterUrl: twitterUrl || null
+        twitterUrl: twitterUrl || null,
+        showEmail: showEmail ?? false,
+        showLocation: showLocation ?? true,
+        showJoinDate: showJoinDate ?? true,
+        showGithubStats: showGithubStats ?? true,
+        showLeetcodeStats: showLeetcodeStats ?? true,
+        showProjects: showProjects ?? true,
+        showBootcamps: showBootcamps ?? true,
+        showAchievements: showAchievements ?? true
       }
     });
 

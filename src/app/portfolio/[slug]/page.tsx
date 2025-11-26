@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Github, Linkedin, Twitter, Globe, MapPin, Calendar, Mail, ExternalLink, Download, Code, Trophy, Award, Briefcase } from 'lucide-react';
+import { Github, Linkedin, Twitter, Globe, MapPin, Calendar, Mail, ExternalLink, Download, Code, Trophy, Award, Briefcase, Star, X, Terminal, GitBranch } from 'lucide-react';
 import GitHubHeatmap from '@/components/ui/github-heatmap';
 import LeetCodeHeatmap from '@/components/ui/leetcode-heatmap';
 import GitCommandsLoader from '@/components/ui/git-commands-loader';
@@ -16,6 +16,8 @@ interface PortfolioData {
     location?: string;
     bio?: string;
     tagline?: string;
+    portfolioTitle?: string;
+    portfolioSubtitle?: string;
     githubUsername?: string;
     leetcodeUsername?: string;
     websiteUrl?: string;
@@ -24,6 +26,14 @@ interface PortfolioData {
     resumeUrl?: string;
     techStack?: string[];
     joinedAt: string;
+    showEmail: boolean;
+    showLocation: boolean;
+    showJoinDate: boolean;
+    showGithubStats: boolean;
+    showLeetcodeStats: boolean;
+    showProjects: boolean;
+    showBootcamps: boolean;
+    showAchievements: boolean;
   };
   githubStats?: {
     commits: number;
@@ -114,11 +124,14 @@ export default function PortfolioPage() {
   if (error || !portfolio) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-4">
-        <div className="bg-red-900/20 backdrop-blur-sm border border-red-500/30 rounded-lg p-8 max-w-md text-center">
-          <h2 className="text-2xl font-bold text-red-400 mb-2">
+        <div className="bg-red-900/20 backdrop-blur-sm border border-red-500/30 rounded-xl p-6 max-w-md text-center">
+          <div className="w-12 h-12 mx-auto mb-3 bg-red-500/20 rounded-full flex items-center justify-center">
+            <X className="w-6 h-6 text-red-400" />
+          </div>
+          <h2 className="text-xl font-bold text-red-400 mb-2">
             {error || 'Portfolio Not Found'}
           </h2>
-          <p className="text-gray-400">
+          <p className="text-sm text-gray-400">
             {error === 'This portfolio is private' 
               ? 'The owner has set this portfolio to private.'
               : 'The portfolio you are looking for does not exist.'}
@@ -129,335 +142,365 @@ export default function PortfolioPage() {
   }
 
   const { user, githubStats, leetcodeStats, projects, bootcamps, achievements } = portfolio;
+  const displayName = user.portfolioTitle || user.name || 'Developer';
+  const displaySubtitle = user.portfolioSubtitle || user.tagline;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
-      {/* Hero Section */}
-      <section className="relative py-20 px-4 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0B874F]/10 to-transparent"></div>
-        <div className="max-w-6xl mx-auto relative z-10">
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            {/* Avatar */}
-            <div className="relative">
-              <div className="w-40 h-40 rounded-full bg-gradient-to-br from-[#0B874F] to-[#065a33] p-1">
-                <div className="w-full h-full rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center overflow-hidden">
-                  {user.avatar ? (
-                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-[#0B874F] text-5xl font-bold">
-                      {user.name?.charAt(0) || user.email.charAt(0)}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="absolute -bottom-2 -right-2 bg-[#0B874F] text-black px-3 py-1 rounded-full text-sm font-bold">
-                Active
-              </div>
-            </div>
-
-            {/* Info */}
-            <div className="flex-1 text-center md:text-left">
-              <h1 className="text-5xl font-bold text-white mb-2">{user.name || 'Anonymous'}</h1>
-              {user.tagline && (
-                <p className="text-xl text-[#0B874F] mb-4">{user.tagline}</p>
-              )}
-              {user.bio && (
-                <p className="text-gray-300 mb-4 max-w-2xl">{user.bio}</p>
-              )}
-              
-              {/* Meta Info */}
-              <div className="flex flex-wrap gap-4 justify-center md:justify-start text-sm text-gray-400 mb-4">
-                {user.location && (
-                  <div className="flex items-center">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    {user.location}
-                  </div>
-                )}
-                <div className="flex items-center">
-                  <Calendar className="w-4 h-4 mr-1" />
-                  Joined {new Date(user.joinedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                </div>
-              </div>
-
-              {/* Social Links */}
-              <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-                {user.githubUsername && (
-                  <a
-                    href={`https://github.com/${user.githubUsername}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-                  >
-                    <Github className="w-4 h-4 mr-2" />
-                    GitHub
-                  </a>
-                )}
-                {user.leetcodeUsername && (
-                  <a
-                    href={`https://leetcode.com/${user.leetcodeUsername}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center px-4 py-2 bg-orange-900/30 hover:bg-orange-900/50 rounded-lg transition-colors"
-                  >
-                    <Code className="w-4 h-4 mr-2" />
-                    LeetCode
-                  </a>
-                )}
-                {user.linkedinUrl && (
-                  <a
-                    href={user.linkedinUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center px-4 py-2 bg-blue-900/30 hover:bg-blue-900/50 rounded-lg transition-colors"
-                  >
-                    <Linkedin className="w-4 h-4 mr-2" />
-                    LinkedIn
-                  </a>
-                )}
-                {user.twitterUrl && (
-                  <a
-                    href={user.twitterUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center px-4 py-2 bg-sky-900/30 hover:bg-sky-900/50 rounded-lg transition-colors"
-                  >
-                    <Twitter className="w-4 h-4 mr-2" />
-                    Twitter
-                  </a>
-                )}
-                {user.websiteUrl && (
-                  <a
-                    href={user.websiteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center px-4 py-2 bg-purple-900/30 hover:bg-purple-900/50 rounded-lg transition-colors"
-                  >
-                    <Globe className="w-4 h-4 mr-2" />
-                    Website
-                  </a>
-                )}
-                {user.resumeUrl && (
-                  <a
-                    href={user.resumeUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center px-4 py-2 bg-[#0B874F] hover:bg-[#0B874F]/80 text-black font-semibold rounded-lg transition-colors"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Resume
-                  </a>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div className="max-w-6xl mx-auto px-4 pb-20 space-y-12">
-        {/* Tech Stack */}
-        {user.techStack && user.techStack.length > 0 && (
-          <section className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-xl p-6">
-            <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
-              <Code className="w-6 h-6 mr-2 text-[#0B874F]" />
-              Tech Stack
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {user.techStack.map((tech, index) => (
-                <span
-                  key={index}
-                  className="px-4 py-2 bg-[#0B874F]/10 border border-[#0B874F]/30 rounded-lg text-[#0B874F] font-medium"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Stats Overview */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {githubStats && (
-            <>
-              <div className="bg-gradient-to-br from-green-900/20 to-black/40 backdrop-blur-sm border border-green-500/30 rounded-xl p-6">
-                <div className="text-3xl font-bold text-green-400 mb-1">{githubStats.commits}</div>
-                <div className="text-sm text-gray-400">GitHub Commits</div>
-              </div>
-              <div className="bg-gradient-to-br from-blue-900/20 to-black/40 backdrop-blur-sm border border-blue-500/30 rounded-xl p-6">
-                <div className="text-3xl font-bold text-blue-400 mb-1">{githubStats.pullRequests}</div>
-                <div className="text-sm text-gray-400">Pull Requests</div>
-              </div>
-            </>
-          )}
-          {leetcodeStats && (
-            <>
-              <div className="bg-gradient-to-br from-orange-900/20 to-black/40 backdrop-blur-sm border border-orange-500/30 rounded-xl p-6">
-                <div className="text-3xl font-bold text-orange-400 mb-1">{leetcodeStats.totalSolved}</div>
-                <div className="text-sm text-gray-400">Problems Solved</div>
-              </div>
-              {leetcodeStats.ranking && (
-                <div className="bg-gradient-to-br from-purple-900/20 to-black/40 backdrop-blur-sm border border-purple-500/30 rounded-xl p-6">
-                  <div className="text-3xl font-bold text-purple-400 mb-1">#{leetcodeStats.ranking.toLocaleString()}</div>
-                  <div className="text-sm text-gray-400">LeetCode Rank</div>
-                </div>
-              )}
-            </>
-          )}
-        </section>
-
-        {/* Heatmaps */}
-        {(user.githubUsername || user.leetcodeUsername) && (
-          <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {user.githubUsername && (
-              <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-xl p-6">
-                <h2 className="text-xl font-bold text-white mb-4 flex items-center">
-                  <Github className="w-5 h-5 mr-2 text-[#0B874F]" />
-                  GitHub Activity
-                </h2>
-                <GitHubHeatmap username={user.githubUsername} />
-              </div>
-            )}
-            {user.leetcodeUsername && (
-              <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-xl p-6">
-                <h2 className="text-xl font-bold text-white mb-4 flex items-center">
-                  <Code className="w-5 h-5 mr-2 text-[#ffa116]" />
-                  LeetCode Activity
-                </h2>
-                <LeetCodeHeatmap username={user.leetcodeUsername} />
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* LeetCode Detailed Stats */}
-        {leetcodeStats && (
-          <section className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-xl p-6">
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-              <Trophy className="w-6 h-6 mr-2 text-[#ffa116]" />
-              LeetCode Statistics
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-                <div className="text-3xl font-bold text-green-500">{leetcodeStats.easySolved}</div>
-                <div className="text-sm text-gray-400 mt-1">Easy</div>
-              </div>
-              <div className="text-center p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                <div className="text-3xl font-bold text-yellow-500">{leetcodeStats.mediumSolved}</div>
-                <div className="text-sm text-gray-400 mt-1">Medium</div>
-              </div>
-              <div className="text-center p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-                <div className="text-3xl font-bold text-red-500">{leetcodeStats.hardSolved}</div>
-                <div className="text-sm text-gray-400 mt-1">Hard</div>
-              </div>
-              <div className="text-center p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                <div className="text-3xl font-bold text-blue-500">{leetcodeStats.totalSolved}</div>
-                <div className="text-sm text-gray-400 mt-1">Total</div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Projects */}
-        {projects.length > 0 && (
-          <section className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-xl p-6">
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-              <Briefcase className="w-6 h-6 mr-2 text-[#0B874F]" />
-              Projects
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {projects.map((project) => (
-                <div
-                  key={project.id}
-                  className="p-4 bg-black/30 border border-[#0B874F]/20 rounded-lg hover:border-[#0B874F]/50 transition-colors"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-lg font-bold text-white">{project.name}</h3>
-                    {project.repoUrl && (
-                      <a
-                        href={project.repoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#0B874F] hover:text-[#0B874F]/80"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </a>
-                    )}
-                  </div>
-                  <p className="text-gray-400 text-sm mb-3">{project.description}</p>
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-1 bg-[#0B874F]/10 border border-[#0B874F]/30 rounded text-xs text-[#0B874F]">
-                      {project.language}
-                    </span>
-                    <span className="px-2 py-1 bg-gray-700/50 rounded text-xs text-gray-300">
-                      {project.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Bootcamps */}
-        {bootcamps.length > 0 && (
-          <section className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-xl p-6">
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-              <Trophy className="w-6 h-6 mr-2 text-[#0B874F]" />
-              Bootcamp Participations
-            </h2>
-            <div className="space-y-3">
-              {bootcamps.map((bootcamp) => (
-                <div
-                  key={bootcamp.id}
-                  className="flex items-center justify-between p-4 bg-black/30 border border-[#0B874F]/20 rounded-lg"
-                >
-                  <div>
-                    <h3 className="text-white font-semibold">{bootcamp.name}</h3>
-                    <p className="text-sm text-gray-400">{bootcamp.type}</p>
-                  </div>
-                  <div className="text-right">
-                    {bootcamp.finalRank && (
-                      <div className="text-[#0B874F] font-bold">Rank #{bootcamp.finalRank}</div>
-                    )}
-                    <div className="text-sm text-gray-400">{bootcamp.finalPoints} points</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Achievements */}
-        {achievements.length > 0 && (
-          <section className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-xl p-6">
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-              <Award className="w-6 h-6 mr-2 text-[#0B874F]" />
-              Achievements
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {achievements.map((achievement) => (
-                <div
-                  key={achievement.id}
-                  className="p-4 bg-gradient-to-br from-[#0B874F]/10 to-black/30 border border-[#0B874F]/30 rounded-lg"
-                >
-                  <div className="text-3xl mb-2">{achievement.icon}</div>
-                  <h3 className="text-white font-semibold mb-1">{achievement.name}</h3>
-                  <p className="text-sm text-gray-400 mb-2">{achievement.description}</p>
-                  <p className="text-xs text-gray-500">
-                    Unlocked {new Date(achievement.unlockedAt).toLocaleDateString()}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+    <div className="min-h-screen bg-black py-8 px-4">
+      {/* Grid Background Effect */}
+      <div className="fixed inset-0 pointer-events-none opacity-20">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `linear-gradient(rgba(11, 135, 79, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(11, 135, 79, 0.1) 1px, transparent 1px)`,
+          backgroundSize: '50px 50px'
+        }}></div>
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-gray-800 py-8">
-        <div className="max-w-6xl mx-auto px-4 text-center text-gray-400 text-sm">
-          <p>Portfolio powered by UFC Platform</p>
+      {/* Main Container */}
+      <div className="relative z-10 max-w-6xl mx-auto">
+        {/* Content Area */}
+        <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-xl p-6">
+          {/* Two Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Sidebar - Profile & Quick Stats */}
+            <div className="lg:col-span-1 space-y-4">
+              {/* Profile Card */}
+              <div className="space-y-4">
+                {/* Avatar & Name */}
+                <div className="text-center">
+                  <div className="w-32 h-32 mx-auto mb-4 rounded-lg bg-gradient-to-br from-[#0B874F] to-[#065a33] p-0.5">
+                    <div className="w-full h-full rounded-lg bg-black flex items-center justify-center overflow-hidden">
+                      {user.avatar ? (
+                        <img src={user.avatar} alt={displayName} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-[#0B874F] text-4xl font-bold">
+                          {displayName.charAt(0)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <h1 className="text-2xl font-bold text-white mb-1 font-mono">{displayName}</h1>
+                  {displaySubtitle && (
+                    <p className="text-[#0B874F] text-sm mb-2">{displaySubtitle}</p>
+                  )}
+                </div>
+
+                {/* Bio */}
+                {user.bio && (
+                  <div className="p-3 bg-white/5 border border-white/10 rounded-lg">
+                    <p className="text-xs text-gray-400 leading-relaxed">{user.bio}</p>
+                  </div>
+                )}
+
+                {/* Meta Info */}
+                <div className="space-y-2 text-xs">
+                  {user.showLocation && user.location && (
+                    <div className="flex items-center gap-2 text-gray-400">
+                      <MapPin className="w-3 h-3 text-[#0B874F]" />
+                      <span className="font-mono">{user.location}</span>
+                    </div>
+                  )}
+                  {user.showJoinDate && (
+                    <div className="flex items-center gap-2 text-gray-400">
+                      <Calendar className="w-3 h-3 text-[#0B874F]" />
+                      <span className="font-mono">Joined {new Date(user.joinedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                    </div>
+                  )}
+                  {user.showEmail && user.email && (
+                    <div className="flex items-center gap-2 text-gray-400">
+                      <Mail className="w-3 h-3 text-[#0B874F]" />
+                      <span className="font-mono text-xs break-all">{user.email}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Social Links */}
+                <div className="flex flex-wrap gap-2">
+                  {user.githubUsername && (
+                    <a href={`https://github.com/${user.githubUsername}`} target="_blank" rel="noopener noreferrer"
+                      className="flex-1 flex items-center justify-center gap-2 p-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#0B874F]/50 rounded-lg transition-all text-xs">
+                      <Github className="w-4 h-4" />
+                      <span>GitHub</span>
+                    </a>
+                  )}
+                  {user.leetcodeUsername && (
+                    <a href={`https://leetcode.com/${user.leetcodeUsername}`} target="_blank" rel="noopener noreferrer"
+                      className="flex-1 flex items-center justify-center gap-2 p-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#ffa116]/50 rounded-lg transition-all text-xs">
+                      <Code className="w-4 h-4" />
+                      <span>LeetCode</span>
+                    </a>
+                  )}
+                  {user.linkedinUrl && (
+                    <a href={user.linkedinUrl} target="_blank" rel="noopener noreferrer"
+                      className="flex-1 flex items-center justify-center gap-2 p-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-500/50 rounded-lg transition-all text-xs">
+                      <Linkedin className="w-4 h-4" />
+                    </a>
+                  )}
+                  {user.twitterUrl && (
+                    <a href={user.twitterUrl} target="_blank" rel="noopener noreferrer"
+                      className="flex-1 flex items-center justify-center gap-2 p-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-sky-500/50 rounded-lg transition-all text-xs">
+                      <Twitter className="w-4 h-4" />
+                    </a>
+                  )}
+                  {user.websiteUrl && (
+                    <a href={user.websiteUrl} target="_blank" rel="noopener noreferrer"
+                      className="flex-1 flex items-center justify-center gap-2 p-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/50 rounded-lg transition-all text-xs">
+                      <Globe className="w-4 h-4" />
+                    </a>
+                  )}
+                </div>
+
+                {user.resumeUrl && (
+                  <a href={user.resumeUrl} target="_blank" rel="noopener noreferrer"
+                    className="block w-full text-center px-4 py-2 bg-[#0B874F] hover:bg-[#0B874F]/80 text-black font-semibold rounded-lg transition-all text-sm">
+                    <Download className="w-4 h-4 inline mr-2" />
+                    Download Resume
+                  </a>
+                )}
+
+                {/* Quick Stats */}
+                {((user.showGithubStats && githubStats) || (user.showLeetcodeStats && leetcodeStats)) && (
+                  <div className="space-y-2">
+                    <div className="text-xs font-semibold text-gray-400 font-mono flex items-center gap-2">
+                      <Terminal className="w-3 h-3" />
+                      <span>$ stats --summary</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {user.showGithubStats && githubStats && (
+                        <>
+                          <div className="p-2 bg-green-500/10 border border-green-500/30 rounded text-center">
+                            <div className="text-lg font-bold text-green-400 font-mono">{githubStats.commits}</div>
+                            <div className="text-xs text-gray-500">Commits</div>
+                          </div>
+                          <div className="p-2 bg-blue-500/10 border border-blue-500/30 rounded text-center">
+                            <div className="text-lg font-bold text-blue-400 font-mono">{githubStats.pullRequests}</div>
+                            <div className="text-xs text-gray-500">PRs</div>
+                          </div>
+                        </>
+                      )}
+                      {user.showLeetcodeStats && leetcodeStats && (
+                        <>
+                          <div className="p-2 bg-orange-500/10 border border-orange-500/30 rounded text-center">
+                            <div className="text-lg font-bold text-orange-400 font-mono">{leetcodeStats.totalSolved}</div>
+                            <div className="text-xs text-gray-500">Solved</div>
+                          </div>
+                          {leetcodeStats.ranking && (
+                            <div className="p-2 bg-purple-500/10 border border-purple-500/30 rounded text-center">
+                              <div className="text-lg font-bold text-purple-400 font-mono">#{(leetcodeStats.ranking / 1000).toFixed(0)}k</div>
+                              <div className="text-xs text-gray-500">Rank</div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Tech Stack */}
+                {user.techStack && user.techStack.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="text-xs font-semibold text-gray-400 font-mono flex items-center gap-2">
+                      <Code className="w-3 h-3" />
+                      <span>$ tech --list</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {user.techStack.map((tech, index) => (
+                        <span key={index} className="px-2 py-1 bg-[#0B874F]/10 border border-[#0B874F]/30 rounded text-xs text-[#0B874F] font-mono">
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Right Content - Projects, Heatmaps, etc */}
+            <div className="lg:col-span-2 space-y-4">
+              {/* Projects Section - Expanded */}
+              {user.showProjects && projects.length > 0 && (
+                <div className="space-y-3">
+                  <div className="text-sm font-semibold text-gray-400 font-mono flex items-center gap-2">
+                    <GitBranch className="w-4 h-4 text-[#0B874F]" />
+                    <span>$ projects --list</span>
+                  </div>
+                  <div className="space-y-3">
+                    {projects.map((project) => (
+                      <div key={project.id} className="group p-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#0B874F]/50 rounded-lg transition-all">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <h3 className="text-base font-bold text-white group-hover:text-[#0B874F] transition-colors font-mono">
+                              {project.name}
+                            </h3>
+                            <p className="text-sm text-gray-400 mt-1 leading-relaxed">{project.description}</p>
+                          </div>
+                          {project.repoUrl && (
+                            <a href={project.repoUrl} target="_blank" rel="noopener noreferrer"
+                              className="ml-3 p-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#0B874F]/50 rounded transition-all">
+                              <ExternalLink className="w-4 h-4 text-gray-400 hover:text-[#0B874F]" />
+                            </a>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mt-3">
+                          <span className="px-2 py-1 bg-[#0B874F]/20 border border-[#0B874F]/30 rounded text-xs text-[#0B874F] font-mono">
+                            {project.language}
+                          </span>
+                          <span className="px-2 py-1 bg-white/5 border border-white/10 rounded text-xs text-gray-400 font-mono">
+                            {project.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* GitHub Heatmap */}
+              {user.showGithubStats && user.githubUsername && (
+                <div className="space-y-2">
+                  <div className="text-sm font-semibold text-gray-400 font-mono flex items-center gap-2">
+                    <Github className="w-4 h-4 text-[#0B874F]" />
+                    <span>$ github --contributions</span>
+                  </div>
+                  <div className="p-4 bg-white/5 border border-white/10 rounded-lg">
+                    <GitHubHeatmap username={user.githubUsername} />
+                  </div>
+                </div>
+              )}
+
+              {/* LeetCode Heatmap */}
+              {user.showLeetcodeStats && user.leetcodeUsername && (
+                <div className="space-y-2">
+                  <div className="text-sm font-semibold text-gray-400 font-mono flex items-center gap-2">
+                    <Code className="w-4 h-4 text-[#ffa116]" />
+                    <span>$ leetcode --activity</span>
+                  </div>
+                  <div className="p-4 bg-white/5 border border-white/10 rounded-lg">
+                    <LeetCodeHeatmap username={user.leetcodeUsername} />
+                  </div>
+                </div>
+              )}
+
+              {/* Stats Breakdown */}
+              {((user.showGithubStats && githubStats) || (user.showLeetcodeStats && leetcodeStats)) && (
+                <div className="space-y-2">
+                  <div className="text-sm font-semibold text-gray-400 font-mono flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-[#0B874F]" />
+                    <span>$ stats --detailed</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* GitHub Stats */}
+                    {user.showGithubStats && githubStats && (
+                      <div className="space-y-2">
+                        <div className="text-xs text-gray-500 font-mono mb-2">GitHub</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="p-2 bg-green-500/10 border border-green-500/30 rounded text-center">
+                            <div className="text-lg font-bold text-green-400 font-mono">{githubStats.commits}</div>
+                            <div className="text-xs text-gray-500">Commits</div>
+                          </div>
+                          <div className="p-2 bg-blue-500/10 border border-blue-500/30 rounded text-center">
+                            <div className="text-lg font-bold text-blue-400 font-mono">{githubStats.pullRequests}</div>
+                            <div className="text-xs text-gray-500">PRs</div>
+                          </div>
+                          <div className="p-2 bg-red-500/10 border border-red-500/30 rounded text-center">
+                            <div className="text-lg font-bold text-red-400 font-mono">{githubStats.issues}</div>
+                            <div className="text-xs text-gray-500">Issues</div>
+                          </div>
+                          <div className="p-2 bg-purple-500/10 border border-purple-500/30 rounded text-center">
+                            <div className="text-lg font-bold text-purple-400 font-mono">{githubStats.repositories}</div>
+                            <div className="text-xs text-gray-500">Repos</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* LeetCode Stats */}
+                    {user.showLeetcodeStats && leetcodeStats && (
+                      <div className="space-y-2">
+                        <div className="text-xs text-gray-500 font-mono mb-2">LeetCode</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="p-2 bg-green-500/10 border border-green-500/30 rounded text-center">
+                            <div className="text-lg font-bold text-green-400 font-mono">{leetcodeStats.easySolved}</div>
+                            <div className="text-xs text-gray-500">Easy</div>
+                          </div>
+                          <div className="p-2 bg-yellow-500/10 border border-yellow-500/30 rounded text-center">
+                            <div className="text-lg font-bold text-yellow-400 font-mono">{leetcodeStats.mediumSolved}</div>
+                            <div className="text-xs text-gray-500">Medium</div>
+                          </div>
+                          <div className="p-2 bg-red-500/10 border border-red-500/30 rounded text-center">
+                            <div className="text-lg font-bold text-red-400 font-mono">{leetcodeStats.hardSolved}</div>
+                            <div className="text-xs text-gray-500">Hard</div>
+                          </div>
+                          <div className="p-2 bg-blue-500/10 border border-blue-500/30 rounded text-center">
+                            <div className="text-lg font-bold text-blue-400 font-mono">{leetcodeStats.totalSolved}</div>
+                            <div className="text-xs text-gray-500">Total</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Bootcamps */}
+              {user.showBootcamps && bootcamps.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-sm font-semibold text-gray-400 font-mono flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-[#0B874F]" />
+                    <span>$ bootcamps --achievements</span>
+                  </div>
+                  <div className="space-y-2">
+                    {bootcamps.map((bootcamp) => (
+                      <div key={bootcamp.id} className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-[#0B874F]/20 rounded flex items-center justify-center">
+                            <Trophy className="w-4 h-4 text-[#0B874F]" />
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-semibold text-white font-mono">{bootcamp.name}</h3>
+                            <p className="text-xs text-gray-400">{bootcamp.type}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          {bootcamp.finalRank && (
+                            <div className="text-sm font-bold text-[#0B874F] font-mono">#{bootcamp.finalRank}</div>
+                          )}
+                          <div className="text-xs text-gray-400 font-mono">{bootcamp.finalPoints}pts</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Achievements */}
+              {user.showAchievements && achievements.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-sm font-semibold text-gray-400 font-mono flex items-center gap-2">
+                    <Award className="w-4 h-4 text-[#0B874F]" />
+                    <span>$ achievements --unlocked</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {achievements.map((achievement) => (
+                      <div key={achievement.id} className="p-3 bg-gradient-to-br from-[#0B874F]/10 to-transparent border border-[#0B874F]/30 rounded-lg">
+                        <div className="text-2xl mb-2">{achievement.icon}</div>
+                        <h3 className="text-sm font-semibold text-white mb-1 font-mono">{achievement.name}</h3>
+                        <p className="text-xs text-gray-400 line-clamp-2">{achievement.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="mt-6 pt-4 border-t border-[#0B874F]/30 text-center">
+            <p className="text-xs text-gray-600 font-mono">
+              <span className="text-[#0B874F]">$</span> powered by UFC Platform <span className="text-gray-700 mx-2">|</span> <span className="text-gray-700">~/{slug}/portfolio</span>
+            </p>
+          </div>
         </div>
-      </footer>
+      </div>
     </div>
   );
 }
