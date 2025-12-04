@@ -135,11 +135,50 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
 
   if (!isOpen) return null;
 
+  // Language abbreviation mapping
+  const getLanguageAbbr = (lang: string): string => {
+    const langLower = lang.toLowerCase();
+    const mapping: Record<string, string> = {
+      'typescript': 'TS',
+      'javascript': 'JS',
+      'java': 'JA',
+      'python': 'PY',
+      'html': 'HTML',
+      'css': 'CSS',
+      'c++': 'C++',
+      'c#': 'C#',
+      'c': 'C',
+      'go': 'GO',
+      'rust': 'RS',
+      'php': 'PHP',
+      'ruby': 'RB',
+      'swift': 'SW',
+      'kotlin': 'KT',
+      'scala': 'SC',
+      'r': 'R',
+      'dart': 'DT',
+      'vue': 'VUE',
+      'react': 'REACT',
+      'angular': 'ANG',
+      'svelte': 'SV',
+      'shell': 'SH',
+      'bash': 'BASH',
+      'powershell': 'PS',
+      'sql': 'SQL',
+      'markdown': 'MD',
+      'json': 'JSON',
+      'yaml': 'YAML',
+      'xml': 'XML',
+    };
+    
+    return mapping[langLower] || (lang.length > 4 ? lang.substring(0, 4).toUpperCase() : lang.toUpperCase());
+  };
+
   // Get top 5 languages sorted by percentage
   const topLanguages = Object.entries(languages)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5)
-    .map(([lang, value]) => ({ lang, value }));
+    .map(([lang, value]) => ({ lang, value, abbr: getLanguageAbbr(lang) }));
 
   const totalLanguageValue = Object.values(languages).reduce((sum, val) => sum + val, 0);
 
@@ -246,7 +285,7 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
                 <div className="text-center text-gray-400">Loading languages...</div>
               ) : topLanguages.length > 0 ? (
                 <div className="space-y-6">
-                  {topLanguages.map(({ lang, value }, index) => {
+                  {topLanguages.map(({ lang, value, abbr }, index) => {
                     const percentage = totalLanguageValue > 0 ? (value / totalLanguageValue) * 100 : 0;
                     const colors = [
                       '#EF4444', // Red
@@ -256,14 +295,13 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
                       '#3B82F6', // Blue
                     ];
                     const color = colors[index % colors.length];
-                    const langAbbr = lang.length > 2 ? lang.substring(0, 2).toUpperCase() : lang.toUpperCase();
 
                     return (
                       <div key={lang} className="flex items-center gap-3 sm:gap-4 mb-3">
                         {/* Language Label */}
                         <div className="w-12 sm:w-16 flex-shrink-0">
                           <span className="matrix-font text-lg sm:text-xl text-[#00ff41]" style={{ textShadow: '0 0 4px rgba(0, 255, 65, 0.5)' }}>
-                            {langAbbr}
+                            {abbr}
                           </span>
                         </div>
                         
