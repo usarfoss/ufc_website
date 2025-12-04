@@ -219,7 +219,7 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
         >
           {/* Slide 1: Welcome */}
           <div
-            ref={(el) => (slideRefs.current[0] = el)}
+            ref={(el) => { slideRefs.current[0] = el; }}
             className="min-w-full snap-center flex items-center justify-center p-8 sm:p-12 relative z-10 transition-opacity duration-500"
             style={{
               opacity: currentSlide === 0 ? 1 : 0.3,
@@ -251,7 +251,7 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
 
           {/* Slide 2: Top Languages */}
           <div
-            ref={(el) => (slideRefs.current[1] = el)}
+            ref={(el) => { slideRefs.current[1] = el; }}
             className="min-w-full snap-center flex items-center justify-center p-8 sm:p-12 relative z-10 transition-opacity duration-500"
             style={{
               opacity: currentSlide === 1 ? 1 : 0.3,
@@ -342,7 +342,7 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
 
           {/* Slide 3: Commits and PRs */}
           <div
-            ref={(el) => (slideRefs.current[2] = el)}
+            ref={(el) => { slideRefs.current[2] = el; }}
             className="min-w-full snap-center flex items-start justify-center p-8 sm:p-12 relative z-10 overflow-y-auto github-wrapped-scroll transition-opacity duration-500"
             style={{
               opacity: currentSlide === 2 ? 1 : 0.3,
@@ -402,7 +402,7 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
 
           {/* Slide 4: GitHub Heatmap */}
           <div
-            ref={(el) => (slideRefs.current[3] = el)}
+            ref={(el) => { slideRefs.current[3] = el; }}
             className="min-w-full snap-center flex items-start justify-center p-8 sm:p-12 relative z-10 overflow-y-auto github-wrapped-scroll transition-opacity duration-500"
             style={{
               opacity: currentSlide === 3 ? 1 : 0.3,
@@ -451,7 +451,7 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
 
           {/* Slide 5: Profile Card */}
           <div
-            ref={(el) => (slideRefs.current[4] = el)}
+            ref={(el) => { slideRefs.current[4] = el; }}
             className="min-w-full snap-center flex items-center justify-center p-8 sm:p-12 relative z-10 transition-opacity duration-500"
             style={{
               opacity: currentSlide === 4 ? 1 : 0.3,
