@@ -344,12 +344,10 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
           <div
             ref={(el) => { slideRefs.current[2] = el; }}
             className="min-w-full snap-center flex items-start justify-center p-8 sm:p-12 relative z-10 overflow-y-auto github-wrapped-scroll transition-opacity duration-500"
-            style={{
+            style={{ 
               opacity: currentSlide === 2 ? 1 : 0.3,
               transform: currentSlide === 2 ? 'scale(1)' : 'scale(0.98)',
-              transition: 'opacity 0.5s ease, transform 0.5s ease'
-            }}
-            style={{ 
+              transition: 'opacity 0.5s ease, transform 0.5s ease',
               maxHeight: '100%',
               scrollbarWidth: 'thin',
               scrollbarColor: 'rgba(0, 255, 65, 0.4) rgba(0, 0, 0, 0.3)'
@@ -407,9 +405,7 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
             style={{
               opacity: currentSlide === 3 ? 1 : 0.3,
               transform: currentSlide === 3 ? 'scale(1)' : 'scale(0.98)',
-              transition: 'opacity 0.5s ease, transform 0.5s ease'
-            }}
-            style={{ 
+              transition: 'opacity 0.5s ease, transform 0.5s ease',
               maxHeight: '100%',
               scrollbarWidth: 'thin',
               scrollbarColor: 'rgba(0, 255, 65, 0.4) rgba(0, 0, 0, 0.3)'
