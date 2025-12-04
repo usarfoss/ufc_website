@@ -2,6 +2,8 @@
 @import 'locomotive-scroll/dist/locomotive-scroll.css';
 /* Add to globals.css */
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=IBM+Plex+Mono:wght@300;400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bitcount+Prop+Double+Ink:wght@300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -331,6 +333,167 @@ html,body,#__next { height:100%; background:var(--bg); color:var(--fg); font-fam
   box-shadow: 0 10px 25px rgba(34, 197, 94, 0.2);
 }
 
+/* GitHub Wrapped Button Effects */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 
+      0 0 10px rgba(11, 135, 79, 0.4),
+      0 0 20px rgba(11, 135, 79, 0.3),
+      0 0 30px rgba(11, 135, 79, 0.2),
+      inset 0 0 10px rgba(11, 135, 79, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 0 20px rgba(11, 135, 79, 0.6),
+      0 0 40px rgba(11, 135, 79, 0.4),
+      0 0 60px rgba(11, 135, 79, 0.3),
+      inset 0 0 15px rgba(11, 135, 79, 0.2);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) translate(var(--sparkle-x), var(--sparkle-y));
+  }
+}
+
+.github-wrapped-button-wrapper {
+  position: relative;
+  display: inline-block;
+  animation: float 3s ease-in-out infinite;
+}
+
+.github-wrapped-button-wrapper::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(
+    45deg,
+    rgba(11, 135, 79, 0.3),
+    rgba(11, 135, 79, 0.1),
+    rgba(11, 135, 79, 0.3),
+    rgba(11, 135, 79, 0.1)
+  );
+  background-size: 200% 200%;
+  border-radius: 8px;
+  z-index: -1;
+  animation: shimmer 3s linear infinite;
+  opacity: 0.6;
+}
+
+.github-wrapped-button {
+  position: relative;
+  animation: pulse-glow 2s ease-in-out infinite;
+  background: linear-gradient(
+    135deg,
+    rgba(11, 135, 79, 1) 0%,
+    rgba(11, 135, 79, 0.9) 50%,
+    rgba(11, 135, 79, 0.8) 100%
+  );
+  background-size: 200% 200%;
+  overflow: hidden;
+}
+
+.github-wrapped-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+.github-wrapped-button:hover {
+  animation: pulse-glow 1s ease-in-out infinite;
+  transform: scale(1.05);
+}
+
+/* Floating particles around button */
+.github-wrapped-particles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.github-wrapped-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(11, 135, 79, 0.6);
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(11, 135, 79, 0.8);
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+.github-wrapped-particle:nth-child(1) {
+  top: 10%;
+  left: 20%;
+  --sparkle-x: -20px;
+  --sparkle-y: -20px;
+  animation-delay: 0s;
+}
+
+.github-wrapped-particle:nth-child(2) {
+  top: 20%;
+  right: 15%;
+  --sparkle-x: 20px;
+  --sparkle-y: -15px;
+  animation-delay: 0.5s;
+}
+
+.github-wrapped-particle:nth-child(3) {
+  bottom: 15%;
+  left: 25%;
+  --sparkle-x: -15px;
+  --sparkle-y: 20px;
+  animation-delay: 1s;
+}
+
+.github-wrapped-particle:nth-child(4) {
+  bottom: 10%;
+  right: 20%;
+  --sparkle-x: 15px;
+  --sparkle-y: 15px;
+  animation-delay: 1.5s;
+}
+
 
 /* Performance Optimizations */
 .will-change-transform {
@@ -442,4 +605,254 @@ html {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Bitcount Prop Double Ink Font */
+.bitcount-prop-double-ink {
+  font-family: "Bitcount Prop Double Ink", system-ui;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+  font-variation-settings:
+    "slnt" 0,
+    "CRSV" 0.5,
+    "ELSH" 0,
+    "ELXP" 0,
+    "SZP1" 0,
+    "SZP2" 0,
+    "XPN1" 0,
+    "XPN2" 0,
+    "YPN1" 0,
+    "YPN2" 0;
+}
+
+/* Matrix/Terminal Style Font for GitHub Wrapped */
+.matrix-font {
+  font-family: "Orbitron", "Rajdhani", "IBM Plex Mono", "Courier New", monospace;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Matrix Glow Effect */
+.matrix-glow {
+  text-shadow: 
+    0 0 5px currentColor,
+    0 0 10px currentColor,
+    0 0 15px currentColor,
+    0 0 20px currentColor,
+    0 0 35px currentColor,
+    0 0 40px currentColor,
+    2px 2px 0 rgba(0, 0, 0, 0.9);
+  filter: brightness(1.2) contrast(1.1);
+}
+
+/* Matrix Green Glow */
+.matrix-green-glow {
+  color: #00ff41;
+  text-shadow: 
+    0 0 3px #00ff41,
+    0 0 6px #00ff41,
+    0 0 9px rgba(0, 255, 65, 0.5),
+    1px 1px 0 rgba(0, 0, 0, 0.8);
+  filter: brightness(1.1);
+}
+
+/* Matrix Cyan Glow */
+.matrix-cyan-glow {
+  color: #00ffff;
+  text-shadow: 
+    0 0 3px #00ffff,
+    0 0 6px rgba(0, 255, 255, 0.6),
+    1px 1px 0 rgba(0, 0, 0, 0.8);
+  filter: brightness(1.1);
+}
+
+/* Matrix Scanline Effect */
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+.matrix-scanline {
+  position: relative;
+  overflow: hidden;
+}
+
+.matrix-scanline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(0, 255, 65, 0.2),
+    transparent
+  );
+  animation: scanline 8s linear infinite;
+  pointer-events: none;
+  z-index: 1000;
+  display: none;
+}
+
+/* Matrix Glitch Effect */
+@keyframes matrix-glitch {
+  0%, 100% {
+    transform: translate(0);
+    filter: hue-rotate(0deg);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+    filter: hue-rotate(90deg);
+  }
+  40% {
+    transform: translate(-2px, -2px);
+    filter: hue-rotate(180deg);
+  }
+  60% {
+    transform: translate(2px, 2px);
+    filter: hue-rotate(270deg);
+  }
+  80% {
+    transform: translate(2px, -2px);
+    filter: hue-rotate(360deg);
+  }
+}
+
+.matrix-glitch {
+  animation: matrix-glitch 0.3s infinite;
+}
+
+.matrix-glitch:hover {
+  animation: matrix-glitch 0.1s infinite;
+}
+
+/* Matrix Digital Rain Background */
+.matrix-rain {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Custom Scrollbar for GitHub Wrapped */
+.github-wrapped-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.github-wrapped-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+.github-wrapped-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 65, 0.4);
+  border-radius: 4px;
+  border: 1px solid rgba(0, 255, 65, 0.2);
+}
+
+.github-wrapped-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 65, 0.6);
+}
+
+/* Gradient Border Animation for Profile Picture */
+@keyframes gradient-border {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Pulse Glow for Legendary Badge */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 4px 10px rgba(0, 0, 0, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 215, 0, 1), 0 4px 15px rgba(0, 0, 0, 0.4);
+    transform: scale(1.05);
+  }
+}
+
+.matrix-rain::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 255, 65, 0.03) 2px,
+      rgba(0, 255, 65, 0.03) 4px
+    );
+  pointer-events: none;
+  z-index: 1;
+  animation: matrix-rain-fall 20s linear infinite;
+}
+
+@keyframes matrix-rain-fall {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+/* Matrix CRT Monitor Effect */
+.matrix-crt {
+  position: relative;
+  background: #000;
+}
+
+.matrix-crt::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.15),
+      rgba(0, 0, 0, 0.15) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.matrix-crt::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
 }

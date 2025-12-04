@@ -46,13 +46,13 @@ export async function POST(request: NextRequest) {
         const timeSinceLastSync = now - parseInt(lastSync);
         if (timeSinceLastSync < SYNC_RATE_LIMIT_DURATION) {
           const remainingTime = Math.ceil((SYNC_RATE_LIMIT_DURATION - timeSinceLastSync) / 1000);
-          return NextResponse.json({ 
+        return NextResponse.json({ 
             error: 'Rate limited', 
             message: `Please wait ${Math.floor(remainingTime / 60)}m ${remainingTime % 60}s before syncing again`,
             remainingTime,
             rateLimited: true
-          }, { status: 429 });
-        }
+        }, { status: 429 });
+      }
       }
     } catch (error) {
       console.warn('Rate limiting check failed, proceeding with sync:', error);
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     // Sync GitHub data using load balancer
     console.log('🔄 Syncing GitHub data with load balancer...');
     const result = await githubService.syncUserStats(userId, user.githubUsername);
-    
+
     // Set sync rate limit timestamp
     await RedisService.setInRedis(syncRateLimitKey, now.toString(), 10 * 60); // 10 minutes TTL
 
@@ -118,9 +118,9 @@ export async function POST(request: NextRequest) {
           where: {
             type: {
               in: ['CONTRIBUTIONS', 'COMMITS', 'PULL_REQUESTS', 'ISSUES']
-            }
-          }
-        });
+        }
+      }
+    });
         console.log('🧹 Cleared leaderboard caches after significant stats change');
       }
     } catch (cacheError) {

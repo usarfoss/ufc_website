@@ -46,11 +46,11 @@ export async function GET(request: NextRequest) {
     try {
       // Fetch real GitHub activities
       const githubActivities = await githubService.getUserContributions(user.githubUsername);
-      
+
       // Format GitHub activities with repo names and user's profile name
       const formattedActivities = githubActivities.recentActivity.map((activity, index) => ({
         id: `github-${index}`,
-        type: activity.type.toLowerCase(),
+      type: activity.type.toLowerCase(),
         message: activity.message,
         repo: activity.repo,
         target: activity.repo,
@@ -72,8 +72,8 @@ export async function GET(request: NextRequest) {
       const paginatedActivities = formattedActivities.slice(offset, offset + limit);
       const hasMore = offset + limit < total;
 
-      return NextResponse.json({
-        success: true,
+    return NextResponse.json({
+      success: true,
         activities: paginatedActivities,
         total: total,
         hasMore: hasMore,
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
         total: 0,
         hasMore: false,
         nextCursor: null
-      });
+    });
     }
 
   } catch (error) {

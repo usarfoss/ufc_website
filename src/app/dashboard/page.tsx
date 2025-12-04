@@ -14,6 +14,8 @@ import {
 import { useEffect, useState } from "react";
 import AdvancedPagination from '@/components/ui/advanced-pagination';
 import GitCommandsLoader from '@/components/ui/git-commands-loader';
+import GitHubWrapped from '@/components/ui/github-wrapped';
+import { Gift } from 'lucide-react';
 
 interface DashboardStats {
   totalCommits: {
@@ -68,6 +70,7 @@ const DashboardPage = React.memo(function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [activitiesLoading, setActivitiesLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showWrapped, setShowWrapped] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -192,7 +195,7 @@ const DashboardPage = React.memo(function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Welcome Header */}
-      <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6 text-center">
+      <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6 text-center relative">
         <div className="w-24 h-24 mx-auto mb-4 bg-[#0B874F]/20 rounded-full flex items-center justify-center overflow-hidden">
           {profile?.avatar ? (
             <img src={profile.avatar} alt={profile.name || 'User'} className="w-full h-full object-cover" />
@@ -202,15 +205,33 @@ const DashboardPage = React.memo(function DashboardPage() {
             </span>
           )}
         </div>
-        <h1 className="text-4xl font-bold text-white mb-2">
-          Welcome back, <span className="text-[#0B874F]">{user?.name?.split(' ')[0] || 'Developer'}</span>! 👋
-        </h1>
+            <h1 className="text-4xl font-bold text-white mb-2">
+              Welcome back, <span className="text-[#0B874F]">{user?.name?.split(' ')[0] || 'Developer'}</span>! 👋
+            </h1>
         <p className="text-gray-300 text-lg mb-2">
           Here's what's happening with your contributions.
         </p>
         {profile?.githubUsername && (
           <p className="text-gray-400">@{profile.githubUsername}</p>
         )}
+        {/* GitHub Wrapped Button */}
+        <div className="mt-4 flex justify-center">
+          <div className="github-wrapped-button-wrapper relative">
+            <div className="github-wrapped-particles">
+              <div className="github-wrapped-particle"></div>
+              <div className="github-wrapped-particle"></div>
+              <div className="github-wrapped-particle"></div>
+              <div className="github-wrapped-particle"></div>
+          </div>
+            <button
+              onClick={() => setShowWrapped(true)}
+              className="github-wrapped-button relative z-10 px-6 py-3 text-black font-bold rounded-lg transition-all duration-300 flex items-center space-x-2 shadow-lg"
+            >
+              <Gift className="w-5 h-5 relative z-10" />
+              <span className="relative z-10">View GitHub Wrapped</span>
+            </button>
+            </div>
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -243,7 +264,7 @@ const DashboardPage = React.memo(function DashboardPage() {
         })}
       </div>
 
-      {/* Recent Activity */}
+        {/* Recent Activity */}
       <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
           <div className="flex items-center mb-6">
             <h2 className="text-xl font-bold text-white flex items-center">
@@ -257,8 +278,8 @@ const DashboardPage = React.memo(function DashboardPage() {
               <GitCommandsLoader />
             </div>
           ) : (
-            <div className="space-y-4">
-              {recentActivity.length > 0 ? (
+          <div className="space-y-4">
+            {recentActivity.length > 0 ? (
               recentActivity.map((activity, index) => (
                 <div
                   key={index}
@@ -312,9 +333,9 @@ const DashboardPage = React.memo(function DashboardPage() {
                 <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>No recent activity</p>
                 <p className="text-sm">Start contributing to see your activity here!</p>
-            </div>
-          )}
-            </div>
+              </div>
+            )}
+          </div>
           )}
 
         {/* Pagination */}
@@ -327,16 +348,32 @@ const DashboardPage = React.memo(function DashboardPage() {
               showQuickJump={true}
               maxVisiblePages={5}
             />
-          </div>
+        </div>
         )}
 
         {/* Pagination Info */}
         {!activitiesLoading && totalActivities > 0 && (
           <div className="text-center mt-4 text-gray-400 text-sm">
             Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, totalActivities)} of {totalActivities} activities
+                </div>
+            )}
           </div>
-        )}
-      </div>
+
+      {/* GitHub Wrapped Modal */}
+      {stats && profile && (
+        <GitHubWrapped
+          isOpen={showWrapped}
+          onClose={() => setShowWrapped(false)}
+          userData={{
+            name: profile.name,
+            githubUsername: profile.githubUsername,
+            avatar: profile.avatar,
+            commits: parseInt(stats.totalCommits.value) || 0,
+            pullRequests: parseInt(stats.pullRequests.value) || 0,
+            leaderboardRank: stats.leaderboardRank.value || '#-',
+          }}
+        />
+          )}
     </div>
   );
 });
