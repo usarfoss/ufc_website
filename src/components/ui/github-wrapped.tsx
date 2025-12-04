@@ -26,8 +26,6 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
   const [currentSlide, setCurrentSlide] = useState(0);
   const [languages, setLanguages] = useState<LanguageData>({});
   const [loading, setLoading] = useState(true);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [isOpening, setIsOpening] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
   const touchStartX = useRef<number | null>(null);
@@ -57,21 +55,15 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
 
   useEffect(() => {
     if (isOpen) {
-      setIsOpening(true);
       fetchLanguages();
       setCurrentSlide(0);
       // Set a random quote when modal opens
       setRandomQuote(devQuotes[Math.floor(Math.random() * devQuotes.length)]);
-      // Reset opening animation after it completes
-      setTimeout(() => setIsOpening(false), 600);
-    } else {
-      setIsOpening(false);
     }
   }, [isOpen]);
 
   useEffect(() => {
     if (isOpen && containerRef.current) {
-      setIsAnimating(true);
       const container = containerRef.current;
       const slide = slideRefs.current[currentSlide];
       if (slide) {
@@ -80,9 +72,6 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
           behavior: 'smooth'
         });
       }
-      // Reset animation flag after transition
-      const timer = setTimeout(() => setIsAnimating(false), 500);
-      return () => clearTimeout(timer);
     }
   }, [currentSlide, isOpen]);
 
@@ -156,19 +145,13 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
 
   return (
     <div
-      className={`fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity duration-300 ${
-        isOpen ? 'opacity-100' : 'opacity-0'
-      }`}
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={onClose}
       onKeyDown={handleKeyDown}
       tabIndex={0}
     >
       <div
-        className={`bg-black border-2 border-[#00ff41] rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden relative matrix-crt matrix-rain transition-all duration-500 ease-out ${
-          isOpening
-            ? 'opacity-0 scale-95 translate-y-4'
-            : 'opacity-100 scale-100 translate-y-0'
-        }`}
+        className="bg-black border-2 border-[#00ff41] rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden relative matrix-crt matrix-rain"
         onClick={(e) => e.stopPropagation()}
         style={{ boxShadow: '0 0 15px rgba(0, 255, 65, 0.3), inset 0 0 20px rgba(0, 255, 65, 0.05)' }}
       >
@@ -211,7 +194,7 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
         {/* Slide Container */}
         <div
           ref={containerRef}
-          className="flex overflow-x-hidden scroll-smooth snap-x snap-mandatory flex-1 relative z-10 transition-all duration-500 ease-in-out"
+          className="flex overflow-x-hidden scroll-smooth snap-x snap-mandatory flex-1 relative z-10"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -220,12 +203,7 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
           {/* Slide 1: Welcome */}
           <div
             ref={(el) => { slideRefs.current[0] = el; }}
-            className="min-w-full snap-center flex items-center justify-center p-8 sm:p-12 relative z-10 transition-opacity duration-500"
-            style={{
-              opacity: currentSlide === 0 ? 1 : 0.3,
-              transform: currentSlide === 0 ? 'scale(1)' : 'scale(0.98)',
-              transition: 'opacity 0.5s ease, transform 0.5s ease'
-            }}
+            className="min-w-full snap-center flex items-center justify-center p-8 sm:p-12 relative z-10"
           >
             <div className="text-center space-y-6">
               <h1 className="matrix-font matrix-green-glow text-4xl sm:text-6xl">
@@ -252,12 +230,7 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
           {/* Slide 2: Top Languages */}
           <div
             ref={(el) => { slideRefs.current[1] = el; }}
-            className="min-w-full snap-center flex items-center justify-center p-8 sm:p-12 relative z-10 transition-opacity duration-500"
-            style={{
-              opacity: currentSlide === 1 ? 1 : 0.3,
-              transform: currentSlide === 1 ? 'scale(1)' : 'scale(0.98)',
-              transition: 'opacity 0.5s ease, transform 0.5s ease'
-            }}
+            className="min-w-full snap-center flex items-center justify-center p-8 sm:p-12 relative z-10"
           >
             <div className="w-full space-y-8">
               <div className="text-center">
@@ -286,29 +259,64 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
                     const langAbbr = lang.length > 2 ? lang.substring(0, 2).toUpperCase() : lang.toUpperCase();
 
                     return (
-                      <div key={lang} className="space-y-2">
-                        <div className="flex items-center justify-between mb-2">
+                      <div key={lang} className="flex items-center gap-3 sm:gap-4 mb-3">
+                        {/* Language Label */}
+                        <div className="w-12 sm:w-16 flex-shrink-0">
                           <span className="matrix-font text-lg sm:text-xl text-[#00ff41]" style={{ textShadow: '0 0 4px rgba(0, 255, 65, 0.5)' }}>
                             {langAbbr}
                           </span>
                         </div>
-                        <div className="relative w-full bg-gray-900 rounded-sm h-12 sm:h-16 overflow-hidden border-2 border-[#00ff41]/30" style={{ boxShadow: 'inset 0 0 5px rgba(0, 255, 65, 0.15)' }}>
-                          {/* Scanline effect */}
-                          <div className="absolute inset-0 opacity-20" style={{
-                            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 65, 0.1) 2px, rgba(0, 255, 65, 0.1) 4px)'
-                          }} />
-                          <div
-                            className="h-full transition-all duration-1000 ease-out relative"
+                        
+                        {/* Histogram Bar Container */}
+                        <div className="flex-1 relative">
+                          {/* Container with green border and horizontal texture */}
+                          <div 
+                            className="relative w-full h-8 sm:h-10 rounded-sm overflow-hidden border-2 border-[#00ff41]"
                             style={{
-                              width: `${percentage}%`,
-                              backgroundColor: color,
-                              boxShadow: `inset 0 0 5px ${color}60, 0 0 10px ${color}30`,
-                              clipPath: 'polygon(0 0, 100% 0, 95% 100%, 5% 100%)'
+                              backgroundColor: '#1a1a1a',
+                              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 255, 65, 0.05) 1px, rgba(0, 255, 65, 0.05) 2px)',
+                              boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.5)'
                             }}
                           >
-                            {/* 3D effect lines */}
-                            <div className="absolute top-0 right-0 w-2 h-full bg-white/20" />
-                            <div className="absolute bottom-0 left-0 w-full h-2 bg-black/30" />
+                            {/* Filled portion with 3D bevel effect and diagonal edge */}
+                            <div
+                              className="h-full transition-all duration-1000 ease-out relative"
+                              style={{
+                                width: `${percentage}%`,
+                                backgroundColor: color,
+                                clipPath: 'polygon(0 0, calc(100% - 4px) 0, 100% 100%, 0 100%)',
+                                boxShadow: `
+                                  inset 0 2px 4px rgba(255, 255, 255, 0.3),
+                                  inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+                                  0 0 8px ${color}40
+                                `
+                              }}
+                            >
+                              {/* Top highlight for 3D effect */}
+                              <div 
+                                className="absolute top-0 left-0 right-0 h-1/3"
+                                style={{
+                                  background: `linear-gradient(to bottom, rgba(255, 255, 255, 0.3), transparent)`
+                                }}
+                              />
+                              {/* Right diagonal edge highlight */}
+                              <div 
+                                className="absolute top-0 right-0 w-4 h-full"
+                                style={{
+                                  background: `linear-gradient(to left, ${color}, ${color}dd)`,
+                                  clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)'
+                                }}
+                              />
+                              {/* Bottom shadow for depth */}
+                              <div 
+                                className="absolute bottom-0 left-0 right-0 h-1/3"
+                                style={{
+                                  background: `linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent)`
+                                }}
+                              />
+                            </div>
+                            
+                            {/* Unfilled portion remains as dark gray container */}
                           </div>
                         </div>
                       </div>
@@ -343,11 +351,8 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
           {/* Slide 3: Commits and PRs */}
           <div
             ref={(el) => { slideRefs.current[2] = el; }}
-            className="min-w-full snap-center flex items-start justify-center p-8 sm:p-12 relative z-10 overflow-y-auto github-wrapped-scroll transition-opacity duration-500"
+            className="min-w-full snap-center flex items-start justify-center p-8 sm:p-12 relative z-10 overflow-y-auto github-wrapped-scroll"
             style={{ 
-              opacity: currentSlide === 2 ? 1 : 0.3,
-              transform: currentSlide === 2 ? 'scale(1)' : 'scale(0.98)',
-              transition: 'opacity 0.5s ease, transform 0.5s ease',
               maxHeight: '100%',
               scrollbarWidth: 'thin',
               scrollbarColor: 'rgba(0, 255, 65, 0.4) rgba(0, 0, 0, 0.3)'
@@ -401,11 +406,8 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
           {/* Slide 4: GitHub Heatmap */}
           <div
             ref={(el) => { slideRefs.current[3] = el; }}
-            className="min-w-full snap-center flex items-start justify-center p-8 sm:p-12 relative z-10 overflow-y-auto github-wrapped-scroll transition-opacity duration-500"
+            className="min-w-full snap-center flex items-start justify-center p-8 sm:p-12 relative z-10 overflow-y-auto github-wrapped-scroll"
             style={{
-              opacity: currentSlide === 3 ? 1 : 0.3,
-              transform: currentSlide === 3 ? 'scale(1)' : 'scale(0.98)',
-              transition: 'opacity 0.5s ease, transform 0.5s ease',
               maxHeight: '100%',
               scrollbarWidth: 'thin',
               scrollbarColor: 'rgba(0, 255, 65, 0.4) rgba(0, 0, 0, 0.3)'
@@ -448,12 +450,7 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
           {/* Slide 5: Profile Card */}
           <div
             ref={(el) => { slideRefs.current[4] = el; }}
-            className="min-w-full snap-center flex items-center justify-center p-8 sm:p-12 relative z-10 transition-opacity duration-500"
-            style={{
-              opacity: currentSlide === 4 ? 1 : 0.3,
-              transform: currentSlide === 4 ? 'scale(1)' : 'scale(0.98)',
-              transition: 'opacity 0.5s ease, transform 0.5s ease'
-            }}
+            className="min-w-full snap-center flex items-center justify-center p-8 sm:p-12 relative z-10"
           >
             <div className="w-full max-w-lg space-y-6">
               {/* Profile Picture with RARE badge */}
