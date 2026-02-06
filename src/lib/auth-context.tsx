@@ -8,6 +8,7 @@ interface User {
   name?: string;
   role: string;
   githubUsername?: string;
+  leetcodeUsername?: string;
 }
 
 interface AuthContextType {

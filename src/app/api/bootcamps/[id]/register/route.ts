@@ -3,8 +3,12 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 import { bootcampService } from '@/lib/bootcamp';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await params;
     const token = request.cookies.get('auth-token')?.value;
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -14,7 +18,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     // Get bootcamp details
     const bootcamp = await prisma.bootcamp.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!bootcamp) {
@@ -29,7 +33,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const existingParticipant = await prisma.bootcampParticipant.findUnique({
       where: {
         bootcampId_userId: {
-          bootcampId: params.id,
+          bootcampId: id,
           userId: decoded.userId
         }
       }
@@ -81,7 +85,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     // Register participant
     const participant = await prisma.bootcampParticipant.create({
       data: {
-        bootcampId: params.id,
+        bootcampId: id,
         userId: decoded.userId,
         baselineStats: baselineStats
       }

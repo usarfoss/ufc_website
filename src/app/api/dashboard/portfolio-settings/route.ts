@@ -152,7 +152,7 @@ export async function PUT(request: NextRequest) {
         portfolioTitle: portfolioTitle || null,
         portfolioSubtitle: portfolioSubtitle || null,
         tagline: tagline || null,
-        techStack: techStack ? JSON.stringify(techStack) : null,
+        techStack: techStack ? JSON.stringify(techStack) : undefined,
         resumeUrl: resumeUrl || null,
         websiteUrl: websiteUrl || null,
         linkedinUrl: linkedinUrl || null,

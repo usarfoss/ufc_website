@@ -26,6 +26,8 @@ const projects = [
     forks: 2,
     lastUpdate: "2024-01-15",
     featured: true,
+    collaborators: [] as any[],
+    creator: undefined as any,
     hologramData: {
       components: ["React Frontend", "Express Backend", "MongoDB Database", "JWT Authentication", "OAuth Integration"],
       connections: [
@@ -271,7 +273,7 @@ export default function ProjectsPage() {
                   <div className="mb-6">
                     <h4 className="text-lg font-semibold text-green-400 mb-3">Tech Stack</h4>
                     <div className="flex flex-wrap gap-2">
-                      {ongoingProjects[0].tech.map((tech, index) => (
+                      {ongoingProjects[0].tech.map((tech: string, index: number) => (
                         <motion.span
                           key={tech}
                           className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm border border-green-500/50"
@@ -288,7 +290,7 @@ export default function ProjectsPage() {
 
                   {/* Stats */}
                   <div className="grid grid-cols-2 gap-4 mb-6">
-                    {ongoingProjects[0].stats.map((stat, index) => (
+                    {ongoingProjects[0].stats.map((stat: { label: string; value: string; color: string }, index: number) => (
                       <motion.div
                         key={stat.label}
                         className="text-center p-4 bg-black/30 rounded-lg border border-green-500/20"

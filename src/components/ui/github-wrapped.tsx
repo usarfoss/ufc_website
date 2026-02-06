@@ -199,21 +199,6 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
           <FaultyTerminal
             scale={1.5}
             gridMul={[2, 1]}
-            digitSize={1.5}
-            timeScale={0.3}
-            scanlineIntensity={0}
-            glitchAmount={1}
-            flickerAmount={0.5}
-            noiseAmp={0.8}
-            chromaticAberration={0}
-            dither={false}
-            curvature={0.1}
-            tint="#00ff41"
-            mouseReact={true}
-            mouseStrength={0.15}
-            pageLoadAnimation={false}
-            brightness={0.6}
-            className="w-full h-full"
           />
         </div>
         
@@ -463,7 +448,13 @@ const GitHubWrapped: React.FC<GitHubWrappedProps> = ({ isOpen, onClose, userData
 
               {/* GitHub Contribution Heatmap */}
               <div className="bg-black/40 border-2 border-[#00ff41]/30 rounded-lg p-4 sm:p-6">
-                <GitHubHeatmap username={userData.githubUsername} />
+                {userData.githubUsername ? (
+                  <GitHubHeatmap username={userData.githubUsername} />
+                ) : (
+                  <div className="text-center text-gray-400 py-8">
+                    No GitHub username available
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-center space-x-4 mt-8">
