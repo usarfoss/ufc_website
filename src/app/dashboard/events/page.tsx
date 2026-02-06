@@ -51,9 +51,9 @@ export default function EventsPage() {
   const [eventToReject, setEventToReject] = useState<string | null>(null);
 
   // Check if user can create events (ADMIN, MAINTAINER, MODERATOR)
-  const canCreateEvent = user?.role && ['ADMIN', 'MAINTAINER', 'MODERATOR'].includes(user.role.toUpperCase());
+  const canCreateEvent = user?.role ? ['ADMIN', 'MAINTAINER', 'MODERATOR'].includes(user.role.toUpperCase()) : false;
   // Check if user can approve/reject events
-  const canManageEvents = user?.role && ['ADMIN', 'MAINTAINER', 'MODERATOR'].includes(user.role.toUpperCase());
+  const canManageEvents = user?.role ? ['ADMIN', 'MAINTAINER', 'MODERATOR'].includes(user.role.toUpperCase()) : false;
 
   useEffect(() => {
     fetchEvents();

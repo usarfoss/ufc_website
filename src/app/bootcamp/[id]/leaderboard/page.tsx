@@ -113,6 +113,10 @@ export default function BootcampLeaderboardPage() {
     }
   };
 
+  const getTypeEmoji = (type: string) => {
+    return type === 'LEETCODE' ? '💻' : '🚀';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center">

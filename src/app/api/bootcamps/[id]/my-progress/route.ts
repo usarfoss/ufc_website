@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await params;
     const token = request.cookies.get('auth-token')?.value;
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -14,7 +18,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const participant = await prisma.bootcampParticipant.findUnique({
       where: {
         bootcampId_userId: {
-          bootcampId: params.id,
+          bootcampId: id,
           userId: decoded.userId
         }
       },

@@ -18,7 +18,15 @@ import {
   Globe
 } from "lucide-react";
 
-const navigation = [
+type NavigationItem = {
+  name: string;
+  href: string;
+  icon: any;
+  roles: string[];
+  hasNotification?: boolean;
+};
+
+const navigation: NavigationItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: Home, roles: [] },
   { name: "Bootcamps", href: "/dashboard/bootcamps", icon: Target, roles: [], hasNotification: true },
   { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Trophy, roles: [] },
@@ -31,7 +39,7 @@ const navigation = [
   { name: "Settings", href: "/dashboard/settings", icon: Settings, roles: [] },
 ];
 
-const adminNavigation = [
+const adminNavigation: NavigationItem[] = [
   { name: "Admin Panel", href: "/dashboard/admin", icon: Shield, roles: ['ADMIN', 'MAINTAINER', 'MODERATOR'] },
   { name: "Bootcamps", href: "/dashboard/admin/bootcamps", icon: Trophy, roles: ['ADMIN', 'MAINTAINER', 'MODERATOR'] },
 ];
@@ -75,7 +83,7 @@ export default function Sidebar() {
       <nav className="p-4 space-y-2">
         {navigation.map((item) => {
           // Hide items that require specific roles
-          if (item.roles.length > 0 && !item.roles.includes(user?.role?.toUpperCase() || '')) {
+          if (item.roles.length > 0 && user?.role && !item.roles.includes(user.role.toUpperCase())) {
             return null;
           }
           
@@ -108,7 +116,7 @@ export default function Sidebar() {
       </nav>
 
       {/* Admin Navigation */}
-      {user && ['ADMIN', 'MAINTAINER', 'MODERATOR'].includes(user.role?.toUpperCase() || '') && (
+      {user?.role && ['ADMIN', 'MAINTAINER', 'MODERATOR'].includes(user.role.toUpperCase()) && (
         <>
           <div className="mx-4 border-t border-[#0B874F]/30 my-2"></div>
           <nav className="p-4 space-y-2">
