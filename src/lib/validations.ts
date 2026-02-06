@@ -10,7 +10,7 @@ export const signupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters long'),
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters long'),
-  githubUsername: z.string().optional(),
+  githubUsername: z.string().min(1, 'GitHub username is required'),
 });
 
 // Profile schemas

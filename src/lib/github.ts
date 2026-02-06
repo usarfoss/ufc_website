@@ -58,9 +58,9 @@ export class GitHubService {
     } catch (error) {
       console.warn('Load balancer failed, using primary token:', error);
       // Fallback to primary token
-    this.octokit = new Octokit({
-      auth: process.env.GITHUB_TOKEN,
-    });
+      this.octokit = new Octokit({
+        auth: process.env.GITHUB_TOKEN,
+      });
     }
   }
 
@@ -282,8 +282,8 @@ export class GitHubService {
       let languagePercentages: Record<string, number> = await this.getTopLanguagesFromReadmeStats(username);
 
       if (Object.keys(languagePercentages).length === 0) {
-      const languages: Record<string, number> = {};
-      let totalSize = 0;
+        const languages: Record<string, number> = {};
+        let totalSize = 0;
 
         // Filter repositories to avoid 404 errors
         const validRepos = repos.filter(repo => 
@@ -301,11 +301,11 @@ export class GitHubService {
               const controller = new AbortController();
               const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
               
-            const { data: langData } = await this.octokit.rest.repos.listLanguages({
-              owner: username,
-              repo: repo.name,
-            });
-
+              const { data: langData } = await this.octokit.rest.repos.listLanguages({
+                owner: username,
+                repo: repo.name,
+              });
+              
               clearTimeout(timeoutId);
               return langData as Record<string, number>;
             } catch (error: any) {
@@ -323,13 +323,13 @@ export class GitHubService {
             for (const [lang, bytes] of Object.entries(r.value)) {
               languages[lang] = (languages[lang] || 0) + (bytes as number);
               totalSize += bytes as number;
+            }
           }
         }
-      }
 
         if (totalSize > 0) {
           const tmp: Record<string, number> = {};
-      for (const [lang, bytes] of Object.entries(languages)) {
+          for (const [lang, bytes] of Object.entries(languages)) {
             tmp[lang] = Math.round(((bytes as number) / totalSize) * 100);
           }
           languagePercentages = tmp;
@@ -396,9 +396,9 @@ export class GitHubService {
         const contributionMatch = html.match(/(\d+)\s+contributions?\s+in\s+the\s+last\s+year/i);
         if (contributionMatch) {
           const totalCommits = parseInt(contributionMatch[1]);
-    return totalCommits;
-  }
-
+          return totalCommits;
+        }
+        
         const totalMatch = html.match(/total\s+contributions?\s*:?\s*(\d+)/i);
         if (totalMatch) {
           const totalCommits = parseInt(totalMatch[1]);
@@ -468,12 +468,12 @@ export class GitHubService {
   }
 
          private async getRecentActivity(username: string, purpose: 'user' | 'community' | 'heavy' | 'background' = 'user'): Promise<Array<{
-    type: string;
-    repo: string;
-    date: string;
-    message: string;
-  }>> {
-    try {
+           type: string;
+           repo: string;
+           date: string;
+           message: string;
+         }>> {
+           try {
              // Check cache first
              const cacheKey = `recent-activity-${username}`;
              const cachedData = this.getCachedData(cacheKey);
@@ -488,7 +488,7 @@ export class GitHubService {
 
              const octokit = this.getOctokitWithToken(purpose);
              const { data } = await octokit.rest.activity.listPublicEventsForUser({
-        username,
+               username,
                per_page: 50, // Reduced from 100 to 50 for faster loading
              });
 

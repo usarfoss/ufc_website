@@ -1,179 +1,234 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-
-interface Contribution {
-  date: string;
-  count: number;
-  color: string;
-}
+import React, { useEffect, useRef, useState } from 'react';
+import * as d3 from 'd3';
 
 interface GitHubHeatmapProps {
-  username?: string;
+  username: string;
+  className?: string;
 }
 
-const GitHubHeatmap: React.FC<GitHubHeatmapProps> = ({ username }) => {
-  const [contributions, setContributions] = useState<Contribution[]>([]);
+interface ContributionDay {
+  date: string;
+  count: number;
+  level: number;
+}
+
+export default function GitHubHeatmap({ username, className = '' }: GitHubHeatmapProps) {
+  const svgRef = useRef<SVGSVGElement>(null);
   const [loading, setLoading] = useState(true);
-  const [hoveredDay, setHoveredDay] = useState<{ date: string; count: number } | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<ContributionDay[]>([]);
 
   useEffect(() => {
+    if (!username) {
+      setError('No GitHub username provided');
+      setLoading(false);
+      return;
+    }
+
     fetchContributions();
   }, [username]);
 
   const fetchContributions = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/dashboard/contributions');
-      if (response.ok) {
-        const data = await response.json();
-        setContributions(data.contributions || []);
+      setError(null);
+      
+      const response = await fetch(`/api/github/contributions?username=${username}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch GitHub contributions');
       }
-    } catch (error) {
-      console.error('Error fetching contributions:', error);
+
+      const result = await response.json();
+      setData(result.contributions || []);
+    } catch (err) {
+      console.error('Error fetching GitHub contributions:', err);
+      setError('Unable to load contribution data');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleMouseEnter = (e: React.MouseEvent, contribution: Contribution) => {
-    setHoveredDay({ date: contribution.date, count: contribution.count });
-    setTooltipPosition({ x: e.clientX, y: e.clientY });
-  };
+  useEffect(() => {
+    if (!data.length || !svgRef.current) return;
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (hoveredDay) {
-      setTooltipPosition({ x: e.clientX, y: e.clientY });
+    renderHeatmap();
+  }, [data]);
+
+  const renderHeatmap = () => {
+    if (!svgRef.current) return;
+
+    const svg = d3.select(svgRef.current);
+    svg.selectAll('*').remove();
+
+    const cellSize = 12;
+    const cellGap = 3;
+    const weeks = 53;
+    const days = 7;
+    
+    const width = weeks * (cellSize + cellGap);
+    const height = days * (cellSize + cellGap) + 20;
+
+    svg.attr('width', '100%')
+       .attr('height', height)
+       .attr('viewBox', `0 0 ${width} ${height}`)
+       .attr('preserveAspectRatio', 'xMinYMin meet');
+
+    const g = svg.append('g').attr('transform', 'translate(0, 20)');
+
+    // Color scale
+    const colorScale = d3.scaleQuantize<string>()
+      .domain([0, d3.max(data, d => d.count) || 10])
+      .range(['#0e4429', '#006d32', '#26a641', '#39d353']);
+
+    // Group data by week
+    const dataByDate = new Map(data.map(d => [d.date, d]));
+    
+    // Generate last 365 days
+    const today = new Date();
+    const oneYearAgo = new Date(today);
+    oneYearAgo.setFullYear(today.getFullYear() - 1);
+
+    const cells: { date: Date; count: number; week: number; day: number }[] = [];
+    
+    for (let i = 0; i < 365; i++) {
+      const date = new Date(oneYearAgo);
+      date.setDate(oneYearAgo.getDate() + i);
+      
+      const dateStr = date.toISOString().split('T')[0];
+      const dayData = dataByDate.get(dateStr);
+      
+      const dayOfWeek = date.getDay();
+      const weekNumber = Math.floor(i / 7);
+      
+      cells.push({
+        date,
+        count: dayData?.count || 0,
+        week: weekNumber,
+        day: dayOfWeek
+      });
     }
-  };
 
-  const handleMouseLeave = () => {
-    setHoveredDay(null);
-  };
+    // Create tooltip
+    const tooltip = d3.select('body')
+      .append('div')
+      .attr('class', 'github-heatmap-tooltip')
+      .style('position', 'absolute')
+      .style('visibility', 'hidden')
+      .style('background-color', 'rgba(0, 0, 0, 0.9)')
+      .style('color', 'white')
+      .style('padding', '8px 12px')
+      .style('border-radius', '6px')
+      .style('font-size', '12px')
+      .style('pointer-events', 'none')
+      .style('z-index', '1000')
+      .style('border', '1px solid rgba(11, 135, 79, 0.5)');
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-  };
+    // Draw cells
+    g.selectAll('rect')
+      .data(cells)
+      .enter()
+      .append('rect')
+      .attr('x', d => d.week * (cellSize + cellGap))
+      .attr('y', d => d.day * (cellSize + cellGap))
+      .attr('width', cellSize)
+      .attr('height', cellSize)
+      .attr('rx', 2)
+      .attr('fill', d => d.count === 0 ? '#161b22' : colorScale(d.count))
+      .attr('stroke', 'rgba(11, 135, 79, 0.2)')
+      .attr('stroke-width', 1)
+      .on('mouseover', function(event, d) {
+        d3.select(this)
+          .attr('stroke', '#0B874F')
+          .attr('stroke-width', 2);
+        
+        tooltip
+          .style('visibility', 'visible')
+          .html(`
+            <div>
+              <strong>${d.count} contribution${d.count !== 1 ? 's' : ''}</strong><br/>
+              ${d.date.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
+            </div>
+          `);
+      })
+      .on('mousemove', function(event) {
+        tooltip
+          .style('top', (event.pageY - 10) + 'px')
+          .style('left', (event.pageX + 10) + 'px');
+      })
+      .on('mouseout', function() {
+        d3.select(this)
+          .attr('stroke', 'rgba(11, 135, 79, 0.2)')
+          .attr('stroke-width', 1);
+        
+        tooltip.style('visibility', 'hidden');
+      });
 
-  // Get the last 365 days of contributions
-  const recentContributions = contributions.slice(-365);
-  
-  // Group by weeks (7 days per week, ~52 weeks)
-  const weeks: Contribution[][] = [];
-  for (let i = 0; i < recentContributions.length; i += 7) {
-    weeks.push(recentContributions.slice(i, i + 7));
-  }
+    // Add month labels
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthLabels = svg.append('g').attr('transform', 'translate(0, 10)');
+    
+    let currentMonth = oneYearAgo.getMonth();
+    let monthX = 0;
+    
+    for (let week = 0; week < weeks; week++) {
+      const date = new Date(oneYearAgo);
+      date.setDate(oneYearAgo.getDate() + week * 7);
+      const month = date.getMonth();
+      
+      if (month !== currentMonth) {
+        monthLabels.append('text')
+          .attr('x', monthX)
+          .attr('y', 0)
+          .attr('fill', '#8b949e')
+          .attr('font-size', '10px')
+          .text(months[currentMonth]);
+        
+        currentMonth = month;
+        monthX = week * (cellSize + cellGap);
+      }
+    }
 
-  // Get intensity level for color
-  const getIntensity = (count: number) => {
-    if (count === 0) return 0;
-    if (count <= 2) return 1;
-    if (count <= 5) return 2;
-    if (count <= 10) return 3;
-    return 4;
-  };
-
-  // Color scale similar to GitHub (green theme)
-  const getColor = (count: number, originalColor: string) => {
-    const intensity = getIntensity(count);
-    const colors = [
-      '#161b22', // No contributions
-      'rgba(0, 255, 65, 0.2)', // 1-2 contributions
-      'rgba(0, 255, 65, 0.4)', // 3-5 contributions
-      'rgba(0, 255, 65, 0.6)', // 6-10 contributions
-      'rgba(0, 255, 65, 0.8)', // 11+ contributions
-    ];
-    return colors[intensity];
+    // Cleanup tooltip on unmount
+    return () => {
+      tooltip.remove();
+    };
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="text-[#00ff41] text-sm">Loading heatmap...</div>
+      <div className={`flex items-center justify-center p-8 ${className}`}>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0B874F]"></div>
       </div>
     );
   }
 
-  if (contributions.length === 0) {
+  if (error) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="text-gray-400 text-sm">No contribution data available</div>
+      <div className={`text-center p-8 ${className}`}>
+        <p className="text-gray-400 text-sm">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="relative">
-      <div className="overflow-x-auto">
-        <div className="inline-flex gap-1 p-2">
-          {weeks.map((week, weekIndex) => (
-            <div key={weekIndex} className="flex flex-col gap-1">
-              {week.map((contribution, dayIndex) => {
-                const count = contribution.count;
-                const color = getColor(count, contribution.color);
-                const date = contribution.date;
-                
-                return (
-                  <div
-                    key={`${weekIndex}-${dayIndex}`}
-                    className="w-3 h-3 rounded-sm cursor-pointer transition-all duration-150 hover:scale-125 hover:z-10 hover:ring-2 hover:ring-[#00ff41]/50"
-                    style={{
-                      backgroundColor: color,
-                      border: count > 0 ? `1px solid rgba(0, 255, 65, 0.3)` : '1px solid rgba(255, 255, 255, 0.1)',
-                    }}
-                    onMouseEnter={(e) => handleMouseEnter(e, contribution)}
-                    onMouseMove={handleMouseMove}
-                    onMouseLeave={handleMouseLeave}
-                    title={`${count} contributions on ${formatDate(date)}`}
-                  />
-                );
-              })}
-            </div>
-          ))}
-        </div>
+    <div className={className}>
+      <div className="w-full overflow-hidden">
+        <svg ref={svgRef} className="max-w-full h-auto"></svg>
       </div>
-
-      {/* Tooltip */}
-      {hoveredDay && (
-        <div
-          className="fixed z-50 px-3 py-2 bg-black/90 border border-[#00ff41]/50 rounded-lg pointer-events-none matrix-font text-sm"
-          style={{
-            left: `${tooltipPosition.x + 10}px`,
-            top: `${tooltipPosition.y - 10}px`,
-            transform: 'translateY(-100%)',
-            boxShadow: '0 0 10px rgba(0, 255, 65, 0.3)',
-          }}
-        >
-          <div className="text-[#00ff41] font-bold">
-            {hoveredDay.count} {hoveredDay.count === 1 ? 'contribution' : 'contributions'}
-          </div>
-          <div className="text-gray-400 text-xs mt-1">
-            {formatDate(hoveredDay.date)}
-          </div>
-        </div>
-      )}
-
-      {/* Legend */}
-      <div className="flex items-center justify-between mt-4 text-xs text-gray-400">
+      <div className="flex items-center justify-end mt-4 space-x-2 text-xs text-gray-400">
         <span>Less</span>
-        <div className="flex gap-1 mx-2">
-          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: 'rgba(0, 255, 65, 0.2)' }}></div>
-          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: 'rgba(0, 255, 65, 0.4)' }}></div>
-          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: 'rgba(0, 255, 65, 0.6)' }}></div>
-          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: 'rgba(0, 255, 65, 0.8)' }}></div>
+        <div className="flex space-x-1">
+          <div className="w-3 h-3 rounded-sm bg-[#161b22] border border-gray-700"></div>
+          <div className="w-3 h-3 rounded-sm bg-[#0e4429]"></div>
+          <div className="w-3 h-3 rounded-sm bg-[#006d32]"></div>
+          <div className="w-3 h-3 rounded-sm bg-[#26a641]"></div>
+          <div className="w-3 h-3 rounded-sm bg-[#39d353]"></div>
         </div>
         <span>More</span>
       </div>
     </div>
   );
-};
-
-export default GitHubHeatmap;
-
+}

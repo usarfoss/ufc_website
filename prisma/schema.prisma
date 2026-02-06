@@ -17,6 +17,7 @@ model User {
   password        String
   role            Role     @default(MEMBER)
   githubUsername  String?
+  leetcodeUsername String?
   location        String?
   bio             String?
   avatar          String?
@@ -33,11 +34,36 @@ model User {
   streak          Int      @default(0)
   lastStreakDate  DateTime?
   
+  // Portfolio fields
+  portfolioSlug   String?  @unique
+  portfolioPublic Boolean  @default(false)
+  tagline         String?
+  techStack       Json?    // Array of technologies
+  resumeUrl       String?
+  websiteUrl      String?
+  linkedinUrl     String?
+  twitterUrl      String?
+  portfolioTheme  String?  @default("default")
+  
+  // Extended portfolio customization
+  portfolioTitle  String?  // Custom title instead of name
+  portfolioSubtitle String? // Subtitle/role
+  showEmail       Boolean  @default(false)
+  showLocation    Boolean  @default(true)
+  showJoinDate    Boolean  @default(true)
+  showGithubStats Boolean  @default(true)
+  showLeetcodeStats Boolean @default(true)
+  showProjects    Boolean  @default(true)
+  showBootcamps   Boolean  @default(true)
+  showAchievements Boolean @default(true)
+  customSections  Json?    // Custom sections data
+  
   // Relations
   projects        ProjectMember[]
   events          EventAttendee[]
   activities      Activity[]
   githubStats     GitHubStats?
+  leetcodeStats   LeetCodeStats?
   createdProjects Project[] @relation("ProjectCreator")
   approvedProjects Project[] @relation("ProjectApprover")
   createdEvents   Event[]   @relation("EventCreator")
@@ -45,6 +71,8 @@ model User {
   achievements    UserAchievement[]
   badges          UserBadge[]
   notifications   Notification[]
+  createdBootcamps Bootcamp[] @relation("BootcampCreator")
+  bootcampParticipations BootcampParticipant[]
   
   @@map("users")
   @@index([joinedAt])
@@ -153,6 +181,26 @@ model GitHubStats {
   @@index([lastSynced])
 }
 
+model LeetCodeStats {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  leetcodeUsername  String
+  totalSolved       Int      @default(0)
+  easySolved        Int      @default(0)
+  mediumSolved      Int      @default(0)
+  hardSolved        Int      @default(0)
+  ranking           Int?
+  reputation        Int      @default(0)
+  acceptanceRate    Float?
+  lastSynced        DateTime @default(now())
+  
+  // Relations
+  user              User @relation(fields: [userId], references: [id])
+  
+  @@map("leetcode_stats")
+  @@index([lastSynced])
+}
+
 model Activity {
   id          String       @id @default(cuid())
   type        ActivityType
@@ -221,6 +269,9 @@ enum ActivityType {
   PROJECT_REJECTED
   EVENT_APPROVED
   EVENT_REJECTED
+  LEETCODE_EASY
+  LEETCODE_MEDIUM
+  LEETCODE_HARD
 }
 
 enum ApprovalStatus {
@@ -327,6 +378,7 @@ enum AchievementCategory {
   SOCIAL
   STREAK
   SPECIAL
+  LEETCODE
 }
 
 enum BadgeRarity {
@@ -344,6 +396,8 @@ enum LeaderboardType {
   CONTRIBUTIONS
   EXPERIENCE
   STREAK
+  LEETCODE_PROBLEMS
+  TOTAL_POINTS
 }
 
 enum NotificationType {
@@ -354,4 +408,82 @@ enum NotificationType {
   PROJECT_UPDATE
   MENTION
   SYSTEM
+}
+
+// Bootcamp Competition Models
+model Bootcamp {
+  id              String          @id @default(cuid())
+  name            String
+  description     String
+  type            BootcampType
+  status          BootcampStatus  @default(UPCOMING)
+  startDate       DateTime
+  endDate         DateTime
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  createdById     String
+  
+  // Relations
+  creator         User            @relation("BootcampCreator", fields: [createdById], references: [id])
+  participants    BootcampParticipant[]
+  snapshots       BootcampSnapshot[]
+  
+  @@map("bootcamps")
+  @@index([status, startDate])
+  @@index([endDate])
+}
+
+model BootcampParticipant {
+  id              String   @id @default(cuid())
+  bootcampId      String
+  userId          String
+  registeredAt    DateTime @default(now())
+  
+  // Baseline stats (at registration)
+  baselineStats   Json
+  
+  // Current progress
+  currentStats    Json?
+  progressStats   Json?
+  
+  // Final results
+  finalRank       Int?
+  finalPoints     Int      @default(0)
+  
+  // Relations
+  bootcamp        Bootcamp @relation(fields: [bootcampId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([bootcampId, userId])
+  @@map("bootcamp_participants")
+  @@index([bootcampId, finalPoints])
+}
+
+model BootcampSnapshot {
+  id              String   @id @default(cuid())
+  bootcampId      String
+  participantId   String
+  stats           Json
+  points          Int      @default(0)
+  rank            Int?
+  capturedAt      DateTime @default(now())
+  
+  // Relations
+  bootcamp        Bootcamp @relation(fields: [bootcampId], references: [id], onDelete: Cascade)
+  
+  @@map("bootcamp_snapshots")
+  @@index([bootcampId, capturedAt])
+  @@index([participantId, capturedAt])
+}
+
+enum BootcampType {
+  LEETCODE
+  GITHUB
+}
+
+enum BootcampStatus {
+  UPCOMING
+  ACTIVE
+  COMPLETED
+  CANCELLED
 }

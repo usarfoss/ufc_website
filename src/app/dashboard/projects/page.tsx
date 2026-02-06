@@ -29,16 +29,32 @@ export default function ProjectsPage() {
     name: '',
     description: '',
     repoUrl: '',
-    language: ''
+    language: '',
+    collaborators: [] as Array<{ userId: string; role: string; name: string }>
   });
+  const [allUsers, setAllUsers] = useState<Array<{ id: string; name: string; email: string; githubUsername?: string }>>([]);
+  const [showCollaboratorModal, setShowCollaboratorModal] = useState(false);
   const [creating, setCreating] = useState(false);
 
-  // Check if user can create projects (ADMIN, MAINTAINER, MODERATOR)
-  const canCreateProject = user?.role && ['ADMIN', 'MAINTAINER', 'MODERATOR'].includes(user.role.toUpperCase());
+  // All users can create projects (they go through approval)
+  const canCreateProject = true;
 
   useEffect(() => {
     fetchProjects();
+    fetchUsers();
   }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('/api/dashboard/users');
+      if (response.ok) {
+        const data = await response.json();
+        setAllUsers(data.users || []);
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
 
   const fetchProjects = async () => {
     try {
@@ -74,7 +90,13 @@ export default function ProjectsPage() {
       const response = await fetch('/api/dashboard/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(createForm)
+        body: JSON.stringify({
+          name: createForm.name,
+          description: createForm.description,
+          repoUrl: createForm.repoUrl,
+          language: createForm.language,
+          collaborators: createForm.collaborators.map(c => ({ userId: c.userId, role: c.role }))
+        })
       });
 
       if (!response.ok) {
@@ -82,20 +104,44 @@ export default function ProjectsPage() {
         throw new Error(errorData.error || 'Failed to create project');
       }
 
+      const data = await response.json();
+
       // Reset form and close modal
-      setCreateForm({ name: '', description: '', repoUrl: '', language: '' });
+      setCreateForm({ name: '', description: '', repoUrl: '', language: '', collaborators: [] });
       setShowCreateModal(false);
       
       // Refresh projects list
       await fetchProjects();
       
-      alert('Project created successfully!');
+      alert(data.message || 'Project submitted for approval!');
     } catch (err) {
       console.error('Error creating project:', err);
       alert(err instanceof Error ? err.message : 'Failed to create project');
     } finally {
       setCreating(false);
     }
+  };
+
+  const addCollaborator = (userId: string, role: string) => {
+    const selectedUser = allUsers.find(u => u.id === userId);
+    if (!selectedUser) return;
+
+    // Don't add if already added or if it's the current user
+    if (createForm.collaborators.some(c => c.userId === userId) || userId === user?.id) {
+      return;
+    }
+
+    setCreateForm({
+      ...createForm,
+      collaborators: [...createForm.collaborators, { userId, role, name: selectedUser.name || selectedUser.email }]
+    });
+  };
+
+  const removeCollaborator = (userId: string) => {
+    setCreateForm({
+      ...createForm,
+      collaborators: createForm.collaborators.filter(c => c.userId !== userId)
+    });
   };
 
   const getStatusColor = (status: string) => {
@@ -261,7 +307,10 @@ export default function ProjectsPage() {
           <GitBranch className="w-16 h-16 mx-auto mb-4 text-gray-400 opacity-50" />
           <h3 className="text-xl font-bold text-gray-400 mb-2">No Projects Yet</h3>
           <p className="text-gray-500 mb-6">Start your first project and begin contributing!</p>
-          <button className="px-6 py-3 bg-[#0B874F] text-black rounded-lg hover:bg-[#0B874F]/80 transition-colors font-medium">
+          <button 
+            onClick={() => setShowCreateModal(true)}
+            className="px-6 py-3 bg-[#0B874F] text-black rounded-lg hover:bg-[#0B874F]/80 transition-colors font-medium"
+          >
             <Plus className="w-4 h-4 inline mr-2" />
             Create Project
           </button>
@@ -328,6 +377,36 @@ export default function ProjectsPage() {
                   <option value="Other">Other</option>
                 </select>
               </div>
+
+              {/* Collaborators Section */}
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2">Collaborators (Optional)</label>
+                <div className="space-y-2">
+                  {createForm.collaborators.map((collab) => (
+                    <div key={collab.userId} className="flex items-center justify-between px-3 py-2 bg-[#0B874F]/10 border border-[#0B874F]/30 rounded-lg">
+                      <span className="text-white text-sm">{collab.name}</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-gray-400 text-xs">{collab.role}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeCollaborator(collab.userId)}
+                          className="text-red-400 hover:text-red-300"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setShowCollaboratorModal(true)}
+                    className="w-full px-3 py-2 bg-black/50 border border-[#0B874F]/30 rounded-lg text-[#0B874F] hover:bg-[#0B874F]/10 transition-colors text-sm"
+                  >
+                    <Plus className="w-4 h-4 inline mr-2" />
+                    Add Collaborator
+                  </button>
+                </div>
+              </div>
             </div>
             
             <div className="flex space-x-3 mt-6">
@@ -345,6 +424,70 @@ export default function ProjectsPage() {
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Collaborator Selection Modal */}
+      {showCollaboratorModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60]">
+          <div className="bg-black/90 border border-[#0B874F]/30 rounded-xl p-8 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <h2 className="text-2xl font-bold text-white mb-6">Add Collaborator</h2>
+            
+            {allUsers.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="w-12 h-12 mx-auto mb-4 text-gray-400 opacity-50" />
+                <p className="text-gray-400">Loading users...</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {allUsers
+                  .filter(u => u.id !== user?.id && !createForm.collaborators.some(c => c.userId === u.id))
+                  .length === 0 ? (
+                    <div className="text-center py-8">
+                      <Users className="w-12 h-12 mx-auto mb-4 text-gray-400 opacity-50" />
+                      <p className="text-gray-400">No more users available</p>
+                      <p className="text-gray-500 text-sm mt-2">All users have been added or you're the only user</p>
+                    </div>
+                  ) : (
+                    allUsers
+                      .filter(u => u.id !== user?.id && !createForm.collaborators.some(c => c.userId === u.id))
+                      .map((u) => (
+                        <div key={u.id} className="flex items-center justify-between p-3 bg-black/50 border border-[#0B874F]/30 rounded-lg hover:border-[#0B874F]/50 transition-colors">
+                          <div className="flex-1">
+                            <div className="text-white font-medium">{u.name || u.email}</div>
+                            {u.githubUsername && (
+                              <div className="text-gray-400 text-sm">@{u.githubUsername}</div>
+                            )}
+                          </div>
+                          <select
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                addCollaborator(u.id, e.target.value);
+                                setShowCollaboratorModal(false);
+                              }
+                            }}
+                            className="px-3 py-1 bg-black/50 border border-[#0B874F]/30 rounded text-white text-sm focus:outline-none focus:border-[#0B874F]"
+                            defaultValue=""
+                          >
+                            <option value="">Select Role</option>
+                            <option value="contributor">Contributor</option>
+                            <option value="maintainer">Maintainer</option>
+                            <option value="reviewer">Reviewer</option>
+                          </select>
+                        </div>
+                      ))
+                  )
+                }
+              </div>
+            )}
+            
+            <button
+              onClick={() => setShowCollaboratorModal(false)}
+              className="w-full mt-6 px-4 py-2 bg-gray-500/20 text-gray-400 rounded-lg hover:bg-gray-500/30 transition-colors"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}

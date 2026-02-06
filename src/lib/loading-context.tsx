@@ -34,9 +34,9 @@ export function LoadingProvider({ children }: { children: ReactNode }) {
 
   // Immediately hide loading for non-home pages
   useEffect(() => {
-        const isHomePage = pathname === '/' || pathname === '/home';
+    const isHomePage = pathname === '/' || pathname === '/home';
     if (!isHomePage) {
-          setIsLoading(false);
+      setIsLoading(false);
     }
   }, [pathname]);
 

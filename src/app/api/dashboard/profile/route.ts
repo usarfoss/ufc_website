@@ -20,7 +20,8 @@ export async function GET(request: NextRequest) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        githubStats: true
+        githubStats: true,
+        leetcodeStats: true
       }
     });
 
@@ -34,6 +35,7 @@ export async function GET(request: NextRequest) {
       name: user.name,
       email: user.email,
       githubUsername: user.githubUsername,
+      leetcodeUsername: user.leetcodeUsername,
       location: user.location,
       bio: user.bio,
       avatar: user.avatar,
@@ -73,6 +75,15 @@ export async function GET(request: NextRequest) {
             return {};
           }
         })()
+      } : null,
+      leetcodeStats: user.leetcodeStats ? {
+        totalSolved: user.leetcodeStats.totalSolved,
+        easySolved: user.leetcodeStats.easySolved,
+        mediumSolved: user.leetcodeStats.mediumSolved,
+        hardSolved: user.leetcodeStats.hardSolved,
+        ranking: user.leetcodeStats.ranking,
+        reputation: user.leetcodeStats.reputation,
+        acceptanceRate: user.leetcodeStats.acceptanceRate,
       } : null
     };
 
@@ -103,7 +114,15 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const { name, githubUsername, location, bio } = await request.json();
+    const { name, githubUsername, leetcodeUsername, location, bio } = await request.json();
+
+    // Check if LeetCode username changed and trigger sync
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { leetcodeUsername: true }
+    });
+
+    const leetcodeChanged = leetcodeUsername && leetcodeUsername !== currentUser?.leetcodeUsername;
 
     // Update user profile
     const updatedUser = await prisma.user.update({
@@ -111,10 +130,22 @@ export async function PUT(request: NextRequest) {
       data: {
         name: name || null,
         githubUsername: githubUsername || null,
+        leetcodeUsername: leetcodeUsername || null,
         location: location || null,
         bio: bio || null
       }
     });
+
+    // If LeetCode username was added/changed, trigger initial sync
+    if (leetcodeChanged && leetcodeUsername) {
+      try {
+        const { leetcodeService } = await import('@/lib/leetcode');
+        await leetcodeService.syncUserStats(userId, leetcodeUsername);
+      } catch (error) {
+        console.error('Failed to sync LeetCode stats on profile update:', error);
+        // Don't fail the profile update if sync fails
+      }
+    }
 
     return NextResponse.json({
       success: true,

@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Trophy, Medal, Award, TrendingUp, GitCommit, GitPullRequest, Star, BarChart3, Crown } from "lucide-react";
+import { Trophy, Medal, Award, TrendingUp, GitCommit, GitPullRequest, Star, BarChart3, Crown, Github } from "lucide-react";
 import GitCommandsLoader from '@/components/ui/git-commands-loader';
 
 interface LeaderboardUser {
   id: string;
   name: string;
   githubUsername?: string;
+  leetcodeUsername?: string;
   avatar?: string;
   stats: {
     commits: number;
@@ -15,31 +16,39 @@ interface LeaderboardUser {
     issues: number;
     contributions: number;
   };
+  leetcodeStats?: {
+    totalSolved: number;
+    easySolved: number;
+    mediumSolved: number;
+    hardSolved: number;
+  } | null;
+  githubPoints: number;
+  leetcodePoints: number;
   rank: number;
   points: number;
 }
 
 export default function LeaderboardPage() {
-  const [users, setUsers] = useState<LeaderboardUser[]>([]);
+  const [allUsers, setAllUsers] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<'contributions' | 'commits' | 'pullRequests'>('contributions');
+  const [sortBy, setSortBy] = useState<'totalPoints' | 'commits' | 'pullRequests' | 'leetcode' | 'github'>('totalPoints');
 
   useEffect(() => {
     fetchLeaderboard();
-  }, [sortBy]);
+  }, []); // Only fetch once on mount
 
   const fetchLeaderboard = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/dashboard/leaderboard?sortBy=${sortBy}`);
+      const response = await fetch(`/api/dashboard/leaderboard?sortBy=totalPoints`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch leaderboard');
       }
 
       const data = await response.json();
-      setUsers(data.users || []);
+      setAllUsers(data.users || []);
     } catch (err) {
       console.error('Error fetching leaderboard:', err);
       setError('Failed to load leaderboard');
@@ -47,6 +56,31 @@ export default function LeaderboardPage() {
       setLoading(false);
     }
   };
+
+  // Sort users based on selected filter (client-side)
+  const users = React.useMemo(() => {
+    const sorted = [...allUsers].sort((a, b) => {
+      switch (sortBy) {
+        case 'github':
+          return b.githubPoints - a.githubPoints;
+        case 'leetcode':
+          return b.leetcodePoints - a.leetcodePoints;
+        case 'commits':
+          return b.stats.commits - a.stats.commits;
+        case 'pullRequests':
+          return b.stats.pullRequests - a.stats.pullRequests;
+        case 'totalPoints':
+        default:
+          return b.points - a.points;
+      }
+    });
+
+    // Re-assign ranks based on current sort
+    return sorted.map((user, index) => ({
+      ...user,
+      rank: index + 1
+    }));
+  }, [allUsers, sortBy]);
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -110,39 +144,41 @@ export default function LeaderboardPage() {
           </div>
           
           {/* Sort Options */}
-          <div className="flex space-x-3">
+          <div className="flex flex-wrap gap-3">
             <button
-              onClick={() => setSortBy('contributions')}
+              onClick={() => setSortBy('totalPoints')}
               className={`px-6 py-3 rounded-xl transition-all duration-300 font-medium ${
-                sortBy === 'contributions'
+                sortBy === 'totalPoints'
                   ? 'bg-[#0B874F] text-black shadow-lg shadow-[#0B874F]/30'
                   : 'bg-black/30 text-gray-400 hover:text-[#0B874F] hover:bg-[#0B874F]/10'
               }`}
             >
               <TrendingUp className="w-4 h-4 inline mr-2" />
-              Total Points
+              Combined
             </button>
             <button
-              onClick={() => setSortBy('commits')}
+              onClick={() => setSortBy('github')}
               className={`px-6 py-3 rounded-xl transition-all duration-300 font-medium ${
-                sortBy === 'commits'
+                sortBy === 'github'
                   ? 'bg-[#0B874F] text-black shadow-lg shadow-[#0B874F]/30'
                   : 'bg-black/30 text-gray-400 hover:text-[#0B874F] hover:bg-[#0B874F]/10'
               }`}
             >
-              <GitCommit className="w-4 h-4 inline mr-2" />
-              Commits
+              <Github className="w-4 h-4 inline mr-2" />
+              GitHub
             </button>
             <button
-              onClick={() => setSortBy('pullRequests')}
+              onClick={() => setSortBy('leetcode')}
               className={`px-6 py-3 rounded-xl transition-all duration-300 font-medium ${
-                sortBy === 'pullRequests'
+                sortBy === 'leetcode'
                   ? 'bg-[#0B874F] text-black shadow-lg shadow-[#0B874F]/30'
                   : 'bg-black/30 text-gray-400 hover:text-[#0B874F] hover:bg-[#0B874F]/10'
               }`}
             >
-              <GitPullRequest className="w-4 h-4 inline mr-2" />
-              Pull Requests
+              <svg className="w-4 h-4 inline mr-2" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/>
+              </svg>
+              LeetCode
             </button>
           </div>
         </div>
@@ -231,23 +267,80 @@ export default function LeaderboardPage() {
                 </div>
                 
                 {/* Stats */}
-                <div className="flex items-center space-x-6">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-[#0B874F]">{user.stats.commits}</div>
-                    <div className="text-xs text-gray-400">Commits</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-[#F5A623]">{user.stats.pullRequests}</div>
-                    <div className="text-xs text-gray-400">PRs</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-[#E74C3C]">{user.stats.issues}</div>
-                    <div className="text-xs text-gray-400">Issues</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-white">{user.points}</div>
-                    <div className="text-xs text-gray-400">Points</div>
-                  </div>
+                <div className="flex items-center space-x-4 flex-wrap gap-y-2">
+                  {/* Show GitHub Stats when Combined or GitHub is selected */}
+                  {(sortBy === 'totalPoints' || sortBy === 'github') && (
+                    <>
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-[#0B874F]">{user.stats.commits}</div>
+                        <div className="text-xs text-gray-400">Commits</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-[#F5A623]">{user.stats.pullRequests}</div>
+                        <div className="text-xs text-gray-400">PRs</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-[#E74C3C]">{user.stats.issues}</div>
+                        <div className="text-xs text-gray-400">Issues</div>
+                      </div>
+                      
+                      {/* Show GitHub Points when GitHub is selected */}
+                      {sortBy === 'github' && (
+                        <>
+                          <div className="h-8 w-px bg-gray-600"></div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-white">{user.githubPoints}</div>
+                            <div className="text-xs text-gray-400">GitHub Points</div>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
+                  
+                  {/* Divider between GitHub and LeetCode when both shown */}
+                  {sortBy === 'totalPoints' && user.leetcodeStats && (
+                    <div className="h-8 w-px bg-gray-600"></div>
+                  )}
+                  
+                  {/* Show LeetCode Stats when Combined or LeetCode is selected */}
+                  {(sortBy === 'totalPoints' || sortBy === 'leetcode') && user.leetcodeStats && (
+                    <>
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-green-500">{user.leetcodeStats.easySolved}</div>
+                        <div className="text-xs text-gray-400">Easy</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-yellow-500">{user.leetcodeStats.mediumSolved}</div>
+                        <div className="text-xs text-gray-400">Medium</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-red-500">{user.leetcodeStats.hardSolved}</div>
+                        <div className="text-xs text-gray-400">Hard</div>
+                      </div>
+                      
+                      {/* Show LeetCode Points when LeetCode is selected */}
+                      {sortBy === 'leetcode' && (
+                        <>
+                          <div className="h-8 w-px bg-gray-600"></div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-white">{user.leetcodePoints}</div>
+                            <div className="text-xs text-gray-400">LeetCode Points</div>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
+                  
+                  {/* Show Total Points only when Combined is selected */}
+                  {sortBy === 'totalPoints' && (
+                    <>
+                      <div className="h-8 w-px bg-gray-600"></div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-white">{user.points}</div>
+                        <div className="text-xs text-gray-400">Total</div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

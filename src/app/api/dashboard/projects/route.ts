@@ -8,8 +8,11 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    // Fetch projects with member count and creator info
+    // Fetch only approved projects for regular users
     const projects = await prisma.project.findMany({
+      where: {
+        approvalStatus: 'APPROVED'
+      },
       take: limit,
       skip: offset,
       orderBy: { createdAt: 'desc' },
@@ -20,7 +23,16 @@ export async function GET(request: NextRequest) {
             githubUsername: true
           }
         },
-        members: true,
+        members: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                githubUsername: true
+              }
+            }
+          }
+        },
         _count: {
           select: {
             members: true
@@ -67,29 +79,21 @@ export async function POST(request: NextRequest) {
     }
 
     let userId: string;
-    let userRole: string;
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret') as any;
       userId = decoded.userId;
-      userRole = decoded.role;
     } catch (error) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    // Check if user has permission to create projects
-    const allowedRoles = ['ADMIN', 'MAINTAINER', 'MODERATOR'];
-    if (!allowedRoles.includes(userRole?.toUpperCase())) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
-    }
-
-    const { name, description, repoUrl, language } = await request.json();
+    const { name, description, repoUrl, language, collaborators } = await request.json();
 
     // Validate required fields
     if (!name?.trim() || !description?.trim()) {
       return NextResponse.json({ error: 'Name and description are required' }, { status: 400 });
     }
 
-    // Create project
+    // Create project with PENDING approval status
     const project = await prisma.project.create({
       data: {
         name: name.trim(),
@@ -97,6 +101,7 @@ export async function POST(request: NextRequest) {
         repoUrl: repoUrl?.trim() || null,
         language: language?.trim() || 'Other',
         status: 'PLANNING',
+        approvalStatus: 'PENDING',
         creatorId: userId
       },
       include: {
@@ -118,12 +123,26 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    // Add collaborators if provided
+    if (collaborators && Array.isArray(collaborators) && collaborators.length > 0) {
+      const collaboratorRecords = collaborators.map((collab: { userId: string; role: string }) => ({
+        userId: collab.userId,
+        projectId: project.id,
+        role: collab.role || 'contributor'
+      }));
+
+      await prisma.projectMember.createMany({
+        data: collaboratorRecords,
+        skipDuplicates: true
+      });
+    }
+
     // Create activity record
     await prisma.activity.create({
       data: {
-        type: 'PROJECT_CREATE',
+        type: 'PROJECT_PROPOSAL',
         userId,
-        description: `Created project "${project.name}"`,
+        description: `Proposed project "${project.name}" for approval`,
         projectId: project.id,
         metadata: {
           projectName: project.name,
@@ -134,7 +153,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Project created successfully',
+      message: 'Project submitted for approval! An admin will review it soon.',
       project: {
         id: project.id,
         name: project.name,
@@ -142,8 +161,9 @@ export async function POST(request: NextRequest) {
         repoUrl: project.repoUrl,
         language: project.language,
         status: project.status.toLowerCase(),
+        approvalStatus: 'PENDING',
         createdAt: project.createdAt.toISOString(),
-        memberCount: 1,
+        memberCount: 1 + (collaborators?.length || 0),
         creator: {
           name: project.creator.name || 'Unknown',
           githubUsername: project.creator.githubUsername

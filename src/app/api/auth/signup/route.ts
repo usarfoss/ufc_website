@@ -9,6 +9,8 @@ export async function POST(request: NextRequest) {
     const { email, password, name, githubUsername } = await request.json();
     const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
 
+    console.log('🔵 Signup attempt:', { email: normalizedEmail, name, githubUsername });
+
     if (!email || !password || !name || !githubUsername) {
       return NextResponse.json(
         { error: 'Email, password, name, and GitHub username are required' },
@@ -21,6 +23,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingUserByEmail) {
+      console.log('❌ Signup failed: Email already exists:', normalizedEmail);
       return NextResponse.json(
         { error: 'User with this email already exists' },
         { status: 409 }
@@ -32,6 +35,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingUserByGitHub) {
+      console.log('❌ Signup failed: GitHub username already exists:', githubUsername);
       return NextResponse.json(
         { error: 'User with this GitHub username already exists' },
         { status: 409 }
