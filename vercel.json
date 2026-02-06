@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/bootcamp-sync",
-      "schedule": "0 * * * *"
+      "schedule": "*/5 * * * *"
     }
   ]
 }
