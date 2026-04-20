@@ -140,7 +140,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
 
               <div className="flex flex-wrap gap-4">
                 <motion.a
-                  href={project.github}
+                  href={project.repoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 px-6 py-3 bg-white text-black font-black transform -skew-x-3 hover:skew-x-0 transition-transform duration-300"

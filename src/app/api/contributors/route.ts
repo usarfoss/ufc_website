@@ -76,15 +76,33 @@ async function fetchGitHubUser(username: string) {
 export async function GET(request: Request) {
   try {
     const usernames = [
-      "mystic-06", 
-      "moksh-m9u", 
-      "Gursimarsingh12", 
-      "sidd190", 
+      "manandeepsingh1196",
+      "aayushkat",
+      "mystic-06",
+      "shashank-bingading",
+      "bhavyab19",
+      "Ananya-jainn",
+      "mridulxjain",
+      "moksh-m9u",
+      "arunnegi112",
+      "yashcodes07",
+      "codebyjatin",
+      "abhi-rajput-krp",
+      "harshitthek",
+      "ananya0-0",
+      "vaibhavi-nope-source",
+      "Ojaswini-Fauzdar",
+      "manu-2717",
+      "darshitabhagat",
+      "et3ryx",
+      "saikiaman",
+      "bhuwan-007",
+      "shifali0156-wq",
+      "sidd190",
+      "pranshu640",
+      "Gursimarsingh12",
       "VikramAditya33",
       "Piyush-xo-19",
-      "trishavrma26-cpu", 
-      "Ananya-jainn",
-      "Ojaswini-Fauzdar"
     ]
     
     // Fetch all users in parallel
