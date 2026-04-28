@@ -1,7 +1,7 @@
 "use client"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { Calendar, ExternalLink, ArrowRight, ChevronDown } from "lucide-react"
+import { Calendar, ExternalLink, ArrowRight, ChevronDown, X } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import PageTransition from "../Components/page-transition"
@@ -85,12 +85,179 @@ function EventVisual({ bg }: { bg: string }) {
   return null
 }
 
+const chintans = [
+  {
+    episode: "01",
+    title: "Threat Modeling & Precogly",
+    speaker: "Vikramaditya Narayan",
+    speakerBio: "Creator of Precogly — an open-source, enterprise-grade threat modeling platform built for compliance-aware security teams. Previously designed the prototype for a YC-funded AI governance platform. Leads the Bangalore chapter of Threat Modeling Connect, has spoken at ThreatModCon DC on emergent risks in multi-agentic systems. Holds an MS from Carnegie Mellon and is a Certified Threat Modeling Professional.",
+    topic: "An intro to open threat modeling, followed by a deep dive into Precogly — what it is, why it was built, how it works, and how to contribute. Beginner-friendly with room to go deep.",
+    date: "29 Apr 2025 · 6 PM",
+    links: [{ label: "Precogly on GitHub", url: "https://github.com/precogly/precogly" }],
+    flyer: "/event-images/OCC1.png",
+  },
+  {
+    episode: "02",
+    title: "Open Source, GSoC & Remote Work from a Tier 3 College",
+    speaker: "Jigyasu Rajput",
+    speakerBio: "3rd year engineering student from a Tier 3 college in Ghaziabad. Works remotely at a Japanese AI company, did GSoC at Python Software Foundation, and is an open source mentor at Newton School. Also part of Super 30 by Harkirat Singh. Documenting the entire journey so others don't have to figure it out alone.",
+    topic: "For every college student in India who wants a remote tech job, open source, GSoC, or just wants to escape the placement rat race — this one's for you.",
+    date: "6 May 2025 · 6 PM",
+    links: [
+      { label: "Twitter / X", url: "https://x.com/rajputwt" },
+      { label: "LinkedIn", url: "https://www.linkedin.com/in/jigyasu-rajput-218657284/" },
+      { label: "GitHub", url: "https://github.com/JigyasuRajput" },
+    ],
+    flyer: "/event-images/OCC2.png",
+  },
+]
+
 export default function EventsPage() {
+  const [selectedChintan, setSelectedChintan] = useState<number | null>(null)
+  const active = selectedChintan !== null ? chintans[selectedChintan] : null
+
   return (
     <PageTransition>
-      <div className="min-h-screen bg-black text-white overflow-hidden relative">
+      <div className="min-h-screen bg-black text-white overflow-x-hidden relative">
         <div className="fixed inset-0 bg-gradient-to-br from-black via-[#001F1D] to-black opacity-50 z-0" />
         <div className="fixed inset-0 bg-[linear-gradient(0deg,transparent_24%,rgba(11,135,79,0.08)_25%,rgba(11,135,79,0.08)_26%,transparent_27%,transparent_74%,rgba(11,135,79,0.08)_75%,rgba(11,135,79,0.08)_76%,transparent_77%,transparent),linear-gradient(90deg,transparent_24%,rgba(11,135,79,0.08)_25%,rgba(11,135,79,0.08)_26%,transparent_27%,transparent_74%,rgba(11,135,79,0.08)_75%,rgba(11,135,79,0.08)_76%,transparent_77%,transparent)] bg-[size:80px_80px] opacity-40 z-0" />
+
+        {/* STAY IN THE LOOP — fixed left sidebar, only on xl+ */}
+        <div className="hidden xl:flex fixed left-0 top-1/2 -translate-y-1/2 z-20 flex-col items-center gap-4 w-56 px-5 py-6 mx-4 rounded-2xl border border-white/10 bg-black/60 backdrop-blur-md">
+          <p className="text-white text-sm font-bold uppercase tracking-widest text-center">Stay in the loop</p>
+          <p className="text-gray-400 text-sm leading-relaxed text-center">
+            Event details and meet links drop on WhatsApp. Updates on Instagram.
+          </p>
+          <div className="flex flex-col gap-2.5 w-full pt-1">
+            <a
+              href="https://chat.whatsapp.com/CyN8KlKDUfh8zmzp5VYGSh"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 text-sm font-medium text-emerald-300 border border-emerald-500/40 bg-emerald-500/15 px-4 py-2.5 rounded-xl hover:bg-emerald-500/25 transition-all"
+            >
+              <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+              WhatsApp Community
+            </a>
+            <a
+              href="https://www.instagram.com/foss_usar/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 text-sm font-medium text-pink-300 border border-pink-500/40 bg-pink-500/15 px-4 py-2.5 rounded-xl hover:bg-pink-500/25 transition-all"
+            >
+              <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+              Instagram
+            </a>
+          </div>
+        </div>
+
+        {/* CHINTAN DETAIL — fixed right panel on xl+, bottom sheet on mobile */}
+        <AnimatePresence>
+          {active && (
+            <>
+              {/* Mobile bottom sheet */}
+              <motion.div
+                key={`mobile-${active.episode}`}
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="xl:hidden fixed bottom-0 left-0 right-0 z-40 flex flex-col max-h-[85vh] rounded-t-2xl border-t border-violet-400/20 bg-black/98 backdrop-blur-xl overflow-hidden shadow-[0_-20px_60px_rgba(139,92,246,0.2)]"
+              >
+                {/* drag handle */}
+                <div className="flex justify-center pt-3 pb-1 shrink-0">
+                  <div className="w-10 h-1 rounded-full bg-white/20" />
+                </div>
+                <button
+                  onClick={() => setSelectedChintan(null)}
+                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 border border-white/10 flex items-center justify-center"
+                >
+                  <X className="w-4 h-4 text-white/70" />
+                </button>
+                <div className="overflow-y-auto flex-1" style={{ scrollbarWidth: "none" }}>
+                  <div className="relative w-full aspect-[16/9]">
+                    <Image src={active.flyer} alt={active.title} fill className="object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/40" />
+                  </div>
+                  <div className="px-5 py-4 space-y-3">
+                    <div>
+                      <p className="text-white font-bold text-base leading-snug">{active.title}</p>
+                      <p className="text-violet-300 text-sm mt-1">{active.speaker}</p>
+                      <p className="text-violet-400/70 text-xs mt-0.5">{active.date}</p>
+                    </div>
+                    <p className="text-gray-200 text-sm leading-relaxed">{active.speakerBio}</p>
+                    <p className="text-gray-400 text-sm leading-relaxed">{active.topic}</p>
+                    <div className="flex flex-wrap gap-2 pt-1 pb-6">
+                      {active.links?.map((l) => (
+                        <a
+                          key={l.url}
+                          href={l.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs text-violet-300 border border-violet-500/30 bg-violet-500/10 px-3 py-1.5 rounded-full hover:bg-violet-500/20 transition-all"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          {l.label}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+              {/* Mobile backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="xl:hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-sm"
+                onClick={() => setSelectedChintan(null)}
+              />
+
+              {/* Desktop right panel */}
+              <motion.div
+                key={`desktop-${active.episode}`}
+                initial={{ opacity: 0, x: 40 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 40 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="hidden xl:flex fixed right-0 top-0 bottom-0 z-30 flex-col w-[26rem] border-l border-violet-400/20 bg-black/95 backdrop-blur-xl overflow-hidden shadow-[-20px_0_60px_rgba(139,92,246,0.15)]"
+              >
+                <div className="relative w-full aspect-[2/3] shrink-0">
+                  <Image src={active.flyer} alt={active.title} fill className="object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20" />
+                  <button
+                    onClick={() => setSelectedChintan(null)}
+                    className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 border border-white/10 flex items-center justify-center hover:bg-black/80 transition-all"
+                  >
+                    <X className="w-4 h-4 text-white/70" />
+                  </button>
+                </div>
+                <div className="overflow-y-auto px-5 py-4 space-y-3 flex-1" style={{ scrollbarWidth: "none" }}>
+                  <div>
+                    <p className="text-white font-bold text-lg leading-snug">{active.title}</p>
+                    <p className="text-violet-300 text-sm mt-1">{active.speaker}</p>
+                    <p className="text-violet-400/70 text-xs mt-0.5">{active.date}</p>
+                  </div>
+                  <p className="text-gray-200 text-sm leading-relaxed">{active.speakerBio}</p>
+                  <p className="text-gray-400 text-sm leading-relaxed">{active.topic}</p>
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {active.links?.map((l) => (
+                      <a
+                        key={l.url}
+                        href={l.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs text-violet-300 border border-violet-500/30 bg-violet-500/10 px-3 py-1.5 rounded-full hover:bg-violet-500/20 transition-all"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        {l.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         <section className="pt-28 pb-24 px-6 relative z-10">
           <div className="max-w-3xl mx-auto">
@@ -122,18 +289,17 @@ export default function EventsPage() {
               </div>
             </motion.div>
 
-            {/* TIMELINE */}
-            <div className="relative">
-              {/* Line */}
-              <div className="absolute left-[11px] top-2 bottom-0 w-px bg-gradient-to-b from-green-400/80 via-green-500/30 to-transparent" />
+            {/* OPEN COMMUNITY CHINTANS — UPCOMING */}
+            <ChintansSection selected={selectedChintan} onSelect={setSelectedChintan} />
 
+            {/* TIMELINE */}
+            <div className="relative mt-20">
+              <div className="absolute left-[11px] top-2 bottom-0 w-px bg-gradient-to-b from-green-400/80 via-green-500/30 to-transparent" />
               <div className="space-y-12">
                 {events.map((event, index) => (
                   <TimelineEvent key={event.id} event={event} index={index} />
                 ))}
               </div>
-
-              {/* End cap */}
               <div className="relative pl-10 pt-8">
                 <div className="absolute left-[7px] top-8 w-[9px] h-[9px] rounded-full border border-green-500/30 bg-black" />
                 <p className="text-green-500/30 text-xs tracking-widest uppercase">More coming</p>
@@ -287,6 +453,134 @@ function TimelineEvent({ event, index }: { event: (typeof events)[0]; index: num
           )}
         </AnimatePresence>
       </motion.div>
+    </motion.div>
+  )
+}
+
+function ChintansSection({ selected, onSelect }: { selected: number | null; onSelect: (i: number | null) => void }) {
+  const [open, setOpen] = useState(true)
+
+  return (
+    <motion.div
+      className="mt-20"
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      viewport={{ once: true, margin: "-60px" }}
+    >
+      <button onClick={() => setOpen((v) => !v)} className="w-full group text-left">
+        <div className="rounded-2xl border border-violet-500/30 bg-black/70 backdrop-blur-md px-6 py-5 hover:border-violet-400/50 hover:bg-violet-500/5 transition-all duration-300 shadow-[0_0_30px_rgba(139,92,246,0.06)]">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="px-2 py-0.5 rounded-full border border-violet-400/30 bg-violet-500/10 text-violet-300 text-[11px] tracking-widest uppercase">Series</span>
+                <span className="px-2 py-0.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 text-[11px] tracking-widest uppercase">Upcoming</span>
+                <span className="px-2 py-0.5 rounded-full border border-violet-500/20 bg-violet-500/5 text-violet-400/60 text-[11px]">Online</span>
+              </div>
+              <h2
+                className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white group-hover:text-violet-300 transition-colors duration-200"
+                style={{ fontFamily: "var(--font-orbitron)" }}
+              >
+                Open Community Chintans
+              </h2>
+              <p className="text-white/40 text-sm mt-1">Online talks · Real ideas · Different speakers · No gatekeeping</p>
+            </div>
+            <div className="ml-4 shrink-0 w-9 h-9 rounded-full border border-violet-500/30 bg-violet-500/10 flex items-center justify-center group-hover:bg-violet-500/20 transition-all duration-300">
+              <ChevronDown className={`w-4 h-4 text-violet-400 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+            </div>
+          </div>
+        </div>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.35, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className="mt-3 rounded-2xl border border-violet-500/20 bg-black/60 backdrop-blur-md p-6 space-y-4">
+              <p className="text-gray-300 text-sm leading-relaxed">
+                A series of online community talks — different topics, different speakers, real conversations. No polished corporate panels, just people with ideas worth sharing.
+              </p>
+
+              <div className="flex flex-col gap-3">
+                {chintans.map((c, i) => (
+                  <button
+                    key={c.episode}
+                    onClick={() => onSelect(selected === i ? null : i)}
+                    className={`group/card text-left rounded-xl border overflow-hidden transition-all duration-300 cursor-pointer ${
+                      selected === i
+                        ? "border-violet-400/60 shadow-[0_0_32px_rgba(139,92,246,0.3)] scale-[1.01]"
+                        : "border-violet-500/15 hover:border-violet-400/40 hover:shadow-[0_0_24px_rgba(139,92,246,0.15)] hover:scale-[1.01]"
+                    } bg-violet-500/5`}
+                  >
+                    {c.flyer && (
+                      <div className="relative w-full aspect-[16/9] overflow-hidden">
+                        <Image
+                          src={c.flyer}
+                          alt={`${c.title} flyer`}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover/card:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/70" />
+                        {/* Click me hint */}
+                        <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-200 ${selected === i ? "opacity-0" : "opacity-0 group-hover/card:opacity-100"}`}>
+                          <span className="px-3 py-1.5 rounded-full bg-violet-500/80 backdrop-blur-sm text-white text-xs font-semibold tracking-wide shadow-lg">
+                            {selected === i ? "Close" : "View details →"}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex items-start gap-3 p-4">
+                      <span
+                        className="text-2xl font-black text-violet-400/50 shrink-0 leading-none group-hover/card:text-violet-400/80 transition-colors duration-200"
+                        style={{ fontFamily: "var(--font-orbitron)" }}
+                      >
+                        {c.episode}
+                      </span>
+                      <div>
+                        <p className="text-white font-bold text-sm group-hover/card:text-violet-200 transition-colors duration-200">{c.title}</p>
+                        <p className="text-violet-300 text-xs mt-0.5">{c.speaker} · {c.date}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-violet-400/40 text-xs tracking-widest uppercase pt-2">More episodes coming</p>
+
+              {/* Stay in the loop — inline for mobile, hidden on xl where sidebar shows */}
+              <div className="xl:hidden pt-2 border-t border-violet-500/15 space-y-2">
+                <p className="text-white/50 text-xs font-semibold uppercase tracking-widest">Stay in the loop</p>
+                <p className="text-gray-500 text-xs leading-relaxed">Event details and meet links drop on WhatsApp. Updates on Instagram.</p>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <a
+                    href="https://chat.whatsapp.com/CyN8KlKDUfh8zmzp5VYGSh"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-300 border border-emerald-500/40 bg-emerald-500/15 px-3 py-1.5 rounded-full hover:bg-emerald-500/25 transition-all"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    WhatsApp Community
+                  </a>
+                  <a
+                    href="https://www.instagram.com/foss_usar/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-pink-300 border border-pink-500/40 bg-pink-500/15 px-3 py-1.5 rounded-full hover:bg-pink-500/25 transition-all"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    Instagram
+                  </a>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }
