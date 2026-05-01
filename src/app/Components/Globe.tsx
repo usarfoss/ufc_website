@@ -32,7 +32,7 @@ const GlobeComponent: React.FC = () => {
     const fetchData = async () => {
       try {
         const res = await fetch(
-          "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"
+          "https://raw.githubusercontent.com/here-2007/GLOBE_IND/refs/heads/main/World_coordinates.geojson"
         );
         const countriesData = await res.json();
 
@@ -104,7 +104,7 @@ const GlobeComponent: React.FC = () => {
       const controls = globeRef.current?.controls();
       if (controls) {
         controls.autoRotate = true;
-        controls.autoRotateSpeed = 0.6;
+        controls.autoRotateSpeed = 0.7;
       }
       animationFrameId = requestAnimationFrame(rotate);
     };

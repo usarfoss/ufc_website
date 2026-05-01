@@ -10,7 +10,7 @@ export function TerminalOverlay() {
     '> Initializing UFC Coreverse...',
     '> Connection established',
     '> Loading global OSC data...',
-    '> System ready. Try the command "cd about":',
+    '> System ready. Try the command "cd about", "cd Whatsapp":',
   ]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -51,6 +51,8 @@ export function TerminalOverlay() {
           router.push('/');
           setLines((prev) => [...prev, `Navigating to /`]);
           break;
+      }
+      switch (page.toLowerCase()){ 
         case 'whatsapp':
           window.open('https://chat.whatsapp.com/CyN8KlKDUfh8zmzp5VYGSh', '_blank');
           setLines((prev) => [...prev, `Navigating to /whatsapp...`]);
