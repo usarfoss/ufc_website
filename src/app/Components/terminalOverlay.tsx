@@ -51,6 +51,22 @@ export function TerminalOverlay() {
           router.push('/');
           setLines((prev) => [...prev, `Navigating to /`]);
           break;
+        case 'whatsapp':
+          window.open('https://chat.whatsapp.com/CyN8KlKDUfh8zmzp5VYGSh', '_blank');
+          setLines((prev) => [...prev, `Navigating to /whatsapp...`]);
+          break;
+        case 'discord':
+          window.open('https://discord.com/invite/7HrTYAUpdd', '_blank');
+          setLines((prev) => [...prev, `Navigating to /discord...`]);
+          break;
+        case 'instagram':
+          window.open('https://www.instagram.com/foss_usar/', '_blank');
+          setLines((prev) => [...prev, `Navigating to /instagram...`]);
+          break;
+        case 'github':
+          window.open('https://github.com/usarfoss', '_blank');
+          setLines((prev) => [...prev, `Navigating to /github...`]);
+          break;
         default:
           setLines((prev) => [
             ...prev,
