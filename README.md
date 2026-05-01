@@ -91,7 +91,14 @@ This project is **open-source** under the [MIT License](./LICENSE).
 
 ---
 
+<<<<<<< HEAD
 ## 💚 Built with Love by UFC
 
 We’re here to **learn, build, and grow together**.
 Whether you’re a beginner or an expert, **UFC is your playground** to experiment, collaborate, and make an impact 🚀
+=======
+## 💚 Built with Love by UFC Harshit
+
+We’re here to **learn, build, and grow together**.
+Whether you’re a beginner or an expert, **UFC is your playground** to experiment, collaborate, and make an impact 🚀
+>>>>>>> 793faeb (README.md Changed)
