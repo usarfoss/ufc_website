@@ -91,7 +91,7 @@ This project is **open-source** under the [MIT License](./LICENSE).
 
 ---
 
-## 💚 Built with Love by UFC Harshit
+## 💚 Built with Love by UFC
 
 We’re here to **learn, build, and grow together**.
 Whether you’re a beginner or an expert, **UFC is your playground** to experiment, collaborate, and make an impact 🚀
