@@ -38,7 +38,6 @@ export default function MembersPage() {
   useEffect(() => {
     fetchMembers();
   }, [currentPage, searchTerm]);
-
   const fetchMembers = async () => {
     try {
       setLoading(true);
@@ -69,26 +68,8 @@ export default function MembersPage() {
     setCurrentPage(1); // Reset to first page when searching
   };
 
-  if (loading) {
-    return <GitCommandsLoader />;
-  }
-
-  if (error) {
-    return (
-      <div className="space-y-6">
-        <div className="bg-red-900/20 backdrop-blur-sm border border-red-500/30 rounded-lg p-6">
-          <h2 className="text-xl font-bold text-red-400 mb-2">Error Loading Members</h2>
-          <p className="text-gray-400">{error}</p>
-          <button 
-            onClick={fetchMembers}
-            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Note: keep the page/header/search input mounted even while loading or on error.
+  // Loading / error states are rendered in-place for the members grid below.
 
   return (
     <div className="space-y-6">
@@ -119,8 +100,25 @@ export default function MembersPage() {
         </div>
       </div>
 
-      {/* Members Grid */}
-      {members.length > 0 ? (
+      {/* Members Grid / Loading / Error */}
+      {error ? (
+        <div className="space-y-6">
+          <div className="bg-red-900/20 backdrop-blur-sm border border-red-500/30 rounded-lg p-6">
+            <h2 className="text-xl font-bold text-red-400 mb-2">Error Loading Members</h2>
+            <p className="text-gray-400">{error}</p>
+            <button 
+              onClick={fetchMembers}
+              className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      ) : loading ? (
+        <div className="py-12">
+          <GitCommandsLoader />
+        </div>
+      ) : members.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {members.map((member) => (
             <div
