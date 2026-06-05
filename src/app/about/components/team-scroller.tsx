@@ -17,75 +17,75 @@ type Member = {
 }
 
 const defaultMembers: Member[] = [
-  { 
-    name: "Siddharth Bansal", 
-    role: "President", 
+  {
+    name: "Siddharth Bansal",
+    role: "President",
     img: "/team-images/siddharth.jpg",
     description: "The One Piece... THE ONE PIECE IS REAL!!."
   },
-  { 
-    name: "Dhruv Sharma", 
-    role: "Tech Lead", 
+  {
+    name: "Dhruv Sharma",
+    role: "Tech Lead",
     img: "/team-images/dhruv.jpg",
-    description: "The real yakuza was the friends we made along the way."
+    description: "Kept you waiting, huh?"
   },
-  { 
-    name: "Pranshu Bansal", 
-    role: "Non-Tech Lead", 
+  {
+    name: "Pranshu Bansal",
+    role: "Non-Tech Lead",
     img: "/team-images/pranshu.jpg",
     description: "Sleeping half the time, Bored half the time, sharing cat memes all the time (UwU)."
   },
-  { 
-    name: "Manandeep Singh", 
-    role: "classified.", 
+  {
+    name: "Manandeep Singh",
+    role: "classified.",
     img: "/team-images/manandeep.jpg",
     description: "Sometimes it takes a man to be best girl. ~ Gigguk"
   },
-  { 
-    name: "Avish Chaudhary", 
-    role: "Underpaid Intern", 
+  {
+    name: "Avish Chaudhary",
+    role: "Underpaid Intern",
     img: "/team-images/avish.jpg",
     description: "Proud Member of Kanye's Kool Koderz."
   },
-  { 
-    name: "Ojaswini Fauzdar", 
-    role: "PR Lead", 
+  {
+    name: "Ojaswini Fauzdar",
+    role: "PR Lead",
     img: "/team-images/ojaswini.jpg",
     description: "Managing public relations and building strong connections with the broader developer community."
   },
-  { 
-    name: "Ananya Jain", 
-    role: "External Affairs Lead", 
+  {
+    name: "Ananya Jain",
+    role: "External Affairs Lead",
     img: "/team-images/ananya.jpg",
     description: "Forging partnerships and representing our community in external collaborations and events."
   },
-  { 
-    name: "Trisha Verma", 
-    role: "Core Member", 
+  {
+    name: "Trisha Verma",
+    role: "Core Member",
     img: "/team-images/trisha.jpg",
     description: "Contributing to core development initiatives and supporting community growth through active participation."
   },
-  { 
-    name: "Prithvi Kaushik", 
-    role: "Core Member", 
+  {
+    name: "Prithvi Kaushik",
+    role: "Core Member",
     img: "/team-images/prithvi .jpg",
     description: "Playing a vital role in core project development and helping maintain high standards across the community."
   },
-  { 
-    name: "Moksh", 
-    role: "Core Member", 
+  {
+    name: "Moksh",
+    role: "Core Member",
     img: "/team-images/moksh.jpg",
     description: "Wanderer."
   },
-  { 
-    name: "Piyush Gupta", 
-    role: "Core Member", 
+  {
+    name: "Piyush Gupta",
+    role: "Core Member",
     img: "/team-images/piyush.jpg",
     description: "Collaborating closely with the President to drive community initiatives and foster collaboration."
   },
-  { 
-    name: "Vikram Aditya Verma", 
-    role: "Anonymous Member", 
+  {
+    name: "Vikram Aditya Verma",
+    role: "Anonymous Member",
     img: "/team-images/vikram.jpg",
     description: "Mera khel khatam hai."
   },
@@ -119,9 +119,9 @@ export default function TeamScroller({ members = defaultMembers }: Props = {}) {
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: container,
-            start: "top 90%", 
-            end: "top 70%",   
-            scrub: 0.3,       
+            start: "top 90%",
+            end: "top 70%",
+            scrub: 0.3,
             pin: false,
             anticipatePin: 0,
           },
@@ -141,14 +141,14 @@ export default function TeamScroller({ members = defaultMembers }: Props = {}) {
         gsap.fromTo(
           grid,
           { opacity: 0, y: 20 },
-          { 
-            opacity: 1, 
-            y: 0, 
-            duration: 0.6, 
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
             ease: "power2.out",
             scrollTrigger: {
               trigger: container,
-              start: "top 90%", 
+              start: "top 90%",
               once: true,
             }
           }
@@ -176,15 +176,15 @@ export default function TeamScroller({ members = defaultMembers }: Props = {}) {
                 if (m.name === "Vikram Aditya Verma") {
                   window.open("https://x.com/ViXkrm", "_blank", "noopener,noreferrer")
                 }
-                
+
                 if (m.name === "Siddharth Bansal") {
                   window.open("https://x.com/Sidd190b", "_blank", "noopener,noreferrer")
                 }
               }}
               style={{ cursor: (m.name === "Vikram Aditya Verma" || m.name === "Siddharth Bansal") ? "pointer" : "default" }}
             >
-              <article 
-                aria-label={`${m.name}, ${m.role}`} 
+              <article
+                aria-label={`${m.name}, ${m.role}`}
                 data-magnetic
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
@@ -200,12 +200,11 @@ export default function TeamScroller({ members = defaultMembers }: Props = {}) {
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/25 to-transparent transition-opacity duration-300 group-hover:opacity-80" />
                 </div>
                 <div className="p-5 relative z-10">
-                  <h3 
-                    className={`font-[var(--font-space-grotesk)] text-xl md:text-2xl font-semibold transition-all duration-300 group-hover:translate-y-[-2px] ${
-                      (m.name === "Vikram Aditya Verma" || m.name === "Siddharth Bansal")
-                        ? "group-hover:text-emerald-400 cursor-pointer" 
+                  <h3
+                    className={`font-[var(--font-space-grotesk)] text-xl md:text-2xl font-semibold transition-all duration-300 group-hover:translate-y-[-2px] ${(m.name === "Vikram Aditya Verma" || m.name === "Siddharth Bansal")
+                        ? "group-hover:text-emerald-400 cursor-pointer"
                         : "group-hover:text-white/90"
-                    }`}
+                      }`}
                   >
                     {m.name}
                   </h3>
