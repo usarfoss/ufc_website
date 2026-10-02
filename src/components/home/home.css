@@ -1,0 +1,433 @@
+/* Landing page design tokens + the few primitives Tailwind can't express.
+   Everything is scoped to .ufc-home so the rest of the app is untouched. */
+
+.ufc-home {
+  --ink: #090c0a;
+  --ink-2: #0f1411;
+  --ink-3: #161d18;
+  --paper: #ecefe4;
+  --paper-2: #e0e4d4;
+  --text: #e8ece3;
+  --text-dim: #aab5ac;
+  --line: rgba(232, 236, 227, 0.12);
+  --line-dark: rgba(9, 12, 10, 0.14);
+  --signal: #2ee58f;
+  --signal-deep: #0b874f;
+  --amber: #f5a623;
+  --ember: #ff6b5e;
+  --lilac: #c7b3ff;
+  --butter: #ffe36e;
+  --pink: #ffb3cf;
+  --sky: #9bd7ff;
+  --cream: #f7f2e4;
+
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-dmsans), ui-sans-serif, system-ui, sans-serif;
+  --font-editorial: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-code: var(--font-spacemono), ui-monospace, SFMono-Regular, monospace;
+  --f-hand: var(--font-hand), "Comic Sans MS", cursive;
+  --f-pixel: var(--font-pixel), ui-monospace, monospace;
+
+  position: relative;
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+.ufc-home ::selection {
+  background: var(--signal);
+  color: var(--ink);
+}
+
+.ufc-home :is(h1, h2, h3, h4, .display) {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-optical-sizing: auto;
+  text-wrap: balance;
+}
+
+/* The wonky, soft Fraunces italic — used for the emphasised word in a headline. */
+.ufc-home .serif {
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-weight: 500;
+  font-variation-settings: "SOFT" 100, "WONK" 1;
+  letter-spacing: -0.015em;
+}
+
+/* Bricolage at weight 800 needs air: the per-heading tracking in the markup was tuned for a narrower face. */
+.ufc-home :is(h1, h2) { letter-spacing: -0.028em !important; }
+.ufc-home h3 { letter-spacing: -0.02em !important; }
+
+.ufc-home p { text-wrap: pretty; }
+
+.ufc-home .code {
+  font-family: var(--font-code);
+}
+
+/* Small monospaced eyebrow label, e.g. "§ 01 — The premise" */
+.ufc-home .eyebrow {
+  font-family: var(--font-code);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Film grain: keeps big flat ink areas from feeling like a template. */
+.ufc-home .grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* Buttons: chunky sticker buttons. A hard offset shadow that the button "presses" into. */
+.ufc-home .btn {
+  --bg: var(--cream);
+  --fg: var(--ink);
+  --bd: var(--ink);
+  --sh: var(--ink);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.72rem 0.8rem 0.72rem 1.35rem;
+  border: 2.5px solid var(--bd);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 750;
+  letter-spacing: -0.012em;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 var(--sh);
+  transition:
+    transform 0.22s cubic-bezier(0.3, 1.7, 0.5, 1),
+    box-shadow 0.22s cubic-bezier(0.3, 1.7, 0.5, 1),
+    background-color 0.2s;
+}
+.ufc-home .btn:hover {
+  transform: translate(-3px, -3px) rotate(-1.2deg);
+  box-shadow: 8px 8px 0 var(--sh);
+}
+.ufc-home .btn:active {
+  transform: translate(3px, 3px) rotate(0.5deg);
+  box-shadow: 1px 1px 0 var(--sh);
+  transition-duration: 0.06s;
+}
+.ufc-home .btn:focus-visible { outline: 3px solid var(--butter); outline-offset: 4px; }
+
+/* the little disc that holds the arrow */
+.ufc-home .btn .disc {
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  flex: none;
+  border-radius: 999px;
+  background: var(--fg);
+  color: var(--bg);
+  transition: transform 0.35s cubic-bezier(0.3, 1.7, 0.5, 1);
+}
+.ufc-home .btn:hover .disc { transform: rotate(-45deg) scale(1.08); }
+.ufc-home .btn.btn-sm { padding: 0.5rem 0.6rem 0.5rem 1rem; font-size: 0.9rem; gap: 0.5rem; box-shadow: 3px 3px 0 var(--sh); }
+.ufc-home .btn.btn-sm .disc { width: 1.45rem; height: 1.45rem; }
+.ufc-home .btn.btn-dot { width: 2.6rem; height: 2.6rem; padding: 0; justify-content: center; box-shadow: 3px 3px 0 var(--sh); }
+.ufc-home .btn.btn-dot.btn-xs { width: 2.25rem; height: 2.25rem; }
+
+.ufc-home .btn-signal { --bg: var(--signal); }
+.ufc-home .btn-butter { --bg: var(--butter); }
+.ufc-home .btn-pink { --bg: var(--pink); }
+.ufc-home .btn-lilac { --bg: var(--lilac); }
+.ufc-home .btn-paper { --bg: var(--cream); }
+.ufc-home .btn-ink { --bg: var(--ink); --fg: var(--cream); --bd: var(--ink); --sh: var(--signal); }
+/* on dark backgrounds: a cream shadow keeps the sticker lit */
+.ufc-home .btn.lit { --sh: var(--cream); }
+.ufc-home .btn-ghost { --bg: var(--ink-2); --fg: var(--cream); --bd: var(--cream); --sh: var(--signal); }
+
+/* Text links: a highlighter sweeps across on hover. */
+.ufc-home .lnk {
+  background: linear-gradient(var(--hl, var(--signal)), var(--hl, var(--signal))) 0 100% / 0% 100% no-repeat;
+  transition: background-size 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.2s;
+  padding: 0.05em 0.25em;
+  margin: -0.05em -0.25em;
+  border-radius: 0.2em;
+}
+.ufc-home .lnk:hover, .ufc-home .lnk:focus-visible { background-size: 100% 100%; color: var(--ink); }
+
+/* Marquee */
+@keyframes ufc-marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+.ufc-home .marquee-track {
+  display: flex;
+  width: max-content;
+  animation: ufc-marquee var(--marquee-duration, 48s) linear infinite;
+}
+.ufc-home .marquee:hover .marquee-track { animation-play-state: paused; }
+.ufc-home .marquee-reverse .marquee-track { animation-direction: reverse; }
+
+/* Blinking caret */
+@keyframes ufc-caret { 50% { opacity: 0; } }
+.ufc-home .caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  vertical-align: -0.15em;
+  background: var(--signal);
+  animation: ufc-caret 1.05s steps(1) infinite;
+}
+
+/* Soft breathing for the "online" dot */
+@keyframes ufc-ping {
+  0% { transform: scale(1); opacity: 0.7; }
+  80%, 100% { transform: scale(2.6); opacity: 0; }
+}
+.ufc-home .ping::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: ufc-ping 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Hide scrollbars on horizontal snap rails */
+.ufc-home .rail { scrollbar-width: none; }
+.ufc-home .rail::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ufc-home .marquee-track,
+  .ufc-home .caret,
+  .ufc-home .ping::before { animation: none; }
+}
+
+/* Lenis owns the easing; native smooth-scroll would fight it. */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+
+/* ───────────── Scrapbook layer ───────────── */
+
+.ufc-home .hand { font-family: var(--f-hand); font-weight: 700; letter-spacing: 0; }
+.ufc-home .pixel { font-family: var(--f-pixel); font-weight: 700; letter-spacing: 0.02em; }
+
+/* Die-cut sticker: a white border that follows the alpha edge, plus a soft lift shadow. */
+.ufc-home .die-cut {
+  filter:
+    drop-shadow(2.5px 0 0 #fff) drop-shadow(-2.5px 0 0 #fff)
+    drop-shadow(0 2.5px 0 #fff) drop-shadow(0 -2.5px 0 #fff)
+    drop-shadow(0 10px 12px rgba(0, 0, 0, 0.35));
+}
+
+/* Washi tape: translucent, with torn ends. */
+.ufc-home .tape {
+  position: absolute;
+  width: 5.5rem;
+  height: 1.6rem;
+  background: color-mix(in srgb, var(--tape, var(--butter)) 78%, transparent);
+  clip-path: polygon(0 8%, 4% 0, 8% 10%, 12% 0, 100% 0, 96% 12%, 100% 26%, 96% 40%, 100% 55%, 96% 70%, 100% 84%, 97% 100%, 12% 100%, 8% 90%, 4% 100%, 0 92%, 3% 70%, 0 50%, 3% 30%);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+  mix-blend-mode: multiply;
+}
+.ufc-home .tape::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.28) 0 2px, transparent 2px 7px);
+}
+
+/* Crumpled paper */
+.ufc-home .paper {
+  position: relative;
+  background-color: var(--cream);
+  background-image:
+    radial-gradient(120% 80% at 10% 0%, rgba(255, 255, 255, 0.8), transparent 60%),
+    radial-gradient(90% 70% at 100% 100%, rgba(120, 100, 60, 0.12), transparent 60%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='.035 .05' numOctaves='4' seed='4'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .38  0 0 0 0 .25  0 0 0 .3 -.06'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>");
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15), 0 14px 30px -10px rgba(0, 0, 0, 0.45);
+  color: var(--ink);
+}
+
+/* Post-it with a lifted corner */
+.ufc-home .postit {
+  position: relative;
+  background: var(--note, var(--butter));
+  color: #1a1a14;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 14px 22px -10px rgba(0, 0, 0, 0.5);
+}
+.ufc-home .postit::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 26px;
+  height: 26px;
+  background: linear-gradient(135deg, transparent 50%, rgba(0, 0, 0, 0.14) 50%, rgba(255, 255, 255, 0.35));
+  border-top-left-radius: 4px;
+}
+
+/* Polaroid */
+.ufc-home .polaroid {
+  background: #fbfaf4;
+  padding: 0.6rem 0.6rem 0;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.18), 0 22px 36px -14px rgba(0, 0, 0, 0.6);
+  color: #1a1a14;
+}
+
+/* Gingham tablecloth */
+.ufc-home .gingham {
+  --g: rgba(46, 229, 143, 0.2);
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(90deg, var(--g) 50%, transparent 50%),
+    linear-gradient(var(--g) 50%, transparent 50%);
+  background-size: 56px 56px;
+}
+
+/* Dotted grid on ink */
+.ufc-home .dotgrid {
+  background-image: radial-gradient(rgba(232, 236, 227, 0.14) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Marker highlight behind a word */
+.ufc-home .marker {
+  background-image: linear-gradient(transparent 52%, var(--mark, var(--butter)) 52% 92%, transparent 92%);
+  padding: 0 0.12em;
+  margin: 0 -0.04em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* Tilted tape ribbons */
+.ufc-home .ribbon-strip { transform-origin: center; }
+
+/* Gentle idle wobble for stickers (set --wob per element) */
+@keyframes ufc-wobble {
+  0%, 100% { rotate: calc(var(--r, 0deg) - 1.2deg); }
+  50% { rotate: calc(var(--r, 0deg) + 1.2deg); }
+}
+.ufc-home .wobble { animation: ufc-wobble 5.5s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ufc-home .wobble { animation: none; }
+}
+
+/* Native image drag-and-drop would swallow the pointer events our draggable stickers need. */
+.ufc-home [data-sticker] { user-select: none; -webkit-user-select: none; }
+.ufc-home [data-sticker] img { -webkit-user-drag: none; user-drag: none; pointer-events: none; }
+
+/* ───────────── Motion + scenery ───────────── */
+
+@keyframes ufc-spin { to { transform: rotate(360deg); } }
+.ufc-home .spin-slow { animation: ufc-spin 22s linear infinite; }
+
+@keyframes ufc-steam { 0%, 100% { transform: translateY(0); opacity: .9; } 50% { transform: translateY(-5px); opacity: .45; } }
+.ufc-home .steam { animation: ufc-steam 2.4s ease-in-out infinite; }
+
+@keyframes ufc-flame { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.35) scaleX(.9); } }
+.ufc-home .flame { animation: ufc-flame .35s ease-in-out infinite; }
+
+@keyframes ufc-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -12px; } }
+.ufc-home .bob { animation: ufc-bob 3.2s ease-in-out infinite; }
+
+@keyframes ufc-twinkle { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
+.ufc-home .twinkle { animation: ufc-twinkle 3s ease-in-out infinite; }
+
+@keyframes ufc-drift { from { transform: translateX(-30vw); } to { transform: translateX(130vw); } }
+.ufc-home .drift { animation: ufc-drift var(--drift, 90s) linear infinite; }
+
+@keyframes ufc-sway { 0%, 100% { rotate: calc(var(--s, 1.4deg) * -1); } 50% { rotate: var(--s, 1.4deg); } }
+.ufc-home .sway { animation: ufc-sway var(--dur, 5s) ease-in-out infinite; transform-origin: 50% 0; }
+
+/* Scene backdrops for the freedom wipes */
+.ufc-home .pat-dots { background-image: radial-gradient(rgba(20, 20, 15, 0.16) 2px, transparent 2.5px); background-size: 26px 26px; }
+.ufc-home .pat-grid {
+  background-image: linear-gradient(rgba(20, 20, 15, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 20, 15, 0.1) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+.ufc-home .pat-gingham-pink {
+  --g: rgba(255, 255, 255, 0.35);
+  background-image: linear-gradient(90deg, var(--g) 50%, transparent 50%), linear-gradient(var(--g) 50%, transparent 50%);
+  background-size: 60px 60px;
+}
+.ufc-home .pat-clouds {
+  background-image:
+    radial-gradient(40% 14% at 20% 22%, rgba(255, 255, 255, 0.95), transparent 70%),
+    radial-gradient(34% 12% at 72% 14%, rgba(255, 255, 255, 0.9), transparent 70%),
+    radial-gradient(46% 16% at 60% 82%, rgba(255, 255, 255, 0.9), transparent 70%),
+    radial-gradient(30% 10% at 12% 78%, rgba(255, 255, 255, 0.85), transparent 70%);
+}
+
+/* Giant die-cut numerals */
+.ufc-home .die-num {
+  color: var(--cream);
+  -webkit-text-stroke: 3px var(--ink);
+  paint-order: stroke fill;
+  filter: drop-shadow(8px 8px 0 var(--ink));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ufc-home .spin-slow, .ufc-home .steam, .ufc-home .flame, .ufc-home .bob, .ufc-home .twinkle, .ufc-home .drift, .ufc-home .sway { animation: none; }
+}
+
+@keyframes ufc-flap { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.35); } }
+.ufc-home .flap { animation: ufc-flap 0.7s ease-in-out infinite; transform-origin: 50% 50%; }
+@media (prefers-reduced-motion: reduce) { .ufc-home .flap { animation: none; } }
+
+/* Cork board for the team wall */
+.ufc-home .cork {
+  background-color: #c28d58;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='c'><feTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='3' seed='8'/><feColorMatrix values='0 0 0 0 .32  0 0 0 0 .17  0 0 0 0 .06  0 0 0 1.5 -.5'/></filter><rect width='100%' height='100%' filter='url(%23c)'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='d'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 .86  0 0 0 0 .62  0 0 0 1.2 -.62'/></filter><rect width='100%' height='100%' filter='url(%23d)'/></svg>");
+  box-shadow: inset 0 0 100px rgba(70, 35, 10, 0.65), inset 0 0 0 2px rgba(0, 0, 0, 0.25);
+}
+
+/* ───────────── Hero backdrop ───────────── */
+
+.ufc-home .hero-dots {
+  background-image: radial-gradient(rgba(232, 236, 227, 0.12) 1.3px, transparent 1.7px);
+  background-size: 26px 26px;
+}
+/* A flashlight: the dots light up in colour where the pointer is. */
+.ufc-home .hero-dots-lit {
+  background-image: radial-gradient(#ffe36e 1.7px, transparent 2.1px);
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(300px circle at var(--mx, 70%) var(--my, 35%), #000, transparent 72%);
+  mask-image: radial-gradient(300px circle at var(--mx, 70%) var(--my, 35%), #000, transparent 72%);
+}
+/* Soft colour glows as plain radial gradients (no blur filter, no animation). */
+.ufc-home .aurora {
+  position: absolute;
+  border-radius: 999px;
+  background: radial-gradient(closest-side, var(--c, rgba(46, 229, 143, 0.28)), transparent 72%);
+}
+.ufc-home .ghost-word {
+  color: transparent;
+  -webkit-text-stroke: 2px rgba(232, 236, 227, 0.07);
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  line-height: 0.8;
+  user-select: none;
+}
+
+/* Die-cut with the white outline only: no lift shadow (used on the tape strips). */
+.ufc-home .die-flat {
+  filter: drop-shadow(2.5px 0 0 #fff) drop-shadow(-2.5px 0 0 #fff) drop-shadow(0 2.5px 0 #fff) drop-shadow(0 -2.5px 0 #fff);
+}

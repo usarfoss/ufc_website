@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 export const Menu = () => {
   const pathname = usePathname();
   
-  if (pathname?.startsWith('/dashboard')) {
+  // The landing page ships its own navigation (components/home/site-nav).
+  if (pathname === '/' || pathname?.startsWith('/dashboard')) {
     return null;
   }
 

@@ -1,68 +1,32 @@
-"use client";
-
-import { Header } from "@/components/home/header";
-import { TerminalOverlay } from "@/components/home/terminal-overlay";
-import { BackgroundElements } from "@/components/home/background-elements";
-import { CursorTrail } from "@/components/home/cursor-trail";
+import { HomeShell } from "@/components/home/home-shell";
+import { Hero } from "@/components/home/hero";
+import { Ribbon } from "@/components/home/ribbon";
+import { Freedoms } from "@/components/home/freedoms";
+import { Bazaar } from "@/components/home/bazaar";
+import { BigTent } from "@/components/home/big-tent";
+import { GitLog } from "@/components/home/git-log";
+import { Team } from "@/components/home/team";
+import { GithubPulse } from "@/components/home/github-pulse";
+import { Zoo } from "@/components/home/zoo";
+import { Join } from "@/components/home/join";
+import { Footer } from "@/components/home/footer";
 
 export default function Page() {
   return (
-    <div
-      className="relative w-full h-screen overflow-hidden font-mono"
-      style={{ backgroundColor: "#000000" }}
-    >
-      <CursorTrail />
-      <BackgroundElements />
-      <Header />
-      <TerminalOverlay />
-
-      <div className="absolute top-1/4 left-1 sm:left-2 md:left-4 lg:left-8 transform -translate-y-1/2 z-20 max-w-[180px] sm:max-w-[200px] md:max-w-none">
-        <div
-          className="rounded-lg p-1.5 sm:p-2 md:p-3 lg:p-4 font-mono backdrop-blur-md border transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20"
-          style={{
-            backgroundColor: "rgba(0, 0, 0, 0.3)",
-            borderColor: "#0B874F",
-            boxShadow: "0 0 20px rgba(11, 135, 79, 0.2)",
-          }}
-        >
-          <h4
-            className="text-xs sm:text-xs md:text-sm font-bold mb-1 sm:mb-1 md:mb-2 lg:mb-3"
-            style={{ color: "#F5A623" }}
-          >
-            FOSS Activity
-          </h4>
-          <div className="space-y-0.5 sm:space-y-1 md:space-y-2 text-xs">
-            <div className="flex items-center gap-1 sm:gap-1 md:gap-2">
-              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 md:w-3 md:h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: "#2D8F5A" }} />
-              <span style={{ color: "#FFFFFF" }} className="text-xs truncate">Very High (1M+)</span>
-            </div>
-            <div className="flex items-center gap-1 sm:gap-1 md:gap-2">
-              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 md:w-3 md:h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: "#4A6741" }} />
-              <span style={{ color: "#FFFFFF" }} className="text-xs truncate">High (500k-1M)</span>
-            </div>
-            <div className="flex items-center gap-1 sm:gap-1 md:gap-2">
-              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 md:w-3 md:h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: "#6B7A3A" }} />
-              <span style={{ color: "#FFFFFF" }} className="text-xs truncate">Medium (100k-500k)</span>
-            </div>
-            <div className="flex items-center gap-1 sm:gap-1 md:gap-2">
-              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 md:w-3 md:h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: "#8B6B2A" }} />
-              <span style={{ color: "#FFFFFF" }} className="text-xs truncate">Low-Med (10k-100k)</span>
-            </div>
-            <div className="flex items-center gap-1 sm:gap-1 md:gap-2">
-              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 md:w-3 md:h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: "#8B3A3A" }} />
-              <span style={{ color: "#FFFFFF" }} className="text-xs truncate">Low (&lt;10k)</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="absolute bottom-16 sm:bottom-20 md:bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-        <div className="bg-black/50 text-green-400 text-xs px-2 sm:px-2 md:px-3 py-1 sm:py-1 md:py-2 rounded-full backdrop-blur-sm border border-green-400/30 animate-pulse mx-2 sm:mx-4">
-          <span className="hidden md:inline">Hover over countries to explore FOSS activity • </span>
-          <span className="md:hidden">Tap countries for FOSS data</span>
-        </div>
-      </div>
-    </div>
+    <HomeShell>
+      <main>
+        <Hero />
+        <Ribbon />
+        <Freedoms />
+        <Bazaar />
+        <BigTent />
+        <GitLog />
+        <Team />
+        <GithubPulse />
+        <Zoo />
+        <Join />
+      </main>
+      <Footer />
+    </HomeShell>
   );
 }
-

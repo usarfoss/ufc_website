@@ -1,0 +1,82 @@
+"use client";
+
+import Image from "next/image";
+import { StickerPile, type PileItem } from "./sticker-pile";
+import { StickerArt, ART_SIZE, type ArtId } from "./sticker-art";
+import { Polaroid, Scribble } from "./scrap";
+import { MaskLine, Reveal } from "./motion-primitives";
+import { Ransom } from "./ransom";
+
+const img = (id: string, src: string, alt: string, w: number, h: number): PileItem => ({
+  id,
+  w,
+  h,
+  node: (
+    <div className="die-cut relative size-full">
+      <Image src={src} alt={alt} fill sizes={`${w}px`} className="object-contain" draggable={false} />
+    </div>
+  ),
+});
+const art = (id: ArtId, round = false): PileItem => ({ id, w: ART_SIZE[id][0], h: ART_SIZE[id][1], round, node: <StickerArt id={id} className="die-cut size-full" /> });
+
+/** Phones keep the first seven, so the best-known mascots come first. */
+const ITEMS: PileItem[] = [
+  img("tux", "/collage/tux.webp", "Tux, the Linux penguin", 112, 133),
+  img("wilber", "/collage/wilber.webp", "Wilber, the GIMP mascot", 132, 132),
+  img("ferris", "/collage/ferris.webp", "Ferris, the Rust crab", 150, 100),
+  img("gopher", "/collage/gopher.webp", "The Go gopher", 88, 120),
+  img("git", "/collage/git.webp", "The Git logo", 168, 70),
+  img("gnu", "/collage/gnu.webp", "The GNU head", 106, 104),
+  art("seal", true),
+  img("inkscape", "/collage/inkscape.webp", "The Inkscape logo", 104, 104),
+  img("kicad", "/collage/kicad.webp", "The KiCad logo", 96, 96),
+  img("osm", "/collage/osm.webp", "The OpenStreetMap logo", 108, 108),
+  img("pi", "/collage/pi.webp", "A Raspberry Pi board", 150, 100),
+  img("oshw", "/collage/oshw.webp", "The open-source-hardware gear", 94, 99),
+  {
+    id: "kiki",
+    w: 150,
+    h: 192,
+    node: <Polaroid src="/collage/kiki.webp" alt="Kiki, the Krita mascot" caption="kiki (krita)" tone="lilac" sizes="160px" className="size-full" />,
+  },
+  art("heart"),
+  art("bug"),
+  art("burst"),
+];
+
+export function Zoo() {
+  return (
+    <section id="zoo" className="pat-dots relative overflow-hidden bg-[#c7b3ff] pt-24 text-[var(--ink)] sm:pt-32">
+      <div className="mx-auto max-w-7xl px-5 sm:px-8">
+        <Reveal>
+          <p className="eyebrow mb-8 inline-block bg-[var(--cream)] px-2 py-1 text-[var(--signal-deep)]">§ 06 — the zoo</p>
+        </Reveal>
+        <div className="grid items-end gap-8 lg:grid-cols-12">
+          <h2 className="text-[clamp(2.6rem,6.6vw,6.2rem)] font-semibold leading-[0.92] tracking-[-0.058em] lg:col-span-9">
+            <MaskLine inView>The open-source</MaskLine>
+            <span className="mt-[0.05em] block">
+              <Ransom text="zoo." seed={5} delay={0.2} scale={0.9} />
+            </span>
+          </h2>
+          <Reveal delay={0.1} className="lg:col-span-3">
+            <p className="max-w-sm text-[1.05rem] leading-relaxed text-[var(--ink)]/75">
+              Every project that lasts grows a mascot. Here are a few we love — they&apos;re all licensed for sharing, and they&apos;re all
+              throwable.
+            </p>
+          </Reveal>
+        </div>
+      </div>
+
+      {/* The pit */}
+      <div className="relative mx-auto mt-6 h-[62vh] min-h-[480px] max-w-[110rem]">
+        <div className="hand pointer-events-none absolute right-6 top-6 hidden items-start gap-2 text-2xl text-[var(--ink)]/70 md:flex xl:right-14">
+          <span className="max-w-[10rem] -rotate-3 leading-none">grab one. throw it. no rules.</span>
+          <Scribble variant="curl" className="mt-3 h-10 w-12 rotate-[70deg]" />
+        </div>
+        {/* the floor: a dashed cut line, drawn behind the stickers that rest on it */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 border-t-4 border-dashed border-[var(--ink)]/70" aria-hidden="true" />
+        <StickerPile items={ITEMS} startWhenVisible sizeBoost={1.3} />
+      </div>
+    </section>
+  );
+}
