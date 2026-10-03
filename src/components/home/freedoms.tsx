@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { motion, useInView, useMotionTemplate, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
+import { motion, useMotionTemplate, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
 import { FREEDOMS, type Freedom } from "./data";
 import { MaskLine, Reveal } from "./motion-primitives";
 import { Badge, PostIt, Polaroid, Tape, useFinePointer } from "./scrap";
@@ -183,17 +183,17 @@ function Copy({ f, show }: { f: Freedom; show: boolean }) {
   return (
     <motion.div animate={show ? { opacity: 1, y: 0 } : { opacity: 0, y: 36 }} transition={{ duration: 0.6, ease: EASE, delay: show ? 0.1 : 0 }}>
       <div className="flex items-end gap-5">
-        <span className="serif die-num text-[clamp(8.5rem,16vw,15rem)] leading-[0.8]">{f.n}</span>
-        <div className="pb-4 text-[clamp(2.8rem,5.4vw,5rem)] leading-none">
+        <span className="serif die-num text-[clamp(5.2rem,16vw,15rem)] leading-[0.8]">{f.n}</span>
+        <div className="pb-2 text-[clamp(2.2rem,5.4vw,5rem)] leading-none lg:pb-4">
           <Ransom text={f.verb} seed={f.n * 3 + 1} delay={0.25} play={show} />
         </div>
       </div>
-      <p className="serif mt-8 max-w-lg text-[clamp(1.5rem,2.3vw,2.1rem)] leading-[1.14]">{f.rule}</p>
-      <p className="mt-4 max-w-md text-[1.02rem] leading-relaxed text-[var(--ink)]/80">
+      <p className="serif mt-3 max-w-lg text-[clamp(1.25rem,2.3vw,2.1rem)] leading-[1.14] lg:mt-8">{f.rule}</p>
+      <p className="mt-2 max-w-md text-[0.88rem] leading-snug text-[var(--ink)]/80 sm:text-[0.95rem] lg:mt-4 lg:text-[1.02rem] lg:leading-relaxed">
         <span className="code mr-2 rounded bg-[var(--ink)] px-1.5 py-0.5 text-[0.66rem] uppercase tracking-widest text-[var(--paper)]">at ufc</span>
         {f.ours}
       </p>
-      <ul className="mt-5 flex flex-wrap gap-2">
+      <ul className="mt-3 flex flex-wrap gap-2 lg:mt-5">
         {f.chips.map((c, i) => (
           <li
             key={c}
@@ -208,7 +208,8 @@ function Copy({ f, show }: { f: Freedom; show: boolean }) {
   );
 }
 
-function DesktopStage() {
+/** The pinned, wiped stage. Runs at every screen size: copy on top and collage below on phones, side by side from `lg` up. */
+function Stage() {
   const ref = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start start", "end end"] });
@@ -254,7 +255,7 @@ function DesktopStage() {
   };
 
   return (
-    <div ref={ref} className="relative hidden lg:block" style={{ height: `${FREEDOMS.length * 85 + 15}vh` }}>
+    <div ref={ref} className="relative" style={{ height: `${FREEDOMS.length * 85 + 15}vh` }}>
       <TornEdge color="var(--paper)" className="absolute inset-x-0 top-0 z-30 -translate-y-px" />
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         {FREEDOMS.map((f, i) => {
@@ -267,10 +268,10 @@ function DesktopStage() {
               className={`absolute inset-0 ${sc.pat}`}
               style={{ backgroundColor: sc.bg, clipPath: clips[i] ?? undefined, zIndex: i + 1 }}
             >
-              <div className="mx-auto grid h-full w-full max-w-7xl grid-cols-12 items-center gap-8 px-8 pt-8">
-                <div className="col-span-6 text-[var(--ink)]">
+              <div className="mx-auto grid h-full w-full max-w-7xl grid-cols-1 content-center gap-3 px-5 pt-20 sm:px-8 lg:grid-cols-12 lg:items-center lg:gap-8 lg:pt-8">
+                <div className="text-[var(--ink)] lg:col-span-6">
                   <Copy f={f} show={show} />
-                  <div className="mt-10 flex items-center gap-4">
+                  <div className="mt-4 flex items-center gap-4 lg:mt-10">
                     <div className="flex gap-2">
                       {FREEDOMS.map((x) => (
                         <button
@@ -288,28 +289,13 @@ function DesktopStage() {
                     </div>
                   </div>
                 </div>
-                <div className="relative col-span-6 h-[min(74svh,44rem)]">
+                <div className="relative mx-auto aspect-square h-[40svh] max-h-[24rem] lg:mx-0 lg:aspect-auto lg:h-[min(74svh,44rem)] lg:max-h-none lg:w-auto lg:col-span-6">
                   <Body show={show} />
                 </div>
               </div>
             </motion.div>
           );
         })}
-      </div>
-    </div>
-  );
-}
-
-function MobileScene({ f }: { f: Freedom }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const seen = useInView(ref, { once: true, margin: "-12% 0px" });
-  const sc = SCENES[f.n];
-  const Body = SCENE_BODY[f.n];
-  return (
-    <div ref={ref} className={`${sc.pat} relative overflow-hidden rounded-[2rem] px-5 py-12 text-[var(--ink)]`} style={{ backgroundColor: sc.bg }}>
-      <Copy f={f} show={seen} />
-      <div className="relative mx-auto mt-12 aspect-[1/1.12] w-full max-w-md">
-        <Body show={seen} />
       </div>
     </div>
   );
@@ -341,13 +327,8 @@ export function Freedoms() {
         </Reveal>
       </div>
 
-      <DesktopStage />
+      <Stage />
 
-      <div className="space-y-6 px-4 pb-20 sm:px-6 lg:hidden">
-        {FREEDOMS.map((f) => (
-          <MobileScene key={f.n} f={f} />
-        ))}
-      </div>
     </section>
   );
 }

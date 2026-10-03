@@ -9,10 +9,12 @@ import { COMMITS, type Commit } from "./data";
 import { StickerArt } from "./sticker-art";
 import { TornEdge } from "./torn-edge";
 
-const CARD_W = 250;
-const PITCH = 372;
-const PAD_L = 150;
-const END_PAD = 560;
+/** Card geometry. Phones get narrower, squarer cards so one fits on screen with the next peeking in. */
+const dimsFor = (w: number) =>
+  w < 640
+    ? { CARD_W: 224, PITCH: 262, PAD_L: 28, END_PAD: 300, compact: true }
+    : { CARD_W: 250, PITCH: 372, PAD_L: 150, END_PAD: 560, compact: false };
+type Dims = ReturnType<typeof dimsFor>;
 const ROPE_Y = 24;
 const SAG = 20;
 
@@ -29,10 +31,10 @@ function Peg({ tone }: { tone: string }) {
   );
 }
 
-function Visual({ c }: { c: Commit }) {
-  const portrait = c.aspect !== "landscape";
+function Visual({ c, compact }: { c: Commit; compact: boolean }) {
+  const portrait = c.aspect !== "landscape" && !compact;
   return (
-    <div className={`relative w-full overflow-hidden bg-[#d9d6cb] ${portrait ? "aspect-[4/5]" : "aspect-[5/4]"}`}>
+    <div className={`relative w-full overflow-hidden bg-[#d9d6cb] ${compact ? "aspect-[6/5]" : portrait ? "aspect-[4/5]" : "aspect-[5/4]"}`}>
       {c.image && (
         <Image src={c.image} alt={c.imageAlt ?? c.title} fill sizes="280px" className={c.aspect === "landscape" ? "object-cover" : "object-cover object-top"} draggable={false} />
       )}
@@ -40,22 +42,22 @@ function Visual({ c }: { c: Commit }) {
   );
 }
 
-function HangingCard({ c, i, sway }: { c: Commit; i: number; sway: MotionValue<number> }) {
+function HangingCard({ c, i, sway, d }: { c: Commit; i: number; sway: MotionValue<number>; d: Dims }) {
   const k = [1, 0.8, 1.2, 0.95, 1.1, 0.85][i % 6];
   const rot = useTransform(sway, (v) => v * k);
   const talks = c.branch === "talks";
   const tone = talks ? "#f5a623" : "#2ee58f";
-  const left = PAD_L + i * PITCH;
+  const left = d.PAD_L + i * d.PITCH;
   const head = i === LOG.length - 1;
   const first = i === 0;
 
   return (
-    <div className="absolute top-0" style={{ left, width: CARD_W }}>
+    <div className="absolute top-0" style={{ left, width: d.CARD_W }}>
       <div className="sway" style={{ ["--s" as string]: `${1 + (i % 3) * 0.45}deg`, ["--dur" as string]: `${4.6 + (i % 4) * 0.7}s`, animationDelay: `${-i * 0.9}s` }}>
         <motion.div style={{ rotate: rot, transformOrigin: "50% 0" }} whileHover={{ scale: 1.04, zIndex: 20 }} transition={{ type: "spring", stiffness: 300, damping: 18 }} className="relative pt-5">
           <Peg tone={tone} />
           <figure className="polaroid relative">
-            <Visual c={c} />
+            <Visual c={c} compact={d.compact} />
             <figcaption className="hand px-1 pb-2 pt-2 text-[1.3rem] leading-none">{c.date}</figcaption>
           </figure>
 
@@ -91,17 +93,15 @@ function HangingCard({ c, i, sway }: { c: Commit; i: number; sway: MotionValue<n
   );
 }
 
-const TRACK_W = PAD_L + LOG.length * PITCH + END_PAD;
-
-function ropePath() {
-  const xs = LOG.map((_, i) => PAD_L + i * PITCH + CARD_W / 2);
-  let d = `M -200 ${ROPE_Y - 8} L ${xs[0]} ${ROPE_Y}`;
+function ropePath(d: Dims, trackW: number) {
+  const xs = LOG.map((_, i) => d.PAD_L + i * d.PITCH + d.CARD_W / 2);
+  let path = `M -200 ${ROPE_Y - 8} L ${xs[0]} ${ROPE_Y}`;
   for (let i = 0; i < xs.length - 1; i++) {
     const mid = (xs[i] + xs[i + 1]) / 2;
-    d += ` Q ${mid} ${ROPE_Y + SAG * 2} ${xs[i + 1]} ${ROPE_Y}`;
+    path += ` Q ${mid} ${ROPE_Y + SAG * 2} ${xs[i + 1]} ${ROPE_Y}`;
   }
-  d += ` L ${TRACK_W + 200} ${ROPE_Y - 8}`;
-  return d;
+  path += ` L ${trackW + 200} ${ROPE_Y - 8}`;
+  return path;
 }
 
 function Clouds() {
@@ -140,6 +140,9 @@ export function ClotheslineLog() {
     return () => window.removeEventListener("resize", on);
   }, []);
 
+  const d = dimsFor(vp.w);
+  const TRACK_W = d.PAD_L + LOG.length * d.PITCH + d.END_PAD;
+  const rope = ropePath(d, TRACK_W);
   const ref = useRef<HTMLElement>(null);
   const travel = Math.max(0, TRACK_W - vp.w);
   const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start start", "end end"] });
@@ -153,34 +156,34 @@ export function ClotheslineLog() {
       <div className="sticky top-0 h-[100svh] overflow-hidden bg-[linear-gradient(to_bottom,#6cbcff,#bfe3ff_58%,#e6f4ff)] text-[var(--ink)]">
         <Clouds />
 
-        <div className="absolute right-[5%] top-20 z-[5] w-28 xl:w-36">
+        <div className="absolute right-[4%] top-[4.6rem] z-[5] w-16 sm:w-28 xl:w-36">
           <div className="bob">
             <StickerArt id="sun" className="die-cut w-full" />
           </div>
         </div>
 
         {/* heading, pinned */}
-        <div className="absolute inset-x-0 top-20 z-20 mx-auto max-w-7xl px-8">
+        <div className="absolute inset-x-0 top-20 z-20 mx-auto max-w-7xl px-5 sm:px-8">
           <p className="eyebrow mb-3 inline-block bg-[var(--paper)] px-2 py-1 text-[var(--signal-deep)]">§ 04 — the log</p>
-          <h2 className="text-[clamp(2.4rem,4.8vw,4.6rem)] font-semibold leading-[0.95] tracking-[-0.055em]">
+          <h2 className="max-w-[78%] text-[clamp(2rem,4.8vw,4.6rem)] font-semibold leading-[0.95] tracking-[-0.055em] sm:max-w-none">
             Our history is a <span className="serif">git log.</span>
           </h2>
         </div>
 
         {/* the clothesline */}
-        <motion.div className="absolute left-0 z-10" style={{ x, top: "clamp(215px, 29vh, 285px)", width: TRACK_W }}>
+        <motion.div className="absolute left-0 z-10" style={{ x, top: vp.w < 640 ? "clamp(190px, 27vh, 240px)" : "clamp(215px, 29vh, 285px)", width: TRACK_W }}>
           <svg className="absolute left-0 top-0 overflow-visible" width={TRACK_W} height={ROPE_Y + SAG * 2 + 10} aria-hidden="true">
-            <path d={ropePath()} fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="5" transform="translate(0 4)" />
-            <path d={ropePath()} fill="none" stroke="#e7c98a" strokeWidth="4" strokeLinecap="round" />
-            <path d={ropePath()} fill="none" stroke="#b58a3c" strokeWidth="4" strokeLinecap="round" strokeDasharray="2 9" />
+            <path d={rope} fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="5" transform="translate(0 4)" />
+            <path d={rope} fill="none" stroke="#e7c98a" strokeWidth="4" strokeLinecap="round" />
+            <path d={rope} fill="none" stroke="#b58a3c" strokeWidth="4" strokeLinecap="round" strokeDasharray="2 9" />
           </svg>
           <div className="relative" style={{ top: ROPE_Y - 22 }}>
             {LOG.map((c, i) => (
-              <HangingCard key={c.hash} c={c} i={i} sway={sway} />
+              <HangingCard key={c.hash} c={c} i={i} sway={sway} d={d} />
             ))}
 
             {/* final sign */}
-            <div className="absolute top-0" style={{ left: PAD_L + LOG.length * PITCH }}>
+            <div className="absolute top-0" style={{ left: d.PAD_L + LOG.length * d.PITCH }}>
               <div className="sway" style={{ ["--s" as string]: "2deg", ["--dur" as string]: "5.2s" }}>
                 <div className="relative pt-5">
                   <Peg tone="#c7b3ff" />
@@ -199,7 +202,7 @@ export function ClotheslineLog() {
         </motion.div>
 
         {/* scroll progress */}
-        <div className="absolute inset-x-0 bottom-5 z-20 mx-auto flex max-w-7xl items-center gap-4 px-8">
+        <div className="absolute inset-x-0 bottom-5 z-20 mx-auto flex max-w-7xl items-center gap-4 px-5 sm:px-8">
           <span className="hand text-xl">keep scrolling →</span>
           <div className="relative h-[3px] flex-1 bg-[var(--ink)]/20">
             <motion.div className="absolute inset-y-0 left-0 w-full origin-left bg-[var(--ink)]" style={{ scaleX: bar }} />

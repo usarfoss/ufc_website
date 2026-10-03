@@ -21,7 +21,7 @@ export function Hero() {
     <section className="grain relative isolate flex min-h-[100svh] flex-col overflow-hidden">
       <HeroBackdrop />
 
-      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col justify-end px-5 pb-[19rem] pt-28 sm:px-8 sm:pb-44 sm:pt-32 lg:pb-28">
+      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col justify-end px-5 pb-[14rem] pt-28 sm:px-8 sm:pb-44 sm:pt-32 lg:pb-28">
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}

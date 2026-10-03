@@ -48,11 +48,11 @@ const ITEMS: PileItem[] = [
 export function Zoo() {
   return (
     <section id="zoo" className="pat-dots relative overflow-hidden bg-[#c7b3ff] pt-24 text-[var(--ink)] sm:pt-32">
-      <div className="mx-auto max-w-7xl px-5 sm:px-8">
+      <div className="pointer-events-none relative z-10 mx-auto max-w-7xl px-5 sm:px-8">
         <Reveal>
           <p className="eyebrow mb-8 inline-block bg-[var(--cream)] px-2 py-1 text-[var(--signal-deep)]">§ 06 — the zoo</p>
         </Reveal>
-        <div className="grid items-end gap-8 lg:grid-cols-12">
+        <div className="pointer-events-none relative z-10 grid items-end gap-8 lg:grid-cols-12">
           <h2 className="text-[clamp(2.6rem,6.6vw,6.2rem)] font-semibold leading-[0.92] tracking-[-0.058em] lg:col-span-9">
             <MaskLine inView>The open-source</MaskLine>
             <span className="mt-[0.05em] block">
@@ -68,16 +68,18 @@ export function Zoo() {
         </div>
       </div>
 
-      {/* The pit */}
-      <div className="relative mx-auto mt-6 h-[62vh] min-h-[480px] max-w-[110rem]">
-        <div className="hand pointer-events-none absolute right-6 top-6 hidden items-start gap-2 text-2xl text-[var(--ink)]/70 md:flex xl:right-14">
+      {/* The pit: breathing room under the header. The stickers themselves live in the layer below, which covers the whole section. */}
+      <div className="pointer-events-none relative z-10 mx-auto mt-6 h-[62vh] min-h-[480px] max-w-[110rem]">
+        <div className="hand absolute left-[42%] top-4 hidden items-start gap-2 text-2xl text-[var(--ink)]/70 md:flex">
           <span className="max-w-[10rem] -rotate-3 leading-none">grab one. throw it. no rules.</span>
           <Scribble dir="down" className="mt-3 h-10 w-12" />
         </div>
-        {/* the floor: a dashed cut line, drawn behind the stickers that rest on it */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 border-t-4 border-dashed border-[var(--ink)]/70" aria-hidden="true" />
-        <StickerPile items={ITEMS} startWhenVisible sizeBoost={1.3} />
       </div>
+
+      {/* the floor: a dashed cut line along the bottom edge, behind the stickers that rest on it */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 border-t-4 border-dashed border-[var(--ink)]/70" aria-hidden="true" />
+      {/* the physics world is the whole purple section, stacked just behind the text */}
+      <StickerPile items={ITEMS} className="z-[1]" startWhenVisible sizeBoost={1.3} mobileScale={0.64} />
     </section>
   );
 }

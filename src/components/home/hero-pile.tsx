@@ -50,5 +50,5 @@ const ITEMS: PileItem[] = [
 ];
 
 export function HeroPile() {
-  return <StickerPile items={ITEMS} className="z-[6] !bottom-[4.5rem]" leftInset={0.4} wideBoost={0.8} avoidSelector="[data-pile-avoid]" />;
+  return <StickerPile items={ITEMS} className="z-[6] !bottom-[4.5rem]" leftInset={0.4} wideBoost={0.8} mobileScale={0.56} avoidSelector="[data-pile-avoid]" />;
 }

@@ -28,6 +28,7 @@ export function StickerPile({
   startWhenVisible = false,
   sizeBoost = 1,
   wideBoost = 1,
+  mobileScale = 0.6,
   avoidSelector,
 }: {
   items: PileItem[];
@@ -39,6 +40,8 @@ export function StickerPile({
   sizeBoost?: number;
   /** Extra size multiplier on screens ≥ 1024px only. */
   wideBoost?: number;
+  /** Final size multiplier below 640px (phones). Smaller than the default keeps stickers from burying the content. */
+  mobileScale?: number;
   /** CSS selector of an element (the hero copy + buttons) the pile must never reach. The left wall sits just right of it. */
   avoidSelector?: string;
 }) {
@@ -52,7 +55,7 @@ export function StickerPile({
 
     let W = box.clientWidth;
     let H = box.clientHeight;
-    const scale = (W < 640 ? 0.6 : W < 1024 ? 0.8 : 1 * wideBoost) * sizeBoost;
+    const scale = W < 640 ? mobileScale : (W < 1024 ? 0.8 : 1 * wideBoost) * sizeBoost;
     const wanted = W < 640 ? items.slice(0, 7) : items;
 
     const engine = Engine.create({ enableSleeping: true });
