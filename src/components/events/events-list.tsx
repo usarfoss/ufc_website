@@ -38,11 +38,15 @@ function EventCard({ e, i, latest }: { e: EventItem; i: number; latest: boolean 
                 <EventVisual event={e} sizes="(min-width: 1024px) 35vw, 90vw" />
               </div>
               <span className="absolute left-3 top-3">
-                <Badge tone={e.tone === "mint" ? "signal" : e.tone} className="!text-[0.78rem]">{e.type}</Badge>
+                <Badge tone={e.tone === "mint" ? "signal" : e.tone} className="!text-[0.78rem]">
+                  {e.type}
+                </Badge>
               </span>
               {latest && (
                 <span className="absolute right-3 top-3">
-                  <Badge tone="butter" className="!text-[0.78rem] -rotate-3">latest</Badge>
+                  <Badge tone="butter" className="!text-[0.78rem] -rotate-3">
+                    latest
+                  </Badge>
                 </span>
               )}
             </div>
@@ -59,7 +63,10 @@ function EventCard({ e, i, latest }: { e: EventItem; i: number; latest: boolean 
 
             <h3 className="mt-4 text-[clamp(1.7rem,2.8vw,2.4rem)] leading-[1.04]">
               {/* the title's link stretches over the whole card, so the card is one big button */}
-              <Link href={`/events/${e.slug}`} className="after:absolute after:inset-0 after:z-10 after:rounded-[1.25rem] after:content-['']">
+              <Link
+                href={`/events/${e.slug}`}
+                className="after:absolute after:inset-0 after:z-10 after:rounded-[1.25rem] after:content-['']"
+              >
                 {e.title}
               </Link>
             </h3>
@@ -68,7 +75,11 @@ function EventCard({ e, i, latest }: { e: EventItem; i: number; latest: boolean 
 
             <ul className="mt-5 flex flex-wrap gap-2">
               {e.tags.map((t) => (
-                <li key={t} className="code rounded-full border-2 border-[var(--ink)] px-2.5 py-0.5 text-[0.7rem]" style={{ background: TONE_BG[e.tone] }}>
+                <li
+                  key={t}
+                  className="code rounded-full border-2 border-[var(--ink)] px-2.5 py-0.5 text-[0.7rem]"
+                  style={{ background: TONE_BG[e.tone] }}
+                >
                   {t}
                 </li>
               ))}
@@ -76,7 +87,9 @@ function EventCard({ e, i, latest }: { e: EventItem; i: number; latest: boolean 
 
             <span className="btn btn-sm btn-ink mt-6 pointer-events-none">
               Read the full story
-              <span className="disc"><ArrowUpRight size={13} strokeWidth={2.6} /></span>
+              <span className="disc">
+                <ArrowUpRight size={13} strokeWidth={2.6} />
+              </span>
             </span>
           </div>
         </article>
@@ -101,11 +114,11 @@ export function EventsList() {
         <Reveal delay={0.1}>
           <div className="mt-8 grid max-w-4xl gap-x-12 gap-y-4 text-[1.1rem] leading-[1.7] text-[var(--ink)]/75 md:grid-cols-2">
             <p>
-              Offline events take up a lot of time, and we know it. So we don't run many. A few a semester, done well, beat a packed calendar
-              that's mostly there for show.
+              Offline events take up a lot of time, and we know it. So we don&apos;t run many. A few a semester, done well, beat a packed
+              calendar that&apos;s mostly there for show.
             </p>
             <p>
-              We don't chase sponsors to pay for a tech club either. This space is for people who genuinely want to be here. Click any
+              We don&apos;t chase sponsors to pay for a tech club either. This space is for people who genuinely want to be here. Click any
               event on the thread to read the whole story.
             </p>
           </div>
@@ -148,7 +161,7 @@ export function EventsCta() {
     <section className="relative overflow-hidden bg-[var(--signal)] text-[var(--ink)]">
       <div className="relative mx-auto max-w-7xl px-5 py-24 sm:px-8 sm:py-36">
         <Reveal>
-          <p className="eyebrow mb-8">§ 01 · don't miss the next one</p>
+          <p className="eyebrow mb-8">§ 01 · don&apos;t miss the next one</p>
         </Reveal>
         <h2 className="max-w-5xl text-[clamp(2.8rem,8vw,7.4rem)] leading-[0.92]">
           <MaskLine inView>Stay in</MaskLine>
@@ -158,28 +171,39 @@ export function EventsCta() {
         </h2>
         <Reveal delay={0.1}>
           <p className="mt-8 max-w-xl text-lg leading-relaxed text-[var(--ink)]/75">
-            Event details and meet links go up on WhatsApp first. Updates and posters land on Instagram. Join whichever you like and you won't miss a thing.
+            Event details and meet links go up on WhatsApp first. Updates and posters land on Instagram. Join whichever you like and you
+            won&apos;t miss a thing.
           </p>
         </Reveal>
         <div className="mt-10 flex flex-wrap items-center gap-x-4 gap-y-5">
           <a href={LINKS.whatsapp} target="_blank" rel="noopener noreferrer" className="btn btn-ink">
             WhatsApp community
-            <span className="disc"><ArrowUpRight size={15} strokeWidth={2.6} /></span>
+            <span className="disc">
+              <ArrowUpRight size={15} strokeWidth={2.6} />
+            </span>
           </a>
           <a href={LINKS.instagram} target="_blank" rel="noopener noreferrer" className="btn btn-pink">
             Instagram
-            <span className="disc"><ArrowUpRight size={15} strokeWidth={2.6} /></span>
+            <span className="disc">
+              <ArrowUpRight size={15} strokeWidth={2.6} />
+            </span>
           </a>
           <a href={LINKS.discord} target="_blank" rel="noopener noreferrer" className="btn btn-lilac">
             Discord
-            <span className="disc"><ArrowUpRight size={15} strokeWidth={2.6} /></span>
+            <span className="disc">
+              <ArrowUpRight size={15} strokeWidth={2.6} />
+            </span>
           </a>
         </div>
         <Pin r={-8} className="absolute right-[6%] top-16 hidden md:block" hint="drag me">
-          <Badge tone="butter" className="!text-base">everyone's invited</Badge>
+          <Badge tone="butter" className="!text-base">
+            everyone&apos;s invited
+          </Badge>
         </Pin>
         <Pin r={9} className="absolute bottom-10 right-[12%] hidden w-24 lg:block" hint="drag me">
-          <div className="die-cut w-full"><StickerArt id="rocket" className="w-full" /></div>
+          <div className="die-cut w-full">
+            <StickerArt id="rocket" className="w-full" />
+          </div>
         </Pin>
         <Pin r={-6} className="absolute bottom-24 right-[26%] hidden w-24 lg:block" hint="drag me">
           <Sticker src="/collage/tux.webp" alt="Tux, the Linux penguin" className="aspect-[607/720] w-full" sizes="110px" />

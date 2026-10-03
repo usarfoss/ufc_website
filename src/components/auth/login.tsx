@@ -48,16 +48,27 @@ function Pass() {
   return (
     <div className="relative mx-auto w-full max-w-md">
       {/* the lanyard */}
-      <svg className="pointer-events-none absolute -top-24 left-1/2 z-0 h-28 w-20 -translate-x-1/2" viewBox="0 0 80 112" fill="none" aria-hidden="true">
+      <svg
+        className="pointer-events-none absolute -top-24 left-1/2 z-0 h-28 w-20 -translate-x-1/2"
+        viewBox="0 0 80 112"
+        fill="none"
+        aria-hidden="true"
+      >
         <path d="M6 0 L38 104 M74 0 L42 104" stroke="#14140f" strokeWidth="9" strokeLinecap="round" />
         <path d="M6 0 L38 104 M74 0 L42 104" stroke="#2ee58f" strokeWidth="5" strokeLinecap="round" />
       </svg>
 
       <Pin r={-2} drag className="relative z-10" hint="drag me">
-        <article className="relative border-[2.5px] border-[var(--ink)] bg-[var(--cream)] p-7 text-[var(--ink)] shadow-[8px_8px_0_var(--ink)] sm:p-9" style={{ borderRadius: "1.5rem" }}>
+        <article
+          className="relative border-[2.5px] border-[var(--ink)] bg-[var(--cream)] p-7 text-[var(--ink)] shadow-[8px_8px_0_var(--ink)] sm:p-9"
+          style={{ borderRadius: "1.5rem" }}
+        >
           <Tape tone="butter" className="-top-3 left-8" rotate={-6} />
           <Tape tone="pink" className="-top-3 right-8" rotate={5} />
-          <span className="absolute left-1/2 top-3 block h-3 w-16 -translate-x-1/2 rounded-full border-2 border-[var(--ink)] bg-[var(--paper)]" aria-hidden="true" />
+          <span
+            className="absolute left-1/2 top-3 block h-3 w-16 -translate-x-1/2 rounded-full border-2 border-[var(--ink)] bg-[var(--paper)]"
+            aria-hidden="true"
+          />
 
           <div className="mt-4 flex items-start justify-between gap-4">
             <div>
@@ -80,12 +91,19 @@ function Pass() {
             ))}
           </ul>
 
-          <button type="button" onClick={() => void go()} disabled={redirecting} className="btn btn-ink mt-6 w-full justify-between disabled:cursor-wait disabled:opacity-70">
+          <button
+            type="button"
+            onClick={() => void go()}
+            disabled={redirecting}
+            className="btn btn-ink mt-6 w-full justify-between disabled:cursor-wait disabled:opacity-70"
+          >
             <span className="flex items-center gap-3">
               <GithubIcon className="size-5" />
               {redirecting ? "Taking you to GitHub…" : "Continue with GitHub"}
             </span>
-            <span className="disc"><ArrowUpRight size={15} strokeWidth={2.6} /></span>
+            <span className="disc">
+              <ArrowUpRight size={15} strokeWidth={2.6} />
+            </span>
           </button>
 
           {failed && (
@@ -109,7 +127,9 @@ function Pass() {
         <Sticker src="/collage/tux.webp" alt="Tux, the Linux penguin" className="aspect-[607/720] w-full" sizes="90px" />
       </Pin>
       <Pin r={-8} delay={0.5} className="absolute -left-8 bottom-24 z-20 hidden w-20 sm:block" hint="drag me">
-        <div className="die-cut"><StickerArt id="heart" className="w-full" /></div>
+        <div className="die-cut">
+          <StickerArt id="heart" className="w-full" />
+        </div>
       </Pin>
     </div>
   );
@@ -131,8 +151,8 @@ export function Login() {
           </h1>
           <Reveal delay={0.1}>
             <p className="mt-8 max-w-xl text-[1.18rem] leading-[1.65] text-[var(--ink)]/80">
-              Sign in with GitHub to see <Mark tone="var(--cream)">your dashboard</Mark>, the club leaderboard and what everyone is building. No new
-              password, no sign-up form.
+              Sign in with GitHub to see <Mark tone="var(--cream)">your dashboard</Mark>, the club leaderboard and what everyone is
+              building. No new password, no sign-up form.
             </p>
           </Reveal>
 
@@ -153,7 +173,9 @@ export function Login() {
           <div className="mt-10 flex flex-wrap items-center gap-x-5 gap-y-4">
             <Link href="/" className="btn btn-sm btn-paper">
               Back to the site
-              <span className="disc"><ArrowUpRight size={13} strokeWidth={2.6} /></span>
+              <span className="disc">
+                <ArrowUpRight size={13} strokeWidth={2.6} />
+              </span>
             </Link>
           </div>
         </div>
@@ -166,7 +188,9 @@ export function Login() {
       </div>
 
       <Pin r={-8} delay={0.3} className="absolute bottom-10 left-[44%] hidden lg:block" hint="drag me">
-        <Badge tone="signal" className="!text-base">no experience needed</Badge>
+        <Badge tone="signal" className="!text-base">
+          no experience needed
+        </Badge>
       </Pin>
     </section>
   );

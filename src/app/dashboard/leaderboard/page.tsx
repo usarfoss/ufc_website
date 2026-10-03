@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Crown, Search, TrendingUp, Users } from "lucide-react";
 import { useAuth } from "@/features/auth/auth-provider";
 import { GithubIcon } from "@/components/ui/social-icons";
 import { Badge, Tape } from "@/components/home/scrap";
+import { useApi } from "@/components/dashboard/use-api";
 import { Avatar, Empty, ErrorPanel, Loading, PageHeader, Panel } from "@/components/dashboard/ui";
 
 interface LeaderboardUser {
@@ -68,7 +69,12 @@ function PodiumSlot({ row, def, by }: { row?: Row; def: (typeof PODIUM)[number];
   return (
     <div className={`${def.order} flex min-w-0 flex-col items-center`}>
       {row ? (
-        <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 + (def.place === 1 ? 0.15 : 0), type: "spring", stiffness: 140, damping: 14 }} className="relative flex w-full flex-col items-center px-1 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.55 + (def.place === 1 ? 0.15 : 0), type: "spring", stiffness: 140, damping: 14 }}
+          className="relative flex w-full flex-col items-center px-1 text-center"
+        >
           {def.place === 1 && <Crown className="mb-1 size-9 -rotate-6 fill-[var(--butter)] text-[var(--ink)]" strokeWidth={2.2} />}
           <Avatar src={row.avatar} name={row.name} size={def.place === 1 ? 92 : 72} className="shadow-[3px_3px_0_var(--ink)]" />
           <p className="mt-3 w-full truncate text-[clamp(1rem,1.8vw,1.35rem)] font-extrabold leading-tight">{row.name}</p>
@@ -76,13 +82,19 @@ function PodiumSlot({ row, def, by }: { row?: Row; def: (typeof PODIUM)[number];
         </motion.div>
       ) : (
         <div className="flex w-full flex-col items-center px-1 text-center">
-          <span className="grid size-16 place-items-center rounded-full border-2 border-dashed border-[var(--ink)]/45 text-2xl font-extrabold text-[var(--ink)]/40">?</span>
+          <span className="grid size-16 place-items-center rounded-full border-2 border-dashed border-[var(--ink)]/45 text-2xl font-extrabold text-[var(--ink)]/40">
+            ?
+          </span>
           <p className="hand mt-3 text-[1.3rem] leading-none text-[var(--ink)]/55">could be you</p>
         </div>
       )}
       <div
         className={`rise-block relative mt-4 flex w-full flex-col items-center justify-start border-[2.5px] border-b-0 border-[var(--ink)] pt-3 shadow-[5px_0_0_var(--ink)] ${def.block}`}
-        style={{ background: def.bg, borderRadius: "1rem 1rem 0 0", ["--d" as string]: `${def.place === 1 ? 250 : def.place === 2 ? 100 : 0}ms` }}
+        style={{
+          background: def.bg,
+          borderRadius: "1rem 1rem 0 0",
+          ["--d" as string]: `${def.place === 1 ? 250 : def.place === 2 ? 100 : 0}ms`,
+        }}
       >
         <span className="serif text-[clamp(2.6rem,5vw,4.6rem)] leading-[0.85]">{def.place}</span>
         {row && (
@@ -97,44 +109,28 @@ function PodiumSlot({ row, def, by }: { row?: Row; def: (typeof PODIUM)[number];
 
 export default function LeaderboardPage() {
   const { user } = useAuth();
-  const [all, setAll] = useState<LeaderboardUser[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortBy>("totalPoints");
   const [query, setQuery] = useState("");
-
-  const fetchLeaderboard = useCallback(async (initial = false) => {
-    try {
-      if (initial) setLoading(true);
-      setError(null);
-      const res = await fetch("/api/dashboard/leaderboard?sortBy=totalPoints");
-      if (!res.ok) throw new Error("Failed to fetch leaderboard");
-      setAll((await res.json()).users || []);
-    } catch (err) {
-      console.error("Error fetching leaderboard:", err);
-      setError("We couldn't load the leaderboard just now.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => void fetchLeaderboard(true), [fetchLeaderboard]);
+  const { data, error, loading, reload, refresh } = useApi<{ users?: LeaderboardUser[] }>("/api/dashboard/leaderboard?sortBy=totalPoints", {
+    errorMessage: "We couldn't load the leaderboard just now.",
+  });
+  const all = useMemo(() => data?.users ?? [], [data]);
 
   // The server tells us when the board changes; refresh quietly, without a loading flash.
   useEffect(() => {
     const stream = new EventSource("/api/stream/dashboard");
     const onVersions = (event: MessageEvent<string>) => {
       const payload = JSON.parse(event.data) as { versions?: { leaderboard?: number } };
-      if (payload.versions?.leaderboard !== undefined) void fetchLeaderboard();
+      if (payload.versions?.leaderboard !== undefined) refresh();
     };
     stream.addEventListener("versions", onVersions);
     return () => stream.close();
-  }, [fetchLeaderboard]);
+  }, [refresh]);
 
   // Ranked by the current sort. Ties share a place (1, 2, 2, 4), like a real scoreboard.
   const rows: Row[] = useMemo(() => {
     const sorted = [...all].sort((a, b) => scoreOf(b, sortBy) - scoreOf(a, sortBy));
-    return sorted.map((u, i) => {
+    return sorted.map((u) => {
       const score = scoreOf(u, sortBy);
       const first = sorted.findIndex((x) => scoreOf(x, sortBy) === score);
       return { ...u, score, place: first + 1 };
@@ -142,12 +138,21 @@ export default function LeaderboardPage() {
   }, [all, sortBy]);
 
   const top = rows[0]?.score ?? 0;
-  const isMe = (r: LeaderboardUser) => !!user && (r.id === user.id || (!!user.githubUsername && r.githubUsername?.toLowerCase() === user.githubUsername.toLowerCase()));
+  const isMe = (r: LeaderboardUser) =>
+    !!user && (r.id === user.id || (!!user.githubUsername && r.githubUsername?.toLowerCase() === user.githubUsername.toLowerCase()));
   const meIndex = rows.findIndex(isMe);
   const me = meIndex >= 0 ? rows[meIndex] : null;
-  const ahead = me && meIndex > 0 ? rows.slice(0, meIndex).reverse().find((r) => r.score > me.score) : null;
+  const ahead =
+    me && meIndex > 0
+      ? rows
+          .slice(0, meIndex)
+          .reverse()
+          .find((r) => r.score > me.score)
+      : null;
 
-  const filtered = query.trim() ? rows.filter((r) => `${r.name} ${r.githubUsername ?? ""}`.toLowerCase().includes(query.trim().toLowerCase())) : rows;
+  const filtered = query.trim()
+    ? rows.filter((r) => `${r.name} ${r.githubUsername ?? ""}`.toLowerCase().includes(query.trim().toLowerCase()))
+    : rows;
 
   const totals = useMemo(
     () => ({
@@ -160,7 +165,7 @@ export default function LeaderboardPage() {
   );
 
   if (loading) return <Loading label="counting points" />;
-  if (error && !all.length) return <ErrorPanel title="Couldn't load the leaderboard" message={error} onRetry={() => void fetchLeaderboard(true)} />;
+  if (error && !all.length) return <ErrorPanel title="Couldn't load the leaderboard" message={error} onRetry={reload} />;
 
   const showGithub = sortBy !== "leetcode";
   const showLeet = sortBy !== "github";
@@ -169,9 +174,21 @@ export default function LeaderboardPage() {
 
   return (
     <div className="space-y-12">
-      <PageHeader eyebrow="§ leaderboard · friendly competition" title="The club" accent="leaderboard." tone="pink" art="sparkle" sub="Points come from commits, pull requests, issues and LeetCode problems. They're for fun, so nobody is competing against you.">
+      <PageHeader
+        eyebrow="§ leaderboard · friendly competition"
+        title="The club"
+        accent="leaderboard."
+        tone="pink"
+        art="sparkle"
+        sub="Points come from commits, pull requests, issues and LeetCode problems. They're for fun, so nobody is competing against you."
+      >
         {SORTS.map((s) => (
-          <button key={s.key} onClick={() => setSortBy(s.key)} aria-pressed={sortBy === s.key} className={`btn btn-sm ${sortBy === s.key ? "btn-ink" : "btn-paper"}`}>
+          <button
+            key={s.key}
+            onClick={() => setSortBy(s.key)}
+            aria-pressed={sortBy === s.key}
+            className={`btn btn-sm ${sortBy === s.key ? "btn-ink" : "btn-paper"}`}
+          >
             {s.icon}
             {s.label}
           </button>
@@ -185,7 +202,11 @@ export default function LeaderboardPage() {
       </PageHeader>
 
       {rows.length === 0 ? (
-        <Empty art="rocket" title="The board is empty" body="Nobody has any points yet. Make a commit, open a PR or solve a problem and it'll show up here." />
+        <Empty
+          art="rocket"
+          title="The board is empty"
+          body="Nobody has any points yet. Make a commit, open a PR or solve a problem and it'll show up here."
+        />
       ) : (
         <>
           {/* the board in numbers */}
@@ -196,7 +217,11 @@ export default function LeaderboardPage() {
               { n: totals.commits.toLocaleString(), l: "commits", tone: "#9af2c6" },
               { n: totals.prs.toLocaleString(), l: "pull requests", tone: "#ffb3cf" },
             ].map((s) => (
-              <li key={s.l} className="rounded-2xl border-[2.5px] border-[var(--ink)] px-5 py-4 shadow-[4px_4px_0_var(--ink)]" style={{ background: s.tone }}>
+              <li
+                key={s.l}
+                className="rounded-2xl border-[2.5px] border-[var(--ink)] px-5 py-4 shadow-[4px_4px_0_var(--ink)]"
+                style={{ background: s.tone }}
+              >
                 <p className="serif text-[clamp(2.2rem,3.6vw,3.2rem)] leading-[0.9]">{s.n}</p>
                 <p className="code mt-2 text-[0.64rem] font-bold uppercase tracking-widest text-[var(--ink)]/65">{s.l}</p>
               </li>
@@ -205,7 +230,10 @@ export default function LeaderboardPage() {
 
           {/* where you stand */}
           {me ? (
-            <section className="relative border-[2.5px] border-[var(--ink)] bg-[var(--ink)] p-6 text-[var(--cream)] shadow-[7px_7px_0_var(--signal)] sm:p-8" style={{ borderRadius: "1.5rem" }}>
+            <section
+              className="relative border-[2.5px] border-[var(--ink)] bg-[var(--ink)] p-6 text-[var(--cream)] shadow-[7px_7px_0_var(--signal)] sm:p-8"
+              style={{ borderRadius: "1.5rem" }}
+            >
               <Tape tone="signal" className="-top-3 left-10" rotate={-4} />
               <div className="flex flex-wrap items-center gap-x-8 gap-y-5">
                 <div className="flex items-center gap-4">
@@ -218,26 +246,40 @@ export default function LeaderboardPage() {
                 <div className="min-w-[14rem] flex-1">
                   <p className="text-[1.15rem] font-bold leading-snug">
                     {me.place === 1 ? (
-                      <>You&apos;re leading the club with <span className="text-[var(--butter)]">{me.score} points</span>. Don&apos;t look back.</>
+                      <>
+                        You&apos;re leading the club with <span className="text-[var(--butter)]">{me.score} points</span>. Don&apos;t look
+                        back.
+                      </>
                     ) : ahead ? (
                       <>
-                        <span className="text-[var(--butter)]">{ahead.score - me.score + 1} {ahead.score - me.score + 1 === 1 ? "point" : "points"}</span> to pass {ahead.name} and move up.
+                        <span className="text-[var(--butter)]">
+                          {ahead.score - me.score + 1} {ahead.score - me.score + 1 === 1 ? "point" : "points"}
+                        </span>{" "}
+                        to pass {ahead.name} and move up.
                       </>
                     ) : (
                       <>You&apos;re on the board with {me.score} points.</>
                     )}
                   </p>
                   <div className="mt-3 h-3.5 overflow-hidden rounded-full border-2 border-[var(--cream)]/80 bg-[var(--cream)]/10">
-                    <div className="grow-bar h-full rounded-full bg-[var(--signal)]" style={{ width: `${top ? Math.max(4, (me.score / top) * 100) : 0}%` }} />
+                    <div
+                      className="grow-bar h-full rounded-full bg-[var(--signal)]"
+                      style={{ width: `${top ? Math.max(4, (me.score / top) * 100) : 0}%` }}
+                    />
                   </div>
-                  <p className="code mt-1.5 text-[0.66rem] font-bold uppercase tracking-widest opacity-60">{me.score} of the leader&apos;s {top} points</p>
+                  <p className="code mt-1.5 text-[0.66rem] font-bold uppercase tracking-widest opacity-60">
+                    {me.score} of the leader&apos;s {top} points
+                  </p>
                 </div>
               </div>
             </section>
           ) : (
             <Panel tone="sky">
               <p className="hand text-[1.7rem] leading-none">you&apos;re not on the board yet</p>
-              <p className="mt-3 max-w-xl text-[var(--ink)]/75">Your first commit, pull request or solved problem puts you on it. Your GitHub data syncs on its own in the background after you sign in.</p>
+              <p className="mt-3 max-w-xl text-[var(--ink)]/75">
+                Your first commit, pull request or solved problem puts you on it. Your GitHub data syncs on its own in the background after
+                you sign in.
+              </p>
             </Panel>
           )}
 
@@ -263,14 +305,29 @@ export default function LeaderboardPage() {
               </h2>
               <label className="relative block w-full sm:w-72">
                 <span className="sr-only">Find a member</span>
-                <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--ink)]/55" strokeWidth={2.8} />
-                <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Find someone…" className="field !py-2 !pl-11 !text-[0.95rem]" />
+                <Search
+                  className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--ink)]/55"
+                  strokeWidth={2.8}
+                />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Find someone…"
+                  className="field !py-2 !pl-11 !text-[0.95rem]"
+                />
               </label>
             </div>
 
-            <div className="border-[2.5px] border-[var(--ink)] bg-[var(--cream)] shadow-[7px_7px_0_var(--ink)]" style={{ borderRadius: "1.25rem" }}>
+            <div
+              className="border-[2.5px] border-[var(--ink)] bg-[var(--cream)] shadow-[7px_7px_0_var(--ink)]"
+              style={{ borderRadius: "1.25rem" }}
+            >
               {/* column heads */}
-              <div className="code hidden items-center gap-4 border-b-[2.5px] border-[var(--ink)] bg-[var(--ink)] px-5 py-3 text-[0.64rem] font-bold uppercase tracking-widest text-[var(--cream)] md:flex" style={{ borderRadius: "1rem 1rem 0 0" }}>
+              <div
+                className="code hidden items-center gap-4 border-b-[2.5px] border-[var(--ink)] bg-[var(--ink)] px-5 py-3 text-[0.64rem] font-bold uppercase tracking-widest text-[var(--cream)] md:flex"
+                style={{ borderRadius: "1rem 1rem 0 0" }}
+              >
                 <span className="w-12 text-center">rank</span>
                 <span className="min-w-0 flex-1">member</span>
                 {showGithub && (
@@ -308,7 +365,12 @@ export default function LeaderboardPage() {
                       >
                         <span className="grid w-12 shrink-0 place-items-center">
                           {medal ? (
-                            <span className="grid size-10 place-items-center rounded-full border-2 border-[var(--ink)] text-[1.15rem] font-extrabold shadow-[2px_2px_0_var(--ink)]" style={{ background: medal }}>{r.place}</span>
+                            <span
+                              className="grid size-10 place-items-center rounded-full border-2 border-[var(--ink)] text-[1.15rem] font-extrabold shadow-[2px_2px_0_var(--ink)]"
+                              style={{ background: medal }}
+                            >
+                              {r.place}
+                            </span>
                           ) : (
                             <span className="serif text-[1.9rem] leading-none text-[var(--ink)]/55">{r.place}</span>
                           )}
@@ -319,14 +381,22 @@ export default function LeaderboardPage() {
                           <div className="min-w-0 leading-tight">
                             <p className="flex items-center gap-2 text-[1.05rem] font-extrabold">
                               <span className="truncate">{r.name}</span>
-                              {mine && <span className="pixel shrink-0 rounded-full border-2 border-[var(--ink)] bg-[var(--butter)] px-2 text-[0.68rem] leading-5">YOU</span>}
+                              {mine && (
+                                <span className="pixel shrink-0 rounded-full border-2 border-[var(--ink)] bg-[var(--butter)] px-2 text-[0.68rem] leading-5">
+                                  YOU
+                                </span>
+                              )}
                             </p>
-                            {r.githubUsername && <p className="code truncate text-[0.7rem] font-bold text-[var(--ink)]/55">@{r.githubUsername}</p>}
+                            {r.githubUsername && (
+                              <p className="code truncate text-[0.7rem] font-bold text-[var(--ink)]/55">@{r.githubUsername}</p>
+                            )}
                             {/* below xl the stat columns are hidden, so the numbers live under the name */}
                             <p className="mt-0.5 text-[0.74rem] font-semibold text-[var(--ink)]/60 xl:hidden">
                               {showGithub && `${r.stats.commits} commits · ${r.stats.pullRequests} PRs · ${r.stats.issues} issues`}
                               {sortBy === "totalPoints" && r.leetcodeStats ? " · " : ""}
-                              {showLeet && r.leetcodeStats && `${r.leetcodeStats.easySolved}/${r.leetcodeStats.mediumSolved}/${r.leetcodeStats.hardSolved} E/M/H`}
+                              {showLeet &&
+                                r.leetcodeStats &&
+                                `${r.leetcodeStats.easySolved}/${r.leetcodeStats.mediumSolved}/${r.leetcodeStats.hardSolved} E/M/H`}
                             </p>
                           </div>
                         </div>
@@ -349,7 +419,14 @@ export default function LeaderboardPage() {
                         <div className="w-full shrink-0 sm:w-56">
                           <p className="text-right text-[1.45rem] font-extrabold leading-none">{r.score}</p>
                           <div className="mt-1.5 h-2.5 overflow-hidden rounded-full border-2 border-[var(--ink)] bg-white">
-                            <div className="grow-bar h-full rounded-full" style={{ width: `${top ? Math.max(3, (r.score / top) * 100) : 0}%`, background: medal ?? "var(--signal)", ["--d" as string]: `${Math.min(i, 12) * 40}ms` }} />
+                            <div
+                              className="grow-bar h-full rounded-full"
+                              style={{
+                                width: `${top ? Math.max(3, (r.score / top) * 100) : 0}%`,
+                                background: medal ?? "var(--signal)",
+                                ["--d" as string]: `${Math.min(i, 12) * 40}ms`,
+                              }}
+                            />
                           </div>
                         </div>
                       </motion.li>
@@ -370,14 +447,19 @@ export default function LeaderboardPage() {
             </h2>
             <ul className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
               {RULES.map((r) => (
-                <li key={r.what} className="rounded-2xl border-[2.5px] border-[var(--ink)] px-4 py-4 text-center shadow-[4px_4px_0_var(--ink)]" style={{ background: r.tone }}>
+                <li
+                  key={r.what}
+                  className="rounded-2xl border-[2.5px] border-[var(--ink)] px-4 py-4 text-center shadow-[4px_4px_0_var(--ink)]"
+                  style={{ background: r.tone }}
+                >
                   <p className="serif text-[2.6rem] leading-[0.9]">{r.n}</p>
                   <p className="code mt-2 text-[0.66rem] font-bold uppercase leading-snug tracking-widest text-[var(--ink)]/70">{r.what}</p>
                 </li>
               ))}
             </ul>
             <p className="mt-5 max-w-2xl text-[0.98rem] leading-relaxed text-[var(--ink)]/70">
-              Combined adds your GitHub and LeetCode points together. The board refreshes by itself, so you can leave this page open and watch it move.
+              Combined adds your GitHub and LeetCode points together. The board refreshes by itself, so you can leave this page open and
+              watch it move.
             </p>
           </section>
         </>

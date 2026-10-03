@@ -23,7 +23,11 @@ const LOG = [...COMMITS].reverse(); // oldest → newest, so scrolling moves for
 /** A wooden clothes-peg. `tone` is the commit's branch colour. */
 function Peg({ tone }: { tone: string }) {
   return (
-    <svg viewBox="0 0 22 56" className="absolute -top-[22px] left-1/2 z-10 h-14 w-[22px] -translate-x-1/2 drop-shadow-[0_3px_2px_rgba(0,0,0,0.3)]" aria-hidden="true">
+    <svg
+      viewBox="0 0 22 56"
+      className="absolute -top-[22px] left-1/2 z-10 h-14 w-[22px] -translate-x-1/2 drop-shadow-[0_3px_2px_rgba(0,0,0,0.3)]"
+      aria-hidden="true"
+    >
       <rect x="3" y="2" width="16" height="52" rx="5" fill={tone} stroke="#14140f" strokeWidth="2.4" />
       <path d="M11 4v34" stroke="#14140f" strokeWidth="2.2" />
       <rect x="1" y="20" width="20" height="9" rx="3" fill="#cfd3c8" stroke="#14140f" strokeWidth="2.2" />
@@ -34,9 +38,18 @@ function Peg({ tone }: { tone: string }) {
 function Visual({ c, compact }: { c: Commit; compact: boolean }) {
   const portrait = c.aspect !== "landscape" && !compact;
   return (
-    <div className={`relative w-full overflow-hidden bg-[#d9d6cb] ${compact ? "aspect-[6/5]" : portrait ? "aspect-[4/5]" : "aspect-[5/4]"}`}>
+    <div
+      className={`relative w-full overflow-hidden bg-[#d9d6cb] ${compact ? "aspect-[6/5]" : portrait ? "aspect-[4/5]" : "aspect-[5/4]"}`}
+    >
       {c.image && (
-        <Image src={c.image} alt={c.imageAlt ?? c.title} fill sizes="280px" className={c.aspect === "landscape" ? "object-cover" : "object-cover object-top"} draggable={false} />
+        <Image
+          src={c.image}
+          alt={c.imageAlt ?? c.title}
+          fill
+          sizes="280px"
+          className={c.aspect === "landscape" ? "object-cover" : "object-cover object-top"}
+          draggable={false}
+        />
       )}
     </div>
   );
@@ -53,8 +66,20 @@ function HangingCard({ c, i, sway, d }: { c: Commit; i: number; sway: MotionValu
 
   return (
     <div className="absolute top-0" style={{ left, width: d.CARD_W }}>
-      <div className="sway" style={{ ["--s" as string]: `${1 + (i % 3) * 0.45}deg`, ["--dur" as string]: `${4.6 + (i % 4) * 0.7}s`, animationDelay: `${-i * 0.9}s` }}>
-        <motion.div style={{ rotate: rot, transformOrigin: "50% 0" }} whileHover={{ scale: 1.04, zIndex: 20 }} transition={{ type: "spring", stiffness: 300, damping: 18 }} className="relative pt-5">
+      <div
+        className="sway"
+        style={{
+          ["--s" as string]: `${1 + (i % 3) * 0.45}deg`,
+          ["--dur" as string]: `${4.6 + (i % 4) * 0.7}s`,
+          animationDelay: `${-i * 0.9}s`,
+        }}
+      >
+        <motion.div
+          style={{ rotate: rot, transformOrigin: "50% 0" }}
+          whileHover={{ scale: 1.04, zIndex: 20 }}
+          transition={{ type: "spring", stiffness: 300, damping: 18 }}
+          className="relative pt-5"
+        >
           <Peg tone={tone} />
           <figure className="polaroid relative">
             <Visual c={c} compact={d.compact} />
@@ -120,9 +145,25 @@ function Clouds() {
           style={{ top: c.top, width: c.w, height: c.h, opacity: c.o, ["--drift" as string]: c.d, animationDelay: c.delay }}
         />
       ))}
-      {[{ top: "16%", d: "46s", delay: "-8s", s: 1 }, { top: "52%", d: "62s", delay: "-30s", s: 0.7 }].map((b, i) => (
-        <div key={i} className="drift absolute left-0" style={{ top: b.top, ["--drift" as string]: b.d, animationDelay: b.delay, scale: b.s }}>
-          <svg width="46" height="22" viewBox="0 0 46 22" fill="none" stroke="#14140f" strokeWidth="2.6" strokeLinecap="round" className="flap">
+      {[
+        { top: "16%", d: "46s", delay: "-8s", s: 1 },
+        { top: "52%", d: "62s", delay: "-30s", s: 0.7 },
+      ].map((b, i) => (
+        <div
+          key={i}
+          className="drift absolute left-0"
+          style={{ top: b.top, ["--drift" as string]: b.d, animationDelay: b.delay, scale: b.s }}
+        >
+          <svg
+            width="46"
+            height="22"
+            viewBox="0 0 46 22"
+            fill="none"
+            stroke="#14140f"
+            strokeWidth="2.6"
+            strokeLinecap="round"
+            className="flap"
+          >
             <path d="M2 14C8 2 16 2 23 12 30 2 38 2 44 14" />
           </svg>
         </div>
@@ -171,7 +212,10 @@ export function ClotheslineLog() {
         </div>
 
         {/* the clothesline */}
-        <motion.div className="absolute left-0 z-10" style={{ x, top: vp.w < 640 ? "clamp(190px, 27vh, 240px)" : "clamp(215px, 29vh, 285px)", width: TRACK_W }}>
+        <motion.div
+          className="absolute left-0 z-10"
+          style={{ x, top: vp.w < 640 ? "clamp(190px, 27vh, 240px)" : "clamp(215px, 29vh, 285px)", width: TRACK_W }}
+        >
           <svg className="absolute left-0 top-0 overflow-visible" width={TRACK_W} height={ROPE_Y + SAG * 2 + 10} aria-hidden="true">
             <path d={rope} fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="5" transform="translate(0 4)" />
             <path d={rope} fill="none" stroke="#e7c98a" strokeWidth="4" strokeLinecap="round" />
@@ -192,7 +236,9 @@ export function ClotheslineLog() {
                     <p className="mt-2 text-sm text-black/60">The next commit is yours.</p>
                     <Link href="/events" className="btn btn-signal btn-sm mt-4">
                       Browse every event
-                      <span className="disc"><ArrowUpRight size={13} strokeWidth={2.6} /></span>
+                      <span className="disc">
+                        <ArrowUpRight size={13} strokeWidth={2.6} />
+                      </span>
                     </Link>
                   </div>
                 </div>
@@ -207,7 +253,9 @@ export function ClotheslineLog() {
           <div className="relative h-[3px] flex-1 bg-[var(--ink)]/20">
             <motion.div className="absolute inset-y-0 left-0 w-full origin-left bg-[var(--ink)]" style={{ scaleX: bar }} />
           </div>
-          <span className="code text-xs">{LOG[0].date.split(" ").pop()} → {LOG[LOG.length - 1].date.split(" ").pop()}</span>
+          <span className="code text-xs">
+            {LOG[0].date.split(" ").pop()} → {LOG[LOG.length - 1].date.split(" ").pop()}
+          </span>
         </div>
       </div>
     </section>

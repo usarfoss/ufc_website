@@ -1,5 +1,5 @@
-import 'server-only';
-import { Octokit } from '@octokit/rest';
+import "server-only";
+import { Octokit } from "@octokit/rest";
 
 export interface GitHubUserStats {
   username: string;
@@ -71,11 +71,11 @@ const firstLine = (value?: string) => value?.split(/\r?\n/, 1)[0]?.trim();
 
 const fallbackActivityMessage = (type: string, repo: string) => {
   switch (type.toLowerCase()) {
-    case 'push':
+    case "push":
       return `Push in ${repo}`;
-    case 'pullrequest':
+    case "pullrequest":
       return `Pull request in ${repo}`;
-    case 'issues':
+    case "issues":
       return `Issue in ${repo}`;
     default:
       return `${type} in ${repo}`;
@@ -84,11 +84,11 @@ const fallbackActivityMessage = (type: string, repo: string) => {
 
 const messageInEventPayload = (type: string, payload?: PublicEventPayload) => {
   switch (type.toLowerCase()) {
-    case 'push':
+    case "push":
       return firstLine(payload?.commits?.[0]?.message);
-    case 'pullrequest':
+    case "pullrequest":
       return firstLine(payload?.pull_request?.title);
-    case 'issues':
+    case "issues":
       return firstLine(payload?.issue?.title);
     default:
       return undefined;
@@ -97,11 +97,7 @@ const messageInEventPayload = (type: string, payload?: PublicEventPayload) => {
 
 type GitHubActivityCandidate = GitHubActivity & { payload?: PublicEventPayload };
 
-const runWithConcurrency = async <T, R>(
-  values: T[],
-  limit: number,
-  task: (value: T) => Promise<R>,
-) => {
+const runWithConcurrency = async <T, R>(values: T[], limit: number, task: (value: T) => Promise<R>) => {
   const results = new Array<R>(values.length);
   let nextIndex = 0;
 
@@ -133,7 +129,7 @@ export class GitHubService {
 
   constructor(accessToken: string) {
     if (!accessToken) {
-      throw new Error('A GitHub OAuth access token is required.');
+      throw new Error("A GitHub OAuth access token is required.");
     }
 
     this.octokit = new Octokit({ auth: accessToken });
@@ -165,12 +161,12 @@ export class GitHubService {
 
   async getUserRepositories(username: string): Promise<GitHubRepoStats[]> {
     try {
-      const repositories = await this.octokit.paginate(this.octokit.rest.repos.listForUser, {
+      const repositories = (await this.octokit.paginate(this.octokit.rest.repos.listForUser, {
         username,
-        type: 'all',
-        sort: 'updated',
+        type: "all",
+        sort: "updated",
         per_page: 100,
-      }) as Array<{
+      })) as Array<{
         name: string;
         full_name: string;
         description: string | null;
@@ -234,12 +230,14 @@ export class GitHubService {
         };
       }>(query, { username });
       const calendar = data.user?.contributionsCollection?.contributionCalendar;
-      const contributions = calendar?.weeks?.flatMap((week) => week.contributionDays || [])
-        .map((day) => ({
-          date: day.date,
-          count: day.contributionCount,
-          level: contributionLevel(day.contributionCount),
-        })) || [];
+      const contributions =
+        calendar?.weeks
+          ?.flatMap((week) => week.contributionDays || [])
+          .map((day) => ({
+            date: day.date,
+            count: day.contributionCount,
+            level: contributionLevel(day.contributionCount),
+          })) || [];
 
       return {
         totalContributions: calendar?.totalContributions || 0,
@@ -254,7 +252,7 @@ export class GitHubService {
   async getTopLanguages(username: string, repositories?: GitHubRepoStats[]): Promise<Record<string, number>> {
     const languages: Record<string, number> = {};
     let totalBytes = 0;
-    const repos = repositories ?? await this.getUserRepositories(username);
+    const repos = repositories ?? (await this.getUserRepositories(username));
 
     const results = await Promise.allSettled(
       repos.slice(0, 20).map(async (repository) => {
@@ -267,7 +265,7 @@ export class GitHubService {
     );
 
     for (const result of results) {
-      if (result.status !== 'fulfilled') {
+      if (result.status !== "fulfilled") {
         continue;
       }
 
@@ -281,12 +279,7 @@ export class GitHubService {
       return {};
     }
 
-    return Object.fromEntries(
-      Object.entries(languages).map(([language, bytes]) => [
-        language,
-        Math.round((bytes / totalBytes) * 100),
-      ]),
-    );
+    return Object.fromEntries(Object.entries(languages).map(([language, bytes]) => [language, Math.round((bytes / totalBytes) * 100)]));
   }
 
   async getRecentActivity(username: string): Promise<GitHubActivity[]> {
@@ -295,7 +288,7 @@ export class GitHubService {
         username,
         per_page: 50,
       });
-      const cutoff = Date.now() - (36 * 60 * 60 * 1000);
+      const cutoff = Date.now() - 36 * 60 * 60 * 1000;
 
       const candidates = data.flatMap<GitHubActivityCandidate>((event) => {
         const date = event.created_at || new Date().toISOString();
@@ -304,24 +297,26 @@ export class GitHubService {
           return [];
         }
 
-        const repo = event.repo?.name || 'Unknown repository';
-        const type = event.type?.replace('Event', '') || 'Activity';
+        const repo = event.repo?.name || "Unknown repository";
+        const type = event.type?.replace("Event", "") || "Activity";
         const payload = event.payload as PublicEventPayload | undefined;
 
         // The dashboard stores only these GitHub activity kinds. Ignoring the
         // rest also prevents unnecessary detail requests for branch/tag events.
-        if (!['Push', 'PullRequest', 'Issues'].includes(type)) {
+        if (!["Push", "PullRequest", "Issues"].includes(type)) {
           return [];
         }
 
-        return [{
-          sourceId: event.id,
-          type,
-          repo,
-          date,
-          message: messageInEventPayload(type, payload) || fallbackActivityMessage(type, repo),
-          payload,
-        }];
+        return [
+          {
+            sourceId: event.id,
+            type,
+            repo,
+            date,
+            message: messageInEventPayload(type, payload) || fallbackActivityMessage(type, repo),
+            payload,
+          },
+        ];
       });
 
       const messageLookups = new Map<string, Promise<string>>();
@@ -334,7 +329,8 @@ export class GitHubService {
           messageLookups.set(lookupKey, message);
         }
 
-        const { payload: _payload, ...result } = activity;
+        const result = { ...activity } as Omit<typeof activity, "payload"> & { payload?: unknown };
+        delete result.payload; // the raw GitHub payload is large and the client only needs the message
         return { ...result, message: await message };
       });
 
@@ -349,12 +345,12 @@ export class GitHubService {
     const payload = activity.payload;
     const type = activity.type.toLowerCase();
 
-    if (type === 'push' && payload?.head) {
+    if (type === "push" && payload?.head) {
       return `commit:${activity.repo}:${payload.head}`;
     }
 
     const number = payload?.number ?? payload?.pull_request?.number ?? payload?.issue?.number;
-    if ((type === 'pullrequest' || type === 'issues') && number) {
+    if ((type === "pullrequest" || type === "issues") && number) {
       return `${type}:${activity.repo}:${number}`;
     }
 
@@ -367,7 +363,7 @@ export class GitHubService {
       return fromEvent;
     }
 
-    const [owner, repo] = activity.repo.split('/', 2);
+    const [owner, repo] = activity.repo.split("/", 2);
     if (!owner || !repo) {
       return fallbackActivityMessage(activity.type, activity.repo);
     }
@@ -375,7 +371,7 @@ export class GitHubService {
     try {
       const type = activity.type.toLowerCase();
 
-      if (type === 'push' && activity.payload?.head) {
+      if (type === "push" && activity.payload?.head) {
         const { data } = await this.octokit.rest.repos.getCommit({
           owner,
           repo,
@@ -384,16 +380,14 @@ export class GitHubService {
         return firstLine(data.commit.message) || fallbackActivityMessage(activity.type, activity.repo);
       }
 
-      const number = activity.payload?.number
-        ?? activity.payload?.pull_request?.number
-        ?? activity.payload?.issue?.number;
+      const number = activity.payload?.number ?? activity.payload?.pull_request?.number ?? activity.payload?.issue?.number;
 
-      if (type === 'pullrequest' && number) {
+      if (type === "pullrequest" && number) {
         const { data } = await this.octokit.rest.pulls.get({ owner, repo, pull_number: number });
         return firstLine(data.title) || fallbackActivityMessage(activity.type, activity.repo);
       }
 
-      if (type === 'issues' && number) {
+      if (type === "issues" && number) {
         const { data } = await this.octokit.rest.issues.get({ owner, repo, issue_number: number });
         return firstLine(data.title) || fallbackActivityMessage(activity.type, activity.repo);
       }
@@ -413,13 +407,16 @@ export class GitHubService {
     const languages = await this.getTopLanguages(username, repositories);
     const countIssues = async (searchQuery: string) => {
       try {
-        const data = await this.octokit.graphql<{ search?: { issueCount?: number } }>(`
+        const data = await this.octokit.graphql<{ search?: { issueCount?: number } }>(
+          `
           query($searchQuery: String!) {
             search(type: ISSUE, query: $searchQuery, first: 1) {
               issueCount
             }
           }
-        `, { searchQuery });
+        `,
+          { searchQuery },
+        );
         return data.search?.issueCount || 0;
       } catch (error) {
         console.error(`Error fetching GitHub search count for ${username}:`, error);
@@ -442,48 +439,49 @@ export class GitHubService {
     };
   }
 
-  async getBatchUserActivities(users: Array<{
-    id: string;
-    name: string | null;
-    githubUsername: string | null;
-    avatar?: string | null;
-  }>) {
-    const result = await Promise.all(users.map(async (user) => {
-      if (!user.githubUsername) {
-        return [];
-      }
+  async getBatchUserActivities(
+    users: Array<{
+      id: string;
+      name: string | null;
+      githubUsername: string | null;
+      avatar?: string | null;
+    }>,
+  ) {
+    const result = await Promise.all(
+      users.map(async (user) => {
+        if (!user.githubUsername) {
+          return [];
+        }
 
-      const activities = await this.getRecentActivity(user.githubUsername);
+        const activities = await this.getRecentActivity(user.githubUsername);
 
-      return activities.map((activity, index) => ({
-        id: `github-${user.id}-${activity.date}-${activity.type}-${activity.repo}-${index}`,
-        type: activity.type.toLowerCase(),
-        message: activity.message,
-        repo: activity.repo,
-        target: activity.repo,
-        time: this.timeAgo(activity.date),
-        timestamp: activity.date,
-        user: {
-          name: user.name || 'Anonymous',
-          githubUsername: user.githubUsername || undefined,
-          avatar: user.avatar || undefined,
-        },
-        metadata: {
-          source: 'github',
+        return activities.map((activity, index) => ({
+          id: `github-${user.id}-${activity.date}-${activity.type}-${activity.repo}-${index}`,
+          type: activity.type.toLowerCase(),
+          message: activity.message,
           repo: activity.repo,
-          type: activity.type,
-        },
-      }));
-    }));
+          target: activity.repo,
+          time: this.timeAgo(activity.date),
+          timestamp: activity.date,
+          user: {
+            name: user.name || "Anonymous",
+            githubUsername: user.githubUsername || undefined,
+            avatar: user.avatar || undefined,
+          },
+          metadata: {
+            source: "github",
+            repo: activity.repo,
+            type: activity.type,
+          },
+        }));
+      }),
+    );
 
     return result.flat();
   }
 
   async fetchUserSnapshot(githubUsername: string) {
-    const [profile, contributions] = await Promise.all([
-      this.getUserProfile(githubUsername),
-      this.getUserContributions(githubUsername),
-    ]);
+    const [profile, contributions] = await Promise.all([this.getUserProfile(githubUsername), this.getUserContributions(githubUsername)]);
 
     if (!profile) {
       throw new Error(`GitHub profile not found for ${githubUsername}`);
@@ -496,7 +494,7 @@ export class GitHubService {
     const diff = Math.max(0, Date.now() - new Date(date).getTime());
     const minutes = Math.floor(diff / 60000);
 
-    if (minutes < 1) return 'Just now';
+    if (minutes < 1) return "Just now";
     if (minutes < 60) return `${minutes} minutes ago`;
     if (minutes < 1440) return `${Math.floor(minutes / 60)} hours ago`;
     return `${Math.floor(minutes / 1440)} days ago`;

@@ -33,7 +33,17 @@ function Knot({ y, tipY, x }: { y: number; tipY: MotionValue<number>; x: number 
  * A red thread that stitches itself down the page as you scroll. It runs through every `[data-knot]` element inside
  * the wrapper (in document order) and ends with a needle that rides the tip of the stitch.
  */
-export function Thread({ children, className, amplitude, lean = 24 }: { children: ReactNode; className?: string; amplitude?: number; lean?: number }) {
+export function Thread({
+  children,
+  className,
+  amplitude,
+  lean = 24,
+}: {
+  children: ReactNode;
+  className?: string;
+  amplitude?: number;
+  lean?: number;
+}) {
   const wrap = useRef<HTMLDivElement>(null);
   const base = useRef<SVGPathElement>(null);
   const [geo, setGeo] = useState<{ d: string; w: number; h: number; knots: Pt[] }>({ d: "", w: 0, h: 0, knots: [] });
@@ -84,7 +94,7 @@ export function Thread({ children, className, amplitude, lean = 24 }: { children
       ro.disconnect();
       window.removeEventListener("load", measure);
     };
-  }, []);
+  }, [amplitude]);
 
   // Which stretch of thread is "stitched" depends on how far the reader's eye line has travelled.
   const update = () => {
@@ -122,13 +132,39 @@ export function Thread({ children, className, amplitude, lean = 24 }: { children
           {/* the unstitched path, faint */}
           <path d={geo.d} fill="none" stroke="rgba(20,20,15,0.22)" strokeWidth="2.5" strokeDasharray="2 10" strokeLinecap="round" />
           {/* shadow + stitched thread */}
-          <path d={geo.d} fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="6" strokeLinecap="round" transform="translate(2 4)" strokeDasharray={`${dash.shown} ${dash.len + 10}`} />
-          <path ref={base} d={geo.d} fill="none" stroke="#d6332c" strokeWidth="4.5" strokeLinecap="round" strokeDasharray={`${dash.shown} ${dash.len + 10}`} />
+          <path
+            d={geo.d}
+            fill="none"
+            stroke="rgba(0,0,0,0.18)"
+            strokeWidth="6"
+            strokeLinecap="round"
+            transform="translate(2 4)"
+            strokeDasharray={`${dash.shown} ${dash.len + 10}`}
+          />
+          <path
+            ref={base}
+            d={geo.d}
+            fill="none"
+            stroke="#d6332c"
+            strokeWidth="4.5"
+            strokeLinecap="round"
+            strokeDasharray={`${dash.shown} ${dash.len + 10}`}
+          />
           {geo.knots.map((k, i) => (
             <Knot key={i} x={k.x} y={k.y} tipY={tipY} />
           ))}
           {/* the pencil: tip on the thread, body leaning up and to the right */}
-          <motion.g style={{ x: needleX, y: needleY, rotate: needleR, scale: geo.w < 768 ? 0.55 : 1, originX: 0.5, originY: 1, filter: "drop-shadow(3px 6px 4px rgba(0,0,0,0.28))" }}>
+          <motion.g
+            style={{
+              x: needleX,
+              y: needleY,
+              rotate: needleR,
+              scale: geo.w < 768 ? 0.55 : 1,
+              originX: 0.5,
+              originY: 1,
+              filter: "drop-shadow(3px 6px 4px rgba(0,0,0,0.28))",
+            }}
+          >
             <g transform="scale(0.78)" stroke="#14140f" strokeWidth="2.4" strokeLinejoin="round">
               {/* wood cone and lead */}
               <path d="M-10 -34 L10 -34 L2.6 -6 L-2.6 -6 Z" fill="#f1d6a8" />
@@ -138,7 +174,14 @@ export function Thread({ children, className, amplitude, lean = 24 }: { children
               <path d="M-10 -34 H-3.5 V-158 H-10 Z" fill="#f5776c" />
               <path d="M-3.5 -34 H3.5 V-158 H-3.5 Z" fill="#e4463e" />
               <path d="M3.5 -34 H10 V-158 H3.5 Z" fill="#b8322b" />
-              <text transform="translate(0 -96) rotate(-90)" textAnchor="middle" fontSize="9" fill="#fff" stroke="none" style={{ fontFamily: "var(--f-pixel)", fontWeight: 700, letterSpacing: "0.1em" }}>
+              <text
+                transform="translate(0 -96) rotate(-90)"
+                textAnchor="middle"
+                fontSize="9"
+                fill="#fff"
+                stroke="none"
+                style={{ fontFamily: "var(--f-pixel)", fontWeight: 700, letterSpacing: "0.1em" }}
+              >
                 USAR FOSS CLUB
               </text>
               {/* ferrule */}

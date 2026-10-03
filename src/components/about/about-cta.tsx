@@ -20,27 +20,35 @@ export function AboutCta() {
         </h2>
         <Reveal delay={0.1}>
           <p className="mt-8 max-w-xl text-lg leading-relaxed text-[var(--ink)]/75">
-            Nobody guards the door and there's no entry exam. Come as you are. Whatever you build, design, write or organise, there's a
-            place for it here.
+            Nobody guards the door and there&apos;s no entry exam. Come as you are. Whatever you build, design, write or organise,
+            there&apos;s a place for it here.
           </p>
         </Reveal>
         <div className="mt-10 flex flex-wrap items-center gap-x-4 gap-y-5">
           <Link href="/#join" className="btn btn-ink">
             Join the network
-            <span className="disc"><ArrowUpRight size={15} strokeWidth={2.6} /></span>
+            <span className="disc">
+              <ArrowUpRight size={15} strokeWidth={2.6} />
+            </span>
           </Link>
           <Link href="/#team" className="btn btn-paper">
             Meet the team
-            <span className="disc"><ArrowUpRight size={15} strokeWidth={2.6} /></span>
+            <span className="disc">
+              <ArrowUpRight size={15} strokeWidth={2.6} />
+            </span>
           </Link>
           <Link href="/events" className="btn btn-butter">
             See events
-            <span className="disc"><ArrowUpRight size={15} strokeWidth={2.6} /></span>
+            <span className="disc">
+              <ArrowUpRight size={15} strokeWidth={2.6} />
+            </span>
           </Link>
         </div>
 
         <Pin r={-8} className="absolute right-[6%] top-16 hidden md:block" hint="drag me">
-          <Badge tone="butter" className="!text-base">no experience needed</Badge>
+          <Badge tone="butter" className="!text-base">
+            no experience needed
+          </Badge>
         </Pin>
         <Pin r={9} className="absolute bottom-10 right-[12%] hidden w-28 lg:block" hint="drag me">
           <Sticker src="/collage/tux.webp" alt="Tux, the Linux penguin" className="aspect-[607/720] w-full" sizes="120px" />

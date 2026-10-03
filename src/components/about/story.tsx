@@ -59,17 +59,25 @@ function ChapterCard({ c, i }: { c: Chapter; i: number }) {
             (c.link.external ? (
               <a href={c.link.href} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-paper mt-6">
                 {c.link.label}
-                <span className="disc"><ArrowUpRight size={13} strokeWidth={2.6} /></span>
+                <span className="disc">
+                  <ArrowUpRight size={13} strokeWidth={2.6} />
+                </span>
               </a>
             ) : (
               <Link href={c.link.href} className="btn btn-sm btn-paper mt-6">
                 {c.link.label}
-                <span className="disc"><ArrowUpRight size={13} strokeWidth={2.6} /></span>
+                <span className="disc">
+                  <ArrowUpRight size={13} strokeWidth={2.6} />
+                </span>
               </Link>
             ))}
 
           {/* a little sticker clinging to the corner */}
-          <div className={`pointer-events-none absolute -top-7 w-14 sm:w-16 ${right ? "right-3 lg:-left-6 lg:right-auto" : "right-3 lg:-right-6"}`} style={{ rotate: `${right ? -12 : 12}deg` }} aria-hidden="true">
+          <div
+            className={`pointer-events-none absolute -top-7 w-14 sm:w-16 ${right ? "right-3 lg:-left-6 lg:right-auto" : "right-3 lg:-right-6"}`}
+            style={{ rotate: `${right ? -12 : 12}deg` }}
+            aria-hidden="true"
+          >
             <StickerArt id={ART[i % ART.length]} className="die-cut w-full" />
           </div>
         </article>
@@ -96,8 +104,8 @@ export function Story() {
         </h1>
         <Reveal delay={0.1}>
           <p className="mt-8 max-w-2xl text-lg leading-relaxed text-[var(--ink)]/70">
-            Here's how a few friends at USAR started a club, got FOSS United behind it, and ended up with a community that builds things,
-            argues a lot and throws a decent party. Follow the thread to read it.
+            Here&apos;s how a few friends at USAR started a club, got FOSS United behind it, and ended up with a community that builds
+            things, argues a lot and throws a decent party. Follow the thread to read it.
           </p>
         </Reveal>
         <div className="hand mt-6 flex flex-col items-start text-2xl text-[var(--ink)]/60">

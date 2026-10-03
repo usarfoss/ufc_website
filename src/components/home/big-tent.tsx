@@ -95,13 +95,21 @@ export function BigTent() {
           </Reveal>
           <h2 className="text-[clamp(2.6rem,5.4vw,5.2rem)] font-semibold leading-[1.02] tracking-[-0.055em]">
             <MaskLine inView>
-              <span className="marker" style={{ ["--mark" as string]: MARK.mint }}>Software</span> people.
+              <span className="marker" style={{ ["--mark" as string]: MARK.mint }}>
+                Software
+              </span>{" "}
+              people.
             </MaskLine>
             <MaskLine inView delay={0.08}>
-              <span className="marker" style={{ ["--mark" as string]: MARK.lilac }}>Designers.</span>
+              <span className="marker" style={{ ["--mark" as string]: MARK.lilac }}>
+                Designers.
+              </span>
             </MaskLine>
             <MaskLine inView delay={0.16}>
-              <span className="marker" style={{ ["--mark" as string]: MARK.butter }}>Hardware</span> hackers.
+              <span className="marker" style={{ ["--mark" as string]: MARK.butter }}>
+                Hardware
+              </span>{" "}
+              hackers.
             </MaskLine>
             <MaskLine inView delay={0.24}>
               <span className="serif">You.</span>
@@ -110,8 +118,9 @@ export function BigTent() {
 
           <Reveal delay={0.1}>
             <p className="mt-8 max-w-md rounded-sm bg-[var(--paper)]/90 p-1 text-[1.05rem] leading-relaxed text-[var(--ink)]/80">
-              <span className="font-semibold text-[var(--ink)]">Here&apos;s the gap.</span> Most open source only asks for code, so everyone else
-              quietly assumes it isn&apos;t for them. We&apos;d like to close that. Pick what describes you — we&apos;ll show you where you fit.
+              <span className="font-semibold text-[var(--ink)]">Here&apos;s the gap.</span> Most open source only asks for code, so everyone
+              else quietly assumes it isn&apos;t for them. We&apos;d like to close that. Pick what describes you — we&apos;ll show you where
+              you fit.
             </p>
           </Reveal>
 
@@ -153,7 +162,11 @@ export function BigTent() {
       <div className="mx-auto mt-24 max-w-7xl px-5 sm:px-8 lg:mt-32">
         <Reveal>
           <h3 className="serif mb-10 text-[clamp(2rem,4vw,3.4rem)] leading-none">
-            What <span className="marker" style={{ ["--mark" as string]: MARK.mint }}>we promise</span> in return
+            What{" "}
+            <span className="marker" style={{ ["--mark" as string]: MARK.mint }}>
+              we promise
+            </span>{" "}
+            in return
           </h3>
         </Reveal>
         <div className="grid gap-8 md:grid-cols-3">

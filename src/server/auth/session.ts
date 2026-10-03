@@ -1,7 +1,7 @@
-import 'server-only';
-import { getToken } from 'next-auth/jwt';
-import type { NextRequest } from 'next/server';
-import { unauthorized } from '@/server/http/api';
+import "server-only";
+import { getToken } from "next-auth/jwt";
+import type { NextRequest } from "next/server";
+import { unauthorized } from "@/server/http/api";
 
 export interface AuthSession {
   userId: string;
@@ -17,11 +17,11 @@ export async function getSession(request: NextRequest): Promise<AuthSession | nu
   });
 
   if (
-    !token
-    || typeof token.userId !== 'string'
-    || typeof token.role !== 'string'
-    || typeof token.githubUsername !== 'string'
-    || typeof token.githubAccessToken !== 'string'
+    !token ||
+    typeof token.userId !== "string" ||
+    typeof token.role !== "string" ||
+    typeof token.githubUsername !== "string" ||
+    typeof token.githubAccessToken !== "string"
   ) {
     return null;
   }

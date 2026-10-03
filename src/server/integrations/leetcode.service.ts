@@ -1,4 +1,4 @@
-import 'server-only';
+import "server-only";
 
 export interface LeetCodeUserStats {
   username: string;
@@ -13,7 +13,7 @@ export interface LeetCodeUserStats {
 
 export interface LeetCodeSubmission {
   title: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
+  difficulty: "Easy" | "Medium" | "Hard";
   timestamp: string;
 }
 
@@ -24,13 +24,13 @@ export class LeetCodeService {
       try {
         const response = await fetch(`https://alfa-leetcode-api.onrender.com/${username}/solved`, {
           headers: {
-            'Accept': 'application/json',
+            Accept: "application/json",
           },
         });
 
         if (response.ok) {
           const data = await response.json();
-          
+
           const stats: LeetCodeUserStats = {
             username: username,
             ranking: data.ranking || null,
@@ -45,7 +45,7 @@ export class LeetCodeService {
           return stats;
         }
       } catch (error) {
-        console.warn('Primary LeetCode API failed, trying fallback:', error);
+        console.warn("Primary LeetCode API failed, trying fallback:", error);
       }
 
       // Fallback: Try LeetCode GraphQL API
@@ -71,11 +71,11 @@ export class LeetCodeService {
           variables: { username },
         };
 
-        const response = await fetch('https://leetcode.com/graphql', {
-          method: 'POST',
+        const response = await fetch("https://leetcode.com/graphql", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            "Content-Type": "application/json",
+            Accept: "application/json",
           },
           body: JSON.stringify(graphqlQuery),
         });
@@ -96,9 +96,9 @@ export class LeetCodeService {
           let hardSolved = 0;
 
           for (const sub of submissions) {
-            if (sub.difficulty === 'Easy') easySolved = sub.count;
-            else if (sub.difficulty === 'Medium') mediumSolved = sub.count;
-            else if (sub.difficulty === 'Hard') hardSolved = sub.count;
+            if (sub.difficulty === "Easy") easySolved = sub.count;
+            else if (sub.difficulty === "Medium") mediumSolved = sub.count;
+            else if (sub.difficulty === "Hard") hardSolved = sub.count;
           }
 
           const stats: LeetCodeUserStats = {
@@ -115,7 +115,7 @@ export class LeetCodeService {
           return stats;
         }
       } catch (error) {
-        console.error('LeetCode GraphQL API failed:', error);
+        console.error("LeetCode GraphQL API failed:", error);
       }
 
       return null;
@@ -134,7 +134,7 @@ export class LeetCodeService {
       }
 
       // Update user's LeetCode stats in database
-      const { prisma } = await import('@/server/db/prisma');
+      const { prisma } = await import("@/server/db/prisma");
 
       await prisma.leetCodeStats.upsert({
         where: { userId },
@@ -165,13 +165,13 @@ export class LeetCodeService {
 
       return { success: true, stats };
     } catch (error) {
-      console.error('Error syncing LeetCode stats:', error);
+      console.error("Error syncing LeetCode stats:", error);
       throw error;
     }
   }
 
   calculatePoints(stats: { easySolved: number; mediumSolved: number; hardSolved: number }): number {
-    return (stats.easySolved * 2) + (stats.mediumSolved * 4) + (stats.hardSolved * 6);
+    return stats.easySolved * 2 + stats.mediumSolved * 4 + stats.hardSolved * 6;
   }
 }
 

@@ -1,43 +1,43 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from "next/server";
 
 async function fetchGitHubUser(username: string) {
   try {
     // First, get basic user info
     const userResponse = await fetch(`https://api.github.com/users/${username}`, {
-      cache: 'no-store',
+      cache: "no-store",
       headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'FWCC-App'
-      }
-    })
-    
+        Accept: "application/vnd.github.v3+json",
+        "User-Agent": "FWCC-App",
+      },
+    });
+
     if (!userResponse.ok) {
-      throw new Error(`Failed to fetch user ${username}`)
+      throw new Error(`Failed to fetch user ${username}`);
     }
-    
-    const userData = await userResponse.json()
-    
+
+    const userData = await userResponse.json();
+
     return {
       id: userData.id,
       login: userData.login,
       avatar_url: userData.avatar_url,
       html_url: userData.html_url,
       contributions: 0,
-    }
+    };
   } catch (error) {
-    console.error(`Error fetching user ${username}:`, error)
+    console.error(`Error fetching user ${username}:`, error);
     // Fallback data if GitHub API fails - use proper GitHub avatar URL
     return {
       id: Math.random(),
       login: username,
       avatar_url: `https://avatars.githubusercontent.com/${username}?v=4`,
       html_url: `https://github.com/${username}`,
-      contributions: 0
-    }
+      contributions: 0,
+    };
   }
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const usernames = [
       "manandeepsingh1196",
@@ -67,15 +67,15 @@ export async function GET(request: Request) {
       "Gursimarsingh12",
       "VikramAditya33",
       "Piyush-xo-19",
-    ]
-    
+    ];
+
     // Fetch all users in parallel
-    const userPromises = usernames.map(fetchGitHubUser)
-    const contributors = await Promise.all(userPromises)
-    
-    return NextResponse.json({ contributors })
+    const userPromises = usernames.map(fetchGitHubUser);
+    const contributors = await Promise.all(userPromises);
+
+    return NextResponse.json({ contributors });
   } catch (e) {
-    console.error('Error in contributors API:', e)
-    return NextResponse.json({ error: "Unexpected error" }, { status: 500 })
+    console.error("Error in contributors API:", e);
+    return NextResponse.json({ error: "Unexpected error" }, { status: 500 });
   }
 }

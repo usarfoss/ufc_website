@@ -34,7 +34,9 @@ const ITEMS: PileItem[] = [
     h: 52,
     node: (
       <div className="flex size-full items-center justify-center">
-        <Badge tone="signal" className="!px-5 !py-2 !text-base">all branches welcome</Badge>
+        <Badge tone="signal" className="!px-5 !py-2 !text-base">
+          all branches welcome
+        </Badge>
       </div>
     ),
   },
@@ -50,5 +52,14 @@ const ITEMS: PileItem[] = [
 ];
 
 export function HeroPile() {
-  return <StickerPile items={ITEMS} className="z-[6] !bottom-[4.5rem]" leftInset={0.4} wideBoost={0.8} mobileScale={0.56} avoidSelector="[data-pile-avoid]" />;
+  return (
+    <StickerPile
+      items={ITEMS}
+      className="z-[6] !bottom-[4.5rem]"
+      leftInset={0.4}
+      wideBoost={0.8}
+      mobileScale={0.56}
+      avoidSelector="[data-pile-avoid]"
+    />
+  );
 }

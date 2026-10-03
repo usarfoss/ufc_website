@@ -5,9 +5,16 @@ import { Tape } from "./scrap";
 
 /** A cross-hatch of tiny plus signs, like registration marks on a printer's proof. */
 const PLUSES: [number, number, string, number][] = [
-  [6, 24, "#ffe36e", 0.5], [14, 58, "#9bd7ff", 0.4], [31, 16, "#ffb3cf", 0.45], [47, 9, "#9af2c6", 0.4],
-  [58, 46, "#c7b3ff", 0.45], [66, 14, "#ffe36e", 0.35], [79, 30, "#ffb3cf", 0.4], [91, 52, "#9bd7ff", 0.4],
-  [38, 64, "#9af2c6", 0.35], [23, 80, "#c7b3ff", 0.35],
+  [6, 24, "#ffe36e", 0.5],
+  [14, 58, "#9bd7ff", 0.4],
+  [31, 16, "#ffb3cf", 0.45],
+  [47, 9, "#9af2c6", 0.4],
+  [58, 46, "#c7b3ff", 0.45],
+  [66, 14, "#ffe36e", 0.35],
+  [79, 30, "#ffb3cf", 0.4],
+  [91, 52, "#9bd7ff", 0.4],
+  [38, 64, "#9af2c6", 0.35],
+  [23, 80, "#c7b3ff", 0.35],
 ];
 
 /**
@@ -51,7 +58,12 @@ export function HeroBackdrop() {
           USAR FOSS CLUB
         </p>
         <svg viewBox="0 0 600 24" className="-mt-1 w-[88%]" fill="none" preserveAspectRatio="none">
-          <path d="M4 14 C 60 2, 110 24, 170 12 S 280 2, 340 14 S 460 24, 520 10 S 580 6, 596 12" stroke="rgba(255,227,110,0.16)" strokeWidth="4" strokeLinecap="round" />
+          <path
+            d="M4 14 C 60 2, 110 24, 170 12 S 280 2, 340 14 S 460 24, 520 10 S 580 6, 596 12"
+            stroke="rgba(255,227,110,0.16)"
+            strokeWidth="4"
+            strokeLinecap="round"
+          />
         </svg>
         <span className="hand absolute -right-6 -top-3 text-[clamp(1.4rem,3.2vw,3rem)] text-[rgba(255,227,110,0.2)]">✦</span>
         <span className="hand absolute -left-5 bottom-3 text-[clamp(1rem,2vw,2rem)] text-[rgba(255,179,207,0.22)]">✦</span>
@@ -79,7 +91,11 @@ export function HeroBackdrop() {
         />
       </svg>
       {PLUSES.map(([x, y, c, o], i) => (
-        <span key={i} className="code absolute text-lg font-bold leading-none" style={{ left: `${x}%`, top: `${y}%`, color: c, opacity: o }}>
+        <span
+          key={i}
+          className="code absolute text-lg font-bold leading-none"
+          style={{ left: `${x}%`, top: `${y}%`, color: c, opacity: o }}
+        >
           +
         </span>
       ))}

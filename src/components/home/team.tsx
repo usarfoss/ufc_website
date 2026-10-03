@@ -48,7 +48,15 @@ function MemberCard({ m, i }: { m: Member; i: number }) {
         <PushPin tone={PIN_TONES[i % PIN_TONES.length]} />
         <div className="relative">
           <div className="relative aspect-square w-full overflow-hidden bg-[#d9d6cb]">
-            <Image src={m.img} alt={`${m.name}, ${m.role}`} fill sizes="(min-width: 1024px) 260px, 45vw" className="object-cover" style={{ objectPosition: m.focus }} draggable={false} />
+            <Image
+              src={m.img}
+              alt={`${m.name}, ${m.role}`}
+              fill
+              sizes="(min-width: 1024px) 260px, 45vw"
+              className="object-cover"
+              style={{ objectPosition: m.focus }}
+              draggable={false}
+            />
           </div>
           <NameTag first={m.name.split(" ")[0]} />
         </div>
@@ -115,9 +123,7 @@ export function Team() {
             </h2>
           </div>
           <Reveal delay={0.15} className="lg:col-span-4">
-            <p className="max-w-sm leading-relaxed text-[var(--text-dim)]">
-              The students who keep this community alive.
-            </p>
+            <p className="max-w-sm leading-relaxed text-[var(--text-dim)]">The students who keep this community alive.</p>
           </Reveal>
         </div>
 
@@ -136,12 +142,31 @@ export function Team() {
             </div>
           </div>
 
-          <div ref={board} className="cork relative rounded-[1.5rem] border-[12px] border-[#6b4423] p-5 pb-12 pt-12 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.8)] sm:border-[16px] sm:p-9 sm:pb-14 sm:pt-14">
+          <div
+            ref={board}
+            className="cork relative rounded-[1.5rem] border-[12px] border-[#6b4423] p-5 pb-12 pt-12 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.8)] sm:border-[16px] sm:p-9 sm:pb-14 sm:pt-14"
+          >
             <svg className="pointer-events-none absolute inset-0 z-[1] size-full" aria-hidden="true">
               {STRINGS.map((_, i) => (
                 <g key={i}>
-                  <path ref={(el) => { paths.current[i] = el; }} fill="none" stroke="rgba(0,0,0,0.28)" strokeWidth="4" transform="translate(2 3)" />
-                  <path ref={(el) => { paths.current[i + STRINGS.length] = el; }} fill="none" stroke="#d6332c" strokeWidth="2.4" strokeLinecap="round" />
+                  <path
+                    ref={(el) => {
+                      paths.current[i] = el;
+                    }}
+                    fill="none"
+                    stroke="rgba(0,0,0,0.28)"
+                    strokeWidth="4"
+                    transform="translate(2 3)"
+                  />
+                  <path
+                    ref={(el) => {
+                      paths.current[i + STRINGS.length] = el;
+                    }}
+                    fill="none"
+                    stroke="#d6332c"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  />
                 </g>
               ))}
             </svg>
@@ -166,14 +191,28 @@ export function Team() {
               </Pin>
 
               <Pin r={3} delay={0.2} className="relative" z={3} hint="drag me">
-                <Polaroid src="/about-images/team.jpg" alt="UFC members introducing themselves on stage" caption="the team, on a stage. we're friendly." aspect="aspect-square" position="50% 35%" tone="sky" sizes="260px" />
+                <Polaroid
+                  src="/about-images/team.jpg"
+                  alt="UFC members introducing themselves on stage"
+                  caption="the team, on a stage. we're friendly."
+                  aspect="aspect-square"
+                  position="50% 35%"
+                  tone="sky"
+                  sizes="260px"
+                />
               </Pin>
 
               <Pin r={-4} delay={0.3} className="relative" z={4} hint="drag me">
                 <PostIt color="lilac" className="min-h-[11rem]">
                   <Tape tone="pink" className="-top-3 left-1/2 -translate-x-1/2" rotate={3} />
                   psst, we accept pull requests for this wall, too.{" "}
-                  <a href={LINKS.github} target="_blank" rel="noopener noreferrer" className="lnk underline decoration-2 underline-offset-2 hover:no-underline" style={{ ["--hl" as string]: "#fff" }}>
+                  <a
+                    href={LINKS.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="lnk underline decoration-2 underline-offset-2 hover:no-underline"
+                    style={{ ["--hl" as string]: "#fff" }}
+                  >
                     github ↗
                   </a>
                 </PostIt>
@@ -187,7 +226,9 @@ export function Team() {
                   <Sticker src="/collage/ferris.webp" alt="Ferris, the Rust crab" className="aspect-[3/2] w-full" sizes="140px" />
                 </Pin>
                 <Pin r={-4} delay={0.5} className="absolute bottom-[4%] left-[8%] sm:left-[62%]" hint="drag me">
-                  <Badge tone="butter" className="!px-2.5 !py-1 !text-[0.62rem] sm:!px-4 sm:!py-1.5 sm:!text-sm">now hiring: you</Badge>
+                  <Badge tone="butter" className="!px-2.5 !py-1 !text-[0.62rem] sm:!px-4 sm:!py-1.5 sm:!text-sm">
+                    now hiring: you
+                  </Badge>
                 </Pin>
               </div>
             </div>

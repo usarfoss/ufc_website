@@ -1,5 +1,5 @@
-import 'server-only';
-import { Octokit } from '@octokit/rest';
+import "server-only";
+import { Octokit } from "@octokit/rest";
 
 export interface OrgMemberStats {
   login: string;
@@ -39,16 +39,16 @@ export class OrgGitHubService {
     const repos: OrgRepoSummary[] = [];
     const per_page = 100;
     let page = 1;
-    
+
     while (true) {
-      const { data } = await this.octokit.repos.listForOrg({ 
-        org: this.org, 
-        type: 'public', 
-        per_page, 
-        page, 
-        sort: 'updated' 
+      const { data } = await this.octokit.repos.listForOrg({
+        org: this.org,
+        type: "public",
+        per_page,
+        page,
+        sort: "updated",
       });
-      
+
       for (const r of data) {
         repos.push({
           name: r.name,
@@ -62,7 +62,7 @@ export class OrgGitHubService {
           html_url: r.html_url,
         });
       }
-      
+
       if (data.length < per_page) break;
       page += 1;
     }
@@ -73,22 +73,22 @@ export class OrgGitHubService {
     const members: Array<{ login: string; avatar_url: string; html_url: string }> = [];
     const per_page = 100;
     let page = 1;
-    
+
     while (true) {
-      const { data } = await this.octokit.orgs.listMembers({ 
-        org: this.org, 
-        per_page, 
-        page 
+      const { data } = await this.octokit.orgs.listMembers({
+        org: this.org,
+        per_page,
+        page,
       });
-      
+
       for (const m of data) {
-        members.push({ 
-          login: m.login, 
-          avatar_url: m.avatar_url, 
-          html_url: m.html_url 
+        members.push({
+          login: m.login,
+          avatar_url: m.avatar_url,
+          html_url: m.html_url,
         });
       }
-      
+
       if (data.length < per_page) break;
       page += 1;
     }
@@ -96,12 +96,12 @@ export class OrgGitHubService {
   }
 
   async getMemberStats(login: string, repoNames?: string[]): Promise<OrgMemberStats> {
-    const repos = repoNames || (await this.getOrgRepos()).map(r => r.name);
+    const repos = repoNames || (await this.getOrgRepos()).map((r) => r.name);
 
     let commits = 0;
     let pullRequests = 0;
     let issues = 0;
-    let reviews = 0;
+    const reviews = 0;
 
     try {
       const query = `
@@ -114,10 +114,14 @@ export class OrgGitHubService {
         qPr: `org:${this.org} author:${login} is:pr`,
         qIssue: `org:${this.org} author:${login} is:issue`,
       };
-      const { data } = await this.octokit.request('POST /graphql', { query, variables });
-      const root = data as unknown as { data?: { prs?: { issueCount?: number }, issues?: { issueCount?: number } }, prs?: { issueCount?: number }, issues?: { issueCount?: number } };
-      const prsCount = typeof root.data?.prs?.issueCount === 'number' ? root.data.prs.issueCount : (root.prs?.issueCount ?? 0);
-      const issueCount = typeof root.data?.issues?.issueCount === 'number' ? root.data.issues.issueCount : (root.issues?.issueCount ?? 0);
+      const { data } = await this.octokit.request("POST /graphql", { query, variables });
+      const root = data as unknown as {
+        data?: { prs?: { issueCount?: number }; issues?: { issueCount?: number } };
+        prs?: { issueCount?: number };
+        issues?: { issueCount?: number };
+      };
+      const prsCount = typeof root.data?.prs?.issueCount === "number" ? root.data.prs.issueCount : (root.prs?.issueCount ?? 0);
+      const issueCount = typeof root.data?.issues?.issueCount === "number" ? root.data.issues.issueCount : (root.issues?.issueCount ?? 0);
       pullRequests = prsCount || 0;
       issues = issueCount || 0;
     } catch (error) {
@@ -131,14 +135,15 @@ export class OrgGitHubService {
         let count = 0;
         let page = 1;
         const per_page = 50;
-        
-        while (page <= 3) { // Reduced pages to avoid rate limits
-          const { data } = await this.octokit.repos.listCommits({ 
-            owner: this.org, 
-            repo, 
-            author: login, 
-            per_page, 
-            page 
+
+        while (page <= 3) {
+          // Reduced pages to avoid rate limits
+          const { data } = await this.octokit.repos.listCommits({
+            owner: this.org,
+            repo,
+            author: login,
+            per_page,
+            page,
           });
           count += data.length;
           if (data.length < per_page) break;
@@ -155,7 +160,7 @@ export class OrgGitHubService {
     let name: string | undefined = undefined;
     let avatar_url = `https://github.com/${login}.png`;
     let html_url = `https://github.com/${login}`;
-    
+
     try {
       const { data } = await this.octokit.users.getByUsername({ username: login });
       name = data.name || undefined;
@@ -181,7 +186,7 @@ export class OrgGitHubService {
 
   async getAllMemberStats(): Promise<OrgMemberStats[]> {
     const members = await this.getOrgMembers();
-    const repos = (await this.getOrgRepos()).map(r => r.name);
+    const repos = (await this.getOrgRepos()).map((r) => r.name);
 
     // Concurrency control
     const concurrency = 2; // Reduced to avoid rate limits

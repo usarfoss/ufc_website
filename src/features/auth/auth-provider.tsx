@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { createContext, type ReactNode, useContext } from 'react';
-import { SessionProvider, signIn, signOut, useSession } from 'next-auth/react';
+import { createContext, type ReactNode, useContext } from "react";
+import { SessionProvider, signIn, signOut, useSession } from "next-auth/react";
 
 export interface AuthUser {
   id: string;
@@ -24,25 +24,25 @@ function AuthStateProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
   const user = session?.user
     ? {
-      id: session.user.id,
-      email: session.user.email,
-      name: session.user.name,
-      role: session.user.role,
-      githubUsername: session.user.githubUsername,
-      leetcodeUsername: session.user.leetcodeUsername,
-      image: session.user.image,
-    }
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name,
+        role: session.user.role,
+        githubUsername: session.user.githubUsername,
+        leetcodeUsername: session.user.leetcodeUsername,
+        image: session.user.image,
+      }
     : null;
 
   const value: AuthContextValue = {
     user,
     loginWithGitHub: async () => {
-      await signIn('github', { callbackUrl: '/dashboard' });
+      await signIn("github", { callbackUrl: "/dashboard" });
     },
     logout: async () => {
-      await signOut({ callbackUrl: '/' });
+      await signOut({ callbackUrl: "/" });
     },
-    loading: status === 'loading',
+    loading: status === "loading",
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -62,7 +62,7 @@ export function useAuth() {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
 
   return context;

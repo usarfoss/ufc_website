@@ -72,7 +72,9 @@ function MenuOverlay({ origin, onClose, onHome }: { origin: { x: number; y: numb
                 onClick={onClose}
                 className="group relative flex items-baseline gap-4 py-1 text-[clamp(2.6rem,6.4vw,5.6rem)] font-extrabold leading-[1] tracking-[-0.04em] transition-transform duration-300 hover:translate-x-3"
               >
-                <span className="code w-8 -translate-y-[0.4em] text-sm font-bold tracking-widest opacity-50 sm:w-12 sm:text-base">0{i + 1}</span>
+                <span className="code w-8 -translate-y-[0.4em] text-sm font-bold tracking-widest opacity-50 sm:w-12 sm:text-base">
+                  0{i + 1}
+                </span>
                 <span className="relative">
                   <span className="relative z-10">{l.label}</span>
                   <span className="absolute inset-x-[-0.1em] bottom-[0.08em] z-0 h-[0.34em] origin-left scale-x-0 rounded-sm bg-[var(--pink)] transition-transform duration-300 group-hover:scale-x-100" />
@@ -84,25 +86,47 @@ function MenuOverlay({ origin, onClose, onHome }: { origin: { x: number; y: numb
         </ul>
 
         <div className="lg:col-span-5">
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="eyebrow mb-4 text-[var(--ink)]/60">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="eyebrow mb-4 text-[var(--ink)]/60"
+          >
             jump to a chapter
           </motion.p>
           <ul className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
             {SECTIONS.map((s, i) => (
-              <motion.li key={s.id} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + i * 0.05, duration: 0.5, ease: EASE }}>
-                <button onClick={() => jump(s.id)} className="group flex w-full items-baseline gap-3 border-b-2 border-[var(--ink)]/15 py-2.5 text-left transition-colors hover:border-[var(--ink)]">
+              <motion.li
+                key={s.id}
+                initial={{ opacity: 0, x: 24 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 + i * 0.05, duration: 0.5, ease: EASE }}
+              >
+                <button
+                  onClick={() => jump(s.id)}
+                  className="group flex w-full items-baseline gap-3 border-b-2 border-[var(--ink)]/15 py-2.5 text-left transition-colors hover:border-[var(--ink)]"
+                >
                   <span className="code text-xs font-bold text-[var(--signal-deep)]">§{s.n}</span>
-                  <span className="text-lg font-bold tracking-tight transition-transform duration-300 group-hover:translate-x-1.5">{s.label}</span>
+                  <span className="text-lg font-bold tracking-tight transition-transform duration-300 group-hover:translate-x-1.5">
+                    {s.label}
+                  </span>
                 </button>
               </motion.li>
             ))}
           </ul>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85, duration: 0.6, ease: EASE }} className="mt-10 flex flex-wrap gap-3">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.85, duration: 0.6, ease: EASE }}
+            className="mt-10 flex flex-wrap gap-3"
+          >
             {SOCIALS.map((s) => (
               <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className={`btn btn-sm ${s.cls}`}>
                 {s.label}
-                <span className="disc"><ArrowUpRight size={13} /></span>
+                <span className="disc">
+                  <ArrowUpRight size={13} />
+                </span>
               </a>
             ))}
           </motion.div>
@@ -193,7 +217,8 @@ export function SiteNav() {
 
           <ul className="hidden items-center gap-1.5 md:flex" onMouseLeave={() => setHovered(null)}>
             {CENTER_LINKS.map((l, i) => {
-              const active = !("chapter" in l) && (l.href === "/" ? pathname === "/" : pathname === l.href || pathname?.startsWith(`${l.href}/`));
+              const active =
+                !("chapter" in l) && (l.href === "/" ? pathname === "/" : pathname === l.href || pathname?.startsWith(`${l.href}/`));
               const common = {
                 onMouseEnter: () => setHovered(l.href),
                 onFocus: () => setHovered(l.href),
@@ -253,7 +278,11 @@ export function SiteNav() {
                         aria-hidden="true"
                       >
                         <span className="paper relative block px-3 py-1 text-[1.25rem] leading-none">
-                          <Tape tone={(["butter", "pink", "sky", "lilac"] as const)[i % 4]} className="-top-2.5 left-1/2 -translate-x-1/2 !h-4 !w-9" rotate={-4} />
+                          <Tape
+                            tone={(["butter", "pink", "sky", "lilac"] as const)[i % 4]}
+                            className="-top-2.5 left-1/2 -translate-x-1/2 !h-4 !w-9"
+                            rotate={-4}
+                          />
                           <span className="hand">{l.hint}</span>
                         </span>
                       </motion.span>
@@ -277,7 +306,9 @@ export function SiteNav() {
                   className="hidden xl:block"
                   aria-label={`You are in chapter ${section.n}: ${section.label}`}
                 >
-                  <Badge tone="butter" className="!px-3 !py-1 !text-[0.78rem] !shadow-none">§{section.n} · {section.label}</Badge>
+                  <Badge tone="butter" className="!px-3 !py-1 !text-[0.78rem] !shadow-none">
+                    §{section.n} · {section.label}
+                  </Badge>
                 </motion.button>
               )}
             </AnimatePresence>
@@ -289,16 +320,27 @@ export function SiteNav() {
                 aria-current={inDashboard ? "page" : undefined}
                 className={`group flex items-center gap-2.5 rounded-full border-[2.5px] border-[var(--ink)] py-1 pl-1 pr-4 shadow-[3px_3px_0_var(--ink)] transition-[transform,box-shadow] duration-200 [transition-timing-function:cubic-bezier(0.3,1.7,0.5,1)] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[5px_5px_0_var(--ink)] ${inDashboard ? "bg-[var(--ink)] text-[var(--cream)] !shadow-[3px_3px_0_var(--signal)]" : "bg-[var(--signal)]"}`}
               >
-                <Avatar src={user.githubUsername ? `https://github.com/${user.githubUsername}.png` : user.image} name={user.name ?? user.githubUsername} size={34} className="transition-transform duration-300 group-hover:rotate-6" />
+                <Avatar
+                  src={user.githubUsername ? `https://github.com/${user.githubUsername}.png` : user.image}
+                  name={user.name ?? user.githubUsername}
+                  size={34}
+                  className="transition-transform duration-300 group-hover:rotate-6"
+                />
                 <span className="leading-none">
-                  <span className="block max-w-[7rem] truncate text-[0.9rem] font-extrabold">{(user.name ?? user.githubUsername ?? "You").split(" ")[0]}</span>
-                  <span className="code mt-0.5 block text-[0.55rem] font-bold uppercase tracking-widest opacity-60">{inDashboard ? "you're here" : "dashboard"}</span>
+                  <span className="block max-w-[7rem] truncate text-[0.9rem] font-extrabold">
+                    {(user.name ?? user.githubUsername ?? "You").split(" ")[0]}
+                  </span>
+                  <span className="code mt-0.5 block text-[0.55rem] font-bold uppercase tracking-widest opacity-60">
+                    {inDashboard ? "you're here" : "dashboard"}
+                  </span>
                 </span>
               </Link>
             ) : (
               <Link href="/login" className="btn btn-signal btn-sm">
                 Sign in
-                <span className="disc"><ArrowUpRight size={13} /></span>
+                <span className="disc">
+                  <ArrowUpRight size={13} />
+                </span>
               </Link>
             )}
             <button

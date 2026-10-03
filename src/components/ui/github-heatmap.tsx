@@ -5,6 +5,7 @@ import { Flame, GitCommitHorizontal, Star, CalendarCheck } from "lucide-react";
 import { GithubIcon } from "@/components/ui/social-icons";
 import { Tape } from "@/components/home/scrap";
 import { Loading } from "@/components/dashboard/ui";
+import { useApi } from "@/components/dashboard/use-api";
 
 interface Props {
   username: string;
@@ -107,32 +108,22 @@ function Stat({ icon, n, label, tone }: { icon: React.ReactNode; n: React.ReactN
 const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
 
 export default function GitHubHeatmap({ username, className = "" }: Props) {
-  const [data, setData] = useState<ApiDay[] | null>(null);
-  const [synced, setSynced] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [tip, setTip] = useState<{ x: number; y: number; cell: Cell } | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLDivElement>(null);
-
-  const load = async () => {
-    try {
-      setError(null);
-      const res = await fetch(`/api/github/contributions?username=${encodeURIComponent(username)}`);
-      if (!res.ok) throw new Error("Failed to fetch GitHub contributions");
-      const body = await res.json();
-      setData(body.contributions || []);
-      setSynced(body.lastSynced || null);
-    } catch (err) {
-      console.error("Error fetching GitHub contributions:", err);
-      setError("We couldn't load your contribution calendar just now.");
-    }
-  };
-
-  useEffect(() => {
-    if (!username) return;
-    void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [username]);
+  const {
+    data: body,
+    error,
+    loading,
+    reload,
+  } = useApi<{ contributions?: ApiDay[]; lastSynced?: string | null }>(
+    username ? `/api/github/contributions?username=${encodeURIComponent(username)}` : null,
+    {
+      errorMessage: "We couldn't load your contribution calendar just now.",
+    },
+  );
+  const data = body?.contributions ?? null;
+  const synced = body?.lastSynced ?? null;
 
   const model = useMemo(() => (data && data.length ? build(data) : null), [data]);
 
@@ -173,19 +164,17 @@ export default function GitHubHeatmap({ username, className = "" }: Props) {
             </span>
           </h2>
         </div>
-        {model && (
-          <p className="hand text-[1.7rem] leading-none text-[var(--ink)]/70">
-            {plural(model.total, "contribution")}
-          </p>
-        )}
+        {model && <p className="hand text-[1.7rem] leading-none text-[var(--ink)]/70">{plural(model.total, "contribution")}</p>}
       </header>
 
       {error ? (
         <div className="mt-8 rounded-2xl border-2 border-[var(--ink)] bg-[var(--pink)] p-5">
           <p className="font-semibold">{error}</p>
-          <button onClick={() => void load()} className="btn btn-sm btn-ink mt-4">Try again</button>
+          <button onClick={reload} className="btn btn-sm btn-ink mt-4">
+            Try again
+          </button>
         </div>
-      ) : data === null ? (
+      ) : loading ? (
         <Loading label="reading your commits" />
       ) : !model ? (
         <div className="mt-8 rounded-2xl border-2 border-dashed border-[var(--ink)]/40 p-8 text-center">
@@ -200,7 +189,12 @@ export default function GitHubHeatmap({ username, className = "" }: Props) {
             <Stat icon={<Flame size={20} strokeWidth={2.4} />} n={plural(model.current, "day")} label="current streak" tone="#ffb98a" />
             <Stat icon={<Star size={20} strokeWidth={2.4} />} n={plural(model.longest, "day")} label="longest streak" tone="#ffe36e" />
             <Stat icon={<CalendarCheck size={20} strokeWidth={2.4} />} n={model.activeDays} label="active days" tone="#9af2c6" />
-            <Stat icon={<GitCommitHorizontal size={20} strokeWidth={2.4} />} n={model.best.count} label={`best day, ${model.best.date.toLocaleDateString(undefined, { day: "numeric", month: "short" })}`} tone="#c7b3ff" />
+            <Stat
+              icon={<GitCommitHorizontal size={20} strokeWidth={2.4} />}
+              n={model.best.count}
+              label={`best day, ${model.best.date.toLocaleDateString(undefined, { day: "numeric", month: "short" })}`}
+              tone="#c7b3ff"
+            />
           </ul>
 
           <div ref={frame} className="relative mt-7">
@@ -215,10 +209,20 @@ export default function GitHubHeatmap({ username, className = "" }: Props) {
                 onMouseLeave={() => setTip(null)}
               >
                 {model.labels.map((l) => (
-                  <text key={l.text + l.x} x={LEFT + l.x} y={13} className="code" fontSize="11" fontWeight="700" fill="rgba(20,20,15,0.6)">{l.text}</text>
+                  <text key={l.text + l.x} x={LEFT + l.x} y={13} className="code" fontSize="11" fontWeight="700" fill="rgba(20,20,15,0.6)">
+                    {l.text}
+                  </text>
                 ))}
                 {[1, 3, 5].map((d) => (
-                  <text key={d} x={0} y={TOP + d * STEP + CELL - 3} className="code" fontSize="10.5" fontWeight="700" fill="rgba(20,20,15,0.5)">
+                  <text
+                    key={d}
+                    x={0}
+                    y={TOP + d * STEP + CELL - 3}
+                    className="code"
+                    fontSize="10.5"
+                    fontWeight="700"
+                    fill="rgba(20,20,15,0.5)"
+                  >
                     {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d]}
                   </text>
                 ))}
@@ -262,12 +266,18 @@ export default function GitHubHeatmap({ username, className = "" }: Props) {
           </div>
 
           <footer className="mt-4 flex flex-wrap items-center justify-between gap-3">
-            <p className="code text-[0.66rem] font-bold uppercase tracking-widest text-[var(--ink)]/50">{syncedLabel ? `last synced ${syncedLabel}` : "synced in the background"}</p>
+            <p className="code text-[0.66rem] font-bold uppercase tracking-widest text-[var(--ink)]/50">
+              {syncedLabel ? `last synced ${syncedLabel}` : "synced in the background"}
+            </p>
             <div className="flex items-center gap-2 text-[0.8rem] font-bold text-[var(--ink)]/65">
               less
               <span className="flex gap-1.5">
                 {FILL.map((f, i) => (
-                  <span key={f} className="size-4 rounded-[5px] border-[1.5px] border-[var(--ink)]" style={{ background: f, borderColor: i === 0 ? "rgba(20,20,15,0.2)" : "#14140f" }} />
+                  <span
+                    key={f}
+                    className="size-4 rounded-[5px] border-[1.5px] border-[var(--ink)]"
+                    style={{ background: f, borderColor: i === 0 ? "rgba(20,20,15,0.2)" : "#14140f" }}
+                  />
                 ))}
               </span>
               more

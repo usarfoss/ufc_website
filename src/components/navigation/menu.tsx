@@ -5,9 +5,16 @@ import { usePathname } from "next/navigation";
 
 export const Menu = () => {
   const pathname = usePathname();
-  
+
   // The landing and about pages ship its own navigation (components/home/site-nav).
-  if (pathname === '/' || pathname?.startsWith('/about') || pathname?.startsWith('/events') || pathname?.startsWith('/achievements') || pathname?.startsWith('/login') || pathname?.startsWith('/dashboard')) {
+  if (
+    pathname === "/" ||
+    pathname?.startsWith("/about") ||
+    pathname?.startsWith("/events") ||
+    pathname?.startsWith("/achievements") ||
+    pathname?.startsWith("/login") ||
+    pathname?.startsWith("/dashboard")
+  ) {
     return null;
   }
 

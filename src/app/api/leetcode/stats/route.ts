@@ -1,32 +1,31 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/server/db/prisma';
-import { leetcodeService } from '@/server/integrations/leetcode.service';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/server/db/prisma";
+import { leetcodeService } from "@/server/integrations/leetcode.service";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const username = searchParams.get('username');
-    const forceSync = searchParams.get('sync') === 'true';
+    const username = searchParams.get("username");
+    const forceSync = searchParams.get("sync") === "true";
 
     // Fetch users with LeetCode usernames
     const users = await prisma.user.findMany({
       include: {
-        leetcodeStats: true
+        leetcodeStats: true,
       },
       where: {
         leetcodeUsername: {
-          not: null
-        }
-      }
+          not: null,
+        },
+      },
     });
 
     // Auto-sync stale data or force sync if requested
     const syncPromises = users.map(async (user) => {
       if (!user.leetcodeUsername) return user;
 
-      const shouldSync = forceSync || 
-        !user.leetcodeStats || 
-        (new Date().getTime() - new Date(user.leetcodeStats.lastSynced).getTime()) > 24 * 60 * 60 * 1000; // 24 hours
+      const shouldSync =
+        forceSync || !user.leetcodeStats || new Date().getTime() - new Date(user.leetcodeStats.lastSynced).getTime() > 24 * 60 * 60 * 1000; // 24 hours
 
       if (shouldSync) {
         try {
@@ -34,7 +33,7 @@ export async function GET(request: NextRequest) {
           // Fetch updated stats
           const updatedUser = await prisma.user.findUnique({
             where: { id: user.id },
-            include: { leetcodeStats: true }
+            include: { leetcodeStats: true },
           });
           return updatedUser || user;
         } catch (error) {
@@ -49,11 +48,11 @@ export async function GET(request: NextRequest) {
     const usersWithStats = await Promise.all(syncPromises);
 
     // Transform stats for response
-    let transformedStats = usersWithStats.map(user => ({
+    let transformedStats = usersWithStats.map((user) => ({
       id: user.id,
-      username: user.leetcodeUsername || user.email?.split('@')[0] || 'leetcode-user',
-      name: user.name || 'Unknown User',
-      avatar: user.avatar || 'https://github.com/github.png',
+      username: user.leetcodeUsername || user.email?.split("@")[0] || "leetcode-user",
+      name: user.name || "Unknown User",
+      avatar: user.avatar || "https://github.com/github.png",
       stats: {
         totalSolved: user.leetcodeStats?.totalSolved || 0,
         easySolved: user.leetcodeStats?.easySolved || 0,
@@ -66,14 +65,12 @@ export async function GET(request: NextRequest) {
         easySolved: user.leetcodeStats?.easySolved || 0,
         mediumSolved: user.leetcodeStats?.mediumSolved || 0,
         hardSolved: user.leetcodeStats?.hardSolved || 0,
-      })
+      }),
     }));
 
     // Filter by username if provided
     if (username) {
-      transformedStats = transformedStats.filter(
-        stat => stat.username.toLowerCase() === username.toLowerCase()
-      );
+      transformedStats = transformedStats.filter((stat) => stat.username.toLowerCase() === username.toLowerCase());
     }
 
     // Sort by total points
@@ -85,10 +82,7 @@ export async function GET(request: NextRequest) {
       count: transformedStats.length,
     });
   } catch (error) {
-    console.error('LeetCode stats error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch LeetCode stats' },
-      { status: 500 }
-    );
+    console.error("LeetCode stats error:", error);
+    return NextResponse.json({ error: "Failed to fetch LeetCode stats" }, { status: 500 });
   }
 }

@@ -31,9 +31,17 @@ export function Footer() {
         <nav aria-label="Site" className="md:col-span-3 md:col-start-7">
           <p className="eyebrow mb-4 text-[var(--text)]/50">Club</p>
           <ul className={col}>
-            <li><Link href="/" className={link}>Home</Link></li>
+            <li>
+              <Link href="/" className={link}>
+                Home
+              </Link>
+            </li>
             {NAV_LINKS.map((l) => (
-              <li key={l.href}><Link href={l.href} className={link}>{l.label}</Link></li>
+              <li key={l.href}>
+                <Link href={l.href} className={link}>
+                  {l.label}
+                </Link>
+              </li>
             ))}
           </ul>
         </nav>
@@ -43,7 +51,9 @@ export function Footer() {
           <ul className={col}>
             {COMMUNITY.map(({ label, href }) => (
               <li key={label}>
-                <a href={href} target="_blank" rel="noopener noreferrer" className={link}>{label}</a>
+                <a href={href} target="_blank" rel="noopener noreferrer" className={link}>
+                  {label}
+                </a>
               </li>
             ))}
           </ul>

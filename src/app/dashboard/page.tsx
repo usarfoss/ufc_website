@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Activity, Calendar, GitCommit, GitPullRequest, Star, Trophy, type LucideIcon } from "lucide-react";
 import { useAuth } from "@/features/auth/auth-provider";
+import { useApi } from "@/components/dashboard/use-api";
 import GitHubHeatmap from "@/components/ui/github-heatmap";
 import LeetCodeHeatmap from "@/components/ui/leetcode-heatmap";
 import { GithubIcon } from "@/components/ui/social-icons";
@@ -50,60 +51,40 @@ const LeetCodeMark = () => (
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [recent, setRecent] = useState<RecentActivity[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activitiesLoading, setActivitiesLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
   const PER_PAGE = 10;
+  const statsReq = useApi<{ stats?: DashboardStats }>("/api/dashboard/stats", {
+    errorMessage: "We couldn't load your dashboard just now.",
+  });
+  const activityReq = useApi<{ activities?: RecentActivity[]; total?: number }>(
+    `/api/dashboard/activities?limit=${PER_PAGE}&offset=${(page - 1) * PER_PAGE}`,
+  );
+  const stats = statsReq.data?.stats ?? null;
+  const loading = statsReq.loading;
+  const error = statsReq.error;
+  const recent = activityReq.data?.activities ?? [];
+  const activitiesLoading = activityReq.loading;
+  const total = activityReq.data?.total ?? 0;
   const pages = Math.ceil(total / PER_PAGE);
-
-  const fetchStats = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await fetch("/api/dashboard/stats");
-      if (!res.ok) throw new Error("Failed to fetch dashboard data");
-      setStats((await res.json()).stats);
-    } catch (err) {
-      console.error("Error fetching dashboard data:", err);
-      setError("We couldn't load your dashboard just now.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const fetchActivities = useCallback(async () => {
-    try {
-      setActivitiesLoading(true);
-      const res = await fetch(`/api/dashboard/activities?limit=${PER_PAGE}&offset=${(page - 1) * PER_PAGE}`);
-      if (!res.ok) throw new Error("Failed to fetch activities");
-      const data = await res.json();
-      setRecent(data.activities || []);
-      setTotal(data.total || 0);
-    } catch (err) {
-      console.error("Error fetching activities:", err);
-    } finally {
-      setActivitiesLoading(false);
-    }
-  }, [page]);
-
-  useEffect(() => void fetchStats(), [fetchStats]);
-  useEffect(() => void fetchActivities(), [fetchActivities]);
 
   const first = user?.name?.split(" ")[0] || "friend";
   const avatar = user?.image || (user?.githubUsername ? `https://github.com/${user.githubUsername}.png` : null);
 
   if (loading) return <Loading />;
-  if (error) return <ErrorPanel title="Something went sideways" message={error} onRetry={fetchStats} />;
+  if (error) return <ErrorPanel title="Something went sideways" message={error} onRetry={statsReq.reload} />;
 
   const statKeys = stats ? (Object.keys(STAT_META) as (keyof DashboardStats)[]).filter((k) => stats[k]) : [];
 
   return (
     <div className="space-y-12">
-      <PageHeader eyebrow="§ overview · your dashboard" title="Welcome back," accent={`${first}.`} tone="butter" art="fork" sub="Here's what's been happening with your contributions.">
+      <PageHeader
+        eyebrow="§ overview · your dashboard"
+        title="Welcome back,"
+        accent={`${first}.`}
+        tone="butter"
+        art="fork"
+        sub="Here's what's been happening with your contributions."
+      >
         {user?.githubUsername && (
           <a href={`https://github.com/${user.githubUsername}`} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-ink">
             <GithubIcon className="size-4" />@{user.githubUsername}
@@ -131,7 +112,10 @@ export default function DashboardPage() {
                 <Pin key={k} r={[-1.6, 1.4, -1][i % 3]} drag={false} delay={i * 0.08}>
                   <div className="paper relative px-6 pb-6 pt-9">
                     <Tape tone={(["signal", "butter", "pink"] as const)[i % 3]} className="-top-3 left-1/2 -translate-x-1/2" rotate={-2} />
-                    <span className="absolute -right-3 -top-5 grid size-12 rotate-6 place-items-center rounded-2xl border-2 border-[var(--ink)] shadow-[3px_3px_0_var(--ink)]" style={{ background: TONE_BG[meta.tone] }}>
+                    <span
+                      className="absolute -right-3 -top-5 grid size-12 rotate-6 place-items-center rounded-2xl border-2 border-[var(--ink)] shadow-[3px_3px_0_var(--ink)]"
+                      style={{ background: TONE_BG[meta.tone] }}
+                    >
                       <Icon size={22} strokeWidth={2.4} />
                     </span>
                     <p className="serif text-[clamp(3.4rem,5.4vw,5rem)] leading-[0.9]">{s.value}</p>
@@ -142,7 +126,9 @@ export default function DashboardPage() {
             })
           ) : (
             <Panel className="sm:col-span-3">
-              <p className="text-[1.05rem]">No numbers yet. Your GitHub data syncs in the background after you sign in, so check back in a little while.</p>
+              <p className="text-[1.05rem]">
+                No numbers yet. Your GitHub data syncs in the background after you sign in, so check back in a little while.
+              </p>
             </Panel>
           )}
         </div>
@@ -169,8 +155,14 @@ export default function DashboardPage() {
               const meta = ACTIVITY[a.type] ?? { icon: Activity, tone: "sky" as DashTone };
               const Icon = meta.icon;
               return (
-                <li key={i} className="flex items-start gap-4 rounded-2xl border-[2.5px] border-[var(--ink)] bg-[var(--cream)] p-4 shadow-[4px_4px_0_var(--ink)] sm:p-5">
-                  <span className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-[var(--ink)]" style={{ background: TONE_BG[meta.tone] }}>
+                <li
+                  key={i}
+                  className="flex items-start gap-4 rounded-2xl border-[2.5px] border-[var(--ink)] bg-[var(--cream)] p-4 shadow-[4px_4px_0_var(--ink)] sm:p-5"
+                >
+                  <span
+                    className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-[var(--ink)]"
+                    style={{ background: TONE_BG[meta.tone] }}
+                  >
                     <Icon size={19} strokeWidth={2.4} />
                   </span>
                   <div className="min-w-0 flex-1">
@@ -178,13 +170,22 @@ export default function DashboardPage() {
                       {a.user && (
                         <span className="font-extrabold">
                           {a.user.name}
-                          {a.user.githubUsername && <span className="font-medium text-[var(--ink)]/55"> @{a.user.githubUsername}</span>}{" "}
+                          {a.user.githubUsername && (
+                            <span className="font-medium text-[var(--ink)]/55"> @{a.user.githubUsername}</span>
+                          )}{" "}
                         </span>
                       )}
                       {a.message}
                     </p>
                     <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.85rem]">
-                      {a.repo && <span className="code rounded-md border-2 border-[var(--ink)] px-1.5 text-[0.72rem] font-bold" style={{ background: TONE_BG[meta.tone] }}>{a.repo}</span>}
+                      {a.repo && (
+                        <span
+                          className="code rounded-md border-2 border-[var(--ink)] px-1.5 text-[0.72rem] font-bold"
+                          style={{ background: TONE_BG[meta.tone] }}
+                        >
+                          {a.repo}
+                        </span>
+                      )}
                       <span className="text-[var(--ink)]/55">{a.time}</span>
                     </p>
                   </div>
@@ -195,7 +196,12 @@ export default function DashboardPage() {
         ) : (
           <Empty art="rocket" title="Nothing here yet" body="Start contributing and your activity will show up here." />
         )}
-        <Pager page={page} pages={pages} onChange={setPage} label={total ? `${(page - 1) * PER_PAGE + 1} to ${Math.min(page * PER_PAGE, total)} of ${total} activities` : undefined} />
+        <Pager
+          page={page}
+          pages={pages}
+          onChange={setPage}
+          label={total ? `${(page - 1) * PER_PAGE + 1} to ${Math.min(page * PER_PAGE, total)} of ${total} activities` : undefined}
+        />
       </section>
     </div>
   );

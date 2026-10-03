@@ -48,7 +48,9 @@ export function DashTabs() {
       <div className="flex items-center gap-3 pb-3">
         <button onClick={() => void logout()} className="btn btn-sm btn-pink">
           Sign out
-          <span className="disc"><LogOut size={13} strokeWidth={2.6} /></span>
+          <span className="disc">
+            <LogOut size={13} strokeWidth={2.6} />
+          </span>
         </button>
       </div>
     </div>

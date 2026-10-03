@@ -11,7 +11,10 @@ const TAPES = ["pink", "sky", "butter", "signal"] as const;
 
 export function Philosophy() {
   return (
-    <section id="philosophy" className="pat-dots relative overflow-hidden bg-[var(--butter)] pb-28 pt-28 text-[var(--ink)] sm:pb-40 sm:pt-40">
+    <section
+      id="philosophy"
+      className="pat-dots relative overflow-hidden bg-[var(--butter)] pb-28 pt-28 text-[var(--ink)] sm:pb-40 sm:pt-40"
+    >
       <TornEdge color="var(--paper)" className="absolute inset-x-0 top-0 z-10 -translate-y-px" />
 
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
@@ -34,7 +37,10 @@ export function Philosophy() {
           {BELIEFS.map((b, i) => (
             <li key={b.n}>
               <Pin r={[-1.6, 1.4, 1.2, -1.4][i]} delay={(i % 2) * 0.1} drag={false} className="relative h-full">
-                <article className="relative h-full border-[2.5px] border-[var(--ink)] bg-[var(--cream)] p-7 shadow-[7px_7px_0_var(--ink)] sm:p-9" style={{ borderRadius: "1.25rem" }}>
+                <article
+                  className="relative h-full border-[2.5px] border-[var(--ink)] bg-[var(--cream)] p-7 shadow-[7px_7px_0_var(--ink)] sm:p-9"
+                  style={{ borderRadius: "1.25rem" }}
+                >
                   <Tape tone={TAPES[i]} className="-top-3 left-9" rotate={-5} />
                   <div className="flex items-start justify-between gap-4">
                     <span className="serif text-[clamp(5rem,9vw,8rem)] leading-[0.78] text-[var(--signal-deep)]">{b.n}</span>
@@ -51,7 +57,9 @@ export function Philosophy() {
         </ol>
 
         <div className="relative mt-16 flex flex-wrap items-center gap-4">
-          <Badge tone="signal" className="!text-base">this is the whole manifesto</Badge>
+          <Badge tone="signal" className="!text-base">
+            this is the whole manifesto
+          </Badge>
           <div className="hand flex items-center gap-2 text-[1.7rem] text-[var(--ink)]/70">
             <Scribble dir="left" flip className="h-9 w-12" />
             disagree with any of it? open an issue. we mean it.
@@ -60,7 +68,12 @@ export function Philosophy() {
       </div>
 
       <Pin r={-9} className="absolute right-[5%] top-24 hidden w-24 lg:block" hint="drag me">
-        <Sticker src="/collage/gnu.webp" alt="The GNU head, symbol of the free-software movement" className="aspect-[720/704] w-full" sizes="110px" />
+        <Sticker
+          src="/collage/gnu.webp"
+          alt="The GNU head, symbol of the free-software movement"
+          className="aspect-[720/704] w-full"
+          sizes="110px"
+        />
       </Pin>
       <Pin r={8} className="absolute bottom-16 right-[8%] hidden w-24 lg:block" hint="drag me">
         <Sticker src="/collage/tux.webp" alt="Tux, the Linux penguin" className="aspect-[607/720] w-full" sizes="110px" />

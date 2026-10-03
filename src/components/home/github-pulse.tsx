@@ -46,7 +46,15 @@ function age(iso: string) {
 const SWATCH = ["#2ee58f", "#ffe36e", "#ffb3cf", "#9bd7ff", "#c7b3ff", "#ff9d7a", "#9af2c6", "#f7f2e4"];
 const TABS = ["#ffe36e", "#ffb3cf", "#9bd7ff", "#9af2c6", "#c7b3ff", "#ff9d7a"];
 
-type Card = { k: string; big: string; unit: string; tag: string; tone: "signal" | "lilac" | "butter" | "pink"; r: number; sticker: React.ReactNode };
+type Card = {
+  k: string;
+  big: string;
+  unit: string;
+  tag: string;
+  tone: "signal" | "lilac" | "butter" | "pink";
+  r: number;
+  sticker: React.ReactNode;
+};
 
 /** Live numbers from the club's public GitHub, cached for an hour. Renders nothing if GitHub is unreachable. */
 export async function GithubPulse() {
@@ -125,7 +133,9 @@ export async function GithubPulse() {
             </p>
             <a href={LINKS.github} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm">
               view all repositories
-              <span className="disc"><ArrowUpRight size={13} strokeWidth={2.6} /></span>
+              <span className="disc">
+                <ArrowUpRight size={13} strokeWidth={2.6} />
+              </span>
             </a>
           </div>
         </Reveal>
@@ -161,7 +171,11 @@ export async function GithubPulse() {
         <Reveal delay={0.1}>
           <div className="mt-20">
             <p className="hand mb-3 text-2xl text-[var(--butter)]">the language mix →</p>
-            <div className="flex h-7 gap-1 rounded-full border-2 border-[var(--text)] p-1" role="img" aria-label={`Language mix: ${languages.map(([l, c]) => `${l} ${c}`).join(", ")}`}>
+            <div
+              className="flex h-7 gap-1 rounded-full border-2 border-[var(--text)] p-1"
+              role="img"
+              aria-label={`Language mix: ${languages.map(([l, c]) => `${l} ${c}`).join(", ")}`}
+            >
               {languages.map(([lang, count], i) => (
                 <span
                   key={lang}
@@ -194,7 +208,11 @@ export async function GithubPulse() {
             </div>
           </div>
         </div>
-        <div className="marquee marquee-reverse mt-3 border-t-[3px] border-[#14140f] bg-[var(--ink-3)] pt-8" style={{ ["--marquee-duration" as string]: "130s" }} role="presentation">
+        <div
+          className="marquee marquee-reverse mt-3 border-t-[3px] border-[#14140f] bg-[var(--ink-3)] pt-8"
+          style={{ ["--marquee-duration" as string]: "130s" }}
+          role="presentation"
+        >
           <div className="overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
             <div className="marquee-track">
               {row(3)}

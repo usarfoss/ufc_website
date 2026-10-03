@@ -56,15 +56,23 @@
   font-family: var(--font-editorial);
   font-style: italic;
   font-weight: 500;
-  font-variation-settings: "SOFT" 100, "WONK" 1;
+  font-variation-settings:
+    "SOFT" 100,
+    "WONK" 1;
   letter-spacing: -0.015em;
 }
 
 /* Bricolage at weight 800 needs air: the per-heading tracking in the markup was tuned for a narrower face. */
-.ufc-home :is(h1, h2) { letter-spacing: -0.028em !important; }
-.ufc-home h3 { letter-spacing: -0.02em !important; }
+.ufc-home :is(h1, h2) {
+  letter-spacing: -0.028em !important;
+}
+.ufc-home h3 {
+  letter-spacing: -0.02em !important;
+}
 
-.ufc-home p { text-wrap: pretty; }
+.ufc-home p {
+  text-wrap: pretty;
+}
 
 .ufc-home .code {
   font-family: var(--font-code);
@@ -126,7 +134,10 @@
   box-shadow: 1px 1px 0 var(--sh);
   transition-duration: 0.06s;
 }
-.ufc-home .btn:focus-visible { outline: 3px solid var(--butter); outline-offset: 4px; }
+.ufc-home .btn:focus-visible {
+  outline: 3px solid var(--butter);
+  outline-offset: 4px;
+}
 
 /* the little disc that holds the arrow */
 .ufc-home .btn .disc {
@@ -140,47 +151,106 @@
   color: var(--bg);
   transition: transform 0.35s cubic-bezier(0.3, 1.7, 0.5, 1);
 }
-.ufc-home .btn:hover .disc { transform: rotate(-45deg) scale(1.08); }
-.ufc-home .btn.btn-sm { padding: 0.5rem 0.6rem 0.5rem 1rem; font-size: 0.9rem; gap: 0.5rem; box-shadow: 3px 3px 0 var(--sh); }
-.ufc-home .btn.btn-sm .disc { width: 1.45rem; height: 1.45rem; }
-.ufc-home .btn.btn-dot { width: 2.6rem; height: 2.6rem; padding: 0; justify-content: center; box-shadow: 3px 3px 0 var(--sh); }
-.ufc-home .btn.btn-dot.btn-xs { width: 2.25rem; height: 2.25rem; }
+.ufc-home .btn:hover .disc {
+  transform: rotate(-45deg) scale(1.08);
+}
+.ufc-home .btn.btn-sm {
+  padding: 0.5rem 0.6rem 0.5rem 1rem;
+  font-size: 0.9rem;
+  gap: 0.5rem;
+  box-shadow: 3px 3px 0 var(--sh);
+}
+.ufc-home .btn.btn-sm .disc {
+  width: 1.45rem;
+  height: 1.45rem;
+}
+.ufc-home .btn.btn-dot {
+  width: 2.6rem;
+  height: 2.6rem;
+  padding: 0;
+  justify-content: center;
+  box-shadow: 3px 3px 0 var(--sh);
+}
+.ufc-home .btn.btn-dot.btn-xs {
+  width: 2.25rem;
+  height: 2.25rem;
+}
 
-.ufc-home .btn-signal { --bg: var(--signal); }
-.ufc-home .btn-butter { --bg: var(--butter); }
-.ufc-home .btn-pink { --bg: var(--pink); }
-.ufc-home .btn-lilac { --bg: var(--lilac); }
-.ufc-home .btn-paper { --bg: var(--cream); }
-.ufc-home .btn-ink { --bg: var(--ink); --fg: var(--cream); --bd: var(--ink); --sh: var(--signal); }
+.ufc-home .btn-signal {
+  --bg: var(--signal);
+}
+.ufc-home .btn-butter {
+  --bg: var(--butter);
+}
+.ufc-home .btn-pink {
+  --bg: var(--pink);
+}
+.ufc-home .btn-lilac {
+  --bg: var(--lilac);
+}
+.ufc-home .btn-paper {
+  --bg: var(--cream);
+}
+.ufc-home .btn-ink {
+  --bg: var(--ink);
+  --fg: var(--cream);
+  --bd: var(--ink);
+  --sh: var(--signal);
+}
 /* on dark backgrounds: a cream shadow keeps the sticker lit */
-.ufc-home .btn.lit { --sh: var(--cream); }
-.ufc-home .btn-ghost { --bg: var(--ink-2); --fg: var(--cream); --bd: var(--cream); --sh: var(--signal); }
+.ufc-home .btn.lit {
+  --sh: var(--cream);
+}
+.ufc-home .btn-ghost {
+  --bg: var(--ink-2);
+  --fg: var(--cream);
+  --bd: var(--cream);
+  --sh: var(--signal);
+}
 
 /* Text links: a highlighter sweeps across on hover. */
 .ufc-home .lnk {
   background: linear-gradient(var(--hl, var(--signal)), var(--hl, var(--signal))) 0 100% / 0% 100% no-repeat;
-  transition: background-size 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.2s;
+  transition:
+    background-size 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+    color 0.2s;
   padding: 0.05em 0.25em;
   margin: -0.05em -0.25em;
   border-radius: 0.2em;
 }
-.ufc-home .lnk:hover, .ufc-home .lnk:focus-visible { background-size: 100% 100%; color: var(--ink); }
+.ufc-home .lnk:hover,
+.ufc-home .lnk:focus-visible {
+  background-size: 100% 100%;
+  color: var(--ink);
+}
 
 /* Marquee */
 @keyframes ufc-marquee {
-  from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(-50%, 0, 0); }
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
 }
 .ufc-home .marquee-track {
   display: flex;
   width: max-content;
   animation: ufc-marquee var(--marquee-duration, 48s) linear infinite;
 }
-.ufc-home .marquee:hover .marquee-track { animation-play-state: paused; }
-.ufc-home .marquee-reverse .marquee-track { animation-direction: reverse; }
+.ufc-home .marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+.ufc-home .marquee-reverse .marquee-track {
+  animation-direction: reverse;
+}
 
 /* Blinking caret */
-@keyframes ufc-caret { 50% { opacity: 0; } }
+@keyframes ufc-caret {
+  50% {
+    opacity: 0;
+  }
+}
 .ufc-home .caret {
   display: inline-block;
   width: 0.55em;
@@ -192,8 +262,15 @@
 
 /* Soft breathing for the "online" dot */
 @keyframes ufc-ping {
-  0% { transform: scale(1); opacity: 0.7; }
-  80%, 100% { transform: scale(2.6); opacity: 0; }
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  80%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
 }
 .ufc-home .ping::before {
   content: "";
@@ -205,31 +282,49 @@
 }
 
 /* Hide scrollbars on horizontal snap rails */
-.ufc-home .rail { scrollbar-width: none; }
-.ufc-home .rail::-webkit-scrollbar { display: none; }
+.ufc-home .rail {
+  scrollbar-width: none;
+}
+.ufc-home .rail::-webkit-scrollbar {
+  display: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .ufc-home .marquee-track,
   .ufc-home .caret,
-  .ufc-home .ping::before { animation: none; }
+  .ufc-home .ping::before {
+    animation: none;
+  }
 }
 
 /* Lenis owns the easing; native smooth-scroll would fight it. */
-html.lenis, html.lenis body { height: auto; }
-.lenis.lenis-smooth { scroll-behavior: auto !important; }
-.lenis.lenis-stopped { overflow: hidden; }
-
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
 
 /* ───────────── Scrapbook layer ───────────── */
 
-.ufc-home .hand { font-family: var(--f-hand); font-weight: 700; letter-spacing: 0; }
-.ufc-home .pixel { font-family: var(--f-pixel); font-weight: 700; letter-spacing: 0.02em; }
+.ufc-home .hand {
+  font-family: var(--f-hand);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.ufc-home .pixel {
+  font-family: var(--f-pixel);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
 
 /* Die-cut sticker: a white border that follows the alpha edge, plus a soft lift shadow. */
 .ufc-home .die-cut {
-  filter:
-    drop-shadow(2.5px 0 0 #fff) drop-shadow(-2.5px 0 0 #fff)
-    drop-shadow(0 2.5px 0 #fff) drop-shadow(0 -2.5px 0 #fff)
+  filter: drop-shadow(2.5px 0 0 #fff) drop-shadow(-2.5px 0 0 #fff) drop-shadow(0 2.5px 0 #fff) drop-shadow(0 -2.5px 0 #fff)
     drop-shadow(0 10px 12px rgba(0, 0, 0, 0.35));
 }
 
@@ -239,7 +334,27 @@ html.lenis, html.lenis body { height: auto; }
   width: 5.5rem;
   height: 1.6rem;
   background: color-mix(in srgb, var(--tape, var(--butter)) 78%, transparent);
-  clip-path: polygon(0 8%, 4% 0, 8% 10%, 12% 0, 100% 0, 96% 12%, 100% 26%, 96% 40%, 100% 55%, 96% 70%, 100% 84%, 97% 100%, 12% 100%, 8% 90%, 4% 100%, 0 92%, 3% 70%, 0 50%, 3% 30%);
+  clip-path: polygon(
+    0 8%,
+    4% 0,
+    8% 10%,
+    12% 0,
+    100% 0,
+    96% 12%,
+    100% 26%,
+    96% 40%,
+    100% 55%,
+    96% 70%,
+    100% 84%,
+    97% 100%,
+    12% 100%,
+    8% 90%,
+    4% 100%,
+    0 92%,
+    3% 70%,
+    0 50%,
+    3% 30%
+  );
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
   mix-blend-mode: multiply;
 }
@@ -258,7 +373,9 @@ html.lenis, html.lenis body { height: auto; }
     radial-gradient(120% 80% at 10% 0%, rgba(255, 255, 255, 0.8), transparent 60%),
     radial-gradient(90% 70% at 100% 100%, rgba(120, 100, 60, 0.12), transparent 60%),
     url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='.035 .05' numOctaves='4' seed='4'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .38  0 0 0 0 .25  0 0 0 .3 -.06'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>");
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15), 0 14px 30px -10px rgba(0, 0, 0, 0.45);
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.15),
+    0 14px 30px -10px rgba(0, 0, 0, 0.45);
   color: var(--ink);
 }
 
@@ -267,7 +384,9 @@ html.lenis, html.lenis body { height: auto; }
   position: relative;
   background: var(--note, var(--butter));
   color: #1a1a14;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 14px 22px -10px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.12),
+    0 14px 22px -10px rgba(0, 0, 0, 0.5);
 }
 .ufc-home .postit::after {
   content: "";
@@ -284,7 +403,9 @@ html.lenis, html.lenis body { height: auto; }
 .ufc-home .polaroid {
   background: #fbfaf4;
   padding: 0.6rem 0.6rem 0;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.18), 0 22px 36px -14px rgba(0, 0, 0, 0.6);
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.18),
+    0 22px 36px -14px rgba(0, 0, 0, 0.6);
   color: #1a1a14;
 }
 
@@ -292,9 +413,7 @@ html.lenis, html.lenis body { height: auto; }
 .ufc-home .gingham {
   --g: rgba(46, 229, 143, 0.2);
   background-color: var(--paper);
-  background-image:
-    linear-gradient(90deg, var(--g) 50%, transparent 50%),
-    linear-gradient(var(--g) 50%, transparent 50%);
+  background-image: linear-gradient(90deg, var(--g) 50%, transparent 50%), linear-gradient(var(--g) 50%, transparent 50%);
   background-size: 56px 56px;
 }
 
@@ -314,50 +433,140 @@ html.lenis, html.lenis body { height: auto; }
 }
 
 /* Tilted tape ribbons */
-.ufc-home .ribbon-strip { transform-origin: center; }
+.ufc-home .ribbon-strip {
+  transform-origin: center;
+}
 
 /* Gentle idle wobble for stickers (set --wob per element) */
 @keyframes ufc-wobble {
-  0%, 100% { rotate: calc(var(--r, 0deg) - 1.2deg); }
-  50% { rotate: calc(var(--r, 0deg) + 1.2deg); }
+  0%,
+  100% {
+    rotate: calc(var(--r, 0deg) - 1.2deg);
+  }
+  50% {
+    rotate: calc(var(--r, 0deg) + 1.2deg);
+  }
 }
-.ufc-home .wobble { animation: ufc-wobble 5.5s ease-in-out infinite; }
+.ufc-home .wobble {
+  animation: ufc-wobble 5.5s ease-in-out infinite;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .ufc-home .wobble { animation: none; }
+  .ufc-home .wobble {
+    animation: none;
+  }
 }
 
 /* Native image drag-and-drop would swallow the pointer events our draggable stickers need. */
-.ufc-home [data-sticker] { user-select: none; -webkit-user-select: none; }
-.ufc-home [data-sticker] img { -webkit-user-drag: none; user-drag: none; pointer-events: none; }
+.ufc-home [data-sticker] {
+  user-select: none;
+  -webkit-user-select: none;
+}
+.ufc-home [data-sticker] img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  pointer-events: none;
+}
 
 /* ───────────── Motion + scenery ───────────── */
 
-@keyframes ufc-spin { to { transform: rotate(360deg); } }
-.ufc-home .spin-slow { animation: ufc-spin 22s linear infinite; }
+@keyframes ufc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.ufc-home .spin-slow {
+  animation: ufc-spin 22s linear infinite;
+}
 
-@keyframes ufc-steam { 0%, 100% { transform: translateY(0); opacity: .9; } 50% { transform: translateY(-5px); opacity: .45; } }
-.ufc-home .steam { animation: ufc-steam 2.4s ease-in-out infinite; }
+@keyframes ufc-steam {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translateY(-5px);
+    opacity: 0.45;
+  }
+}
+.ufc-home .steam {
+  animation: ufc-steam 2.4s ease-in-out infinite;
+}
 
-@keyframes ufc-flame { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.35) scaleX(.9); } }
-.ufc-home .flame { animation: ufc-flame .35s ease-in-out infinite; }
+@keyframes ufc-flame {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.35) scaleX(0.9);
+  }
+}
+.ufc-home .flame {
+  animation: ufc-flame 0.35s ease-in-out infinite;
+}
 
-@keyframes ufc-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -12px; } }
-.ufc-home .bob { animation: ufc-bob 3.2s ease-in-out infinite; }
+@keyframes ufc-bob {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -12px;
+  }
+}
+.ufc-home .bob {
+  animation: ufc-bob 3.2s ease-in-out infinite;
+}
 
-@keyframes ufc-twinkle { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
-.ufc-home .twinkle { animation: ufc-twinkle 3s ease-in-out infinite; }
+@keyframes ufc-twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.ufc-home .twinkle {
+  animation: ufc-twinkle 3s ease-in-out infinite;
+}
 
-@keyframes ufc-drift { from { transform: translateX(-30vw); } to { transform: translateX(130vw); } }
-.ufc-home .drift { animation: ufc-drift var(--drift, 90s) linear infinite; }
+@keyframes ufc-drift {
+  from {
+    transform: translateX(-30vw);
+  }
+  to {
+    transform: translateX(130vw);
+  }
+}
+.ufc-home .drift {
+  animation: ufc-drift var(--drift, 90s) linear infinite;
+}
 
-@keyframes ufc-sway { 0%, 100% { rotate: calc(var(--s, 1.4deg) * -1); } 50% { rotate: var(--s, 1.4deg); } }
-.ufc-home .sway { animation: ufc-sway var(--dur, 5s) ease-in-out infinite; transform-origin: 50% 0; }
+@keyframes ufc-sway {
+  0%,
+  100% {
+    rotate: calc(var(--s, 1.4deg) * -1);
+  }
+  50% {
+    rotate: var(--s, 1.4deg);
+  }
+}
+.ufc-home .sway {
+  animation: ufc-sway var(--dur, 5s) ease-in-out infinite;
+  transform-origin: 50% 0;
+}
 
 /* Scene backdrops for the freedom wipes */
-.ufc-home .pat-dots { background-image: radial-gradient(rgba(20, 20, 15, 0.16) 2px, transparent 2.5px); background-size: 26px 26px; }
+.ufc-home .pat-dots {
+  background-image: radial-gradient(rgba(20, 20, 15, 0.16) 2px, transparent 2.5px);
+  background-size: 26px 26px;
+}
 .ufc-home .pat-grid {
-  background-image: linear-gradient(rgba(20, 20, 15, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 20, 15, 0.1) 1px, transparent 1px);
+  background-image:
+    linear-gradient(rgba(20, 20, 15, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 20, 15, 0.1) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 .ufc-home .pat-gingham-pink {
@@ -382,12 +591,35 @@ html.lenis, html.lenis body { height: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ufc-home .spin-slow, .ufc-home .steam, .ufc-home .flame, .ufc-home .bob, .ufc-home .twinkle, .ufc-home .drift, .ufc-home .sway { animation: none; }
+  .ufc-home .spin-slow,
+  .ufc-home .steam,
+  .ufc-home .flame,
+  .ufc-home .bob,
+  .ufc-home .twinkle,
+  .ufc-home .drift,
+  .ufc-home .sway {
+    animation: none;
+  }
 }
 
-@keyframes ufc-flap { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.35); } }
-.ufc-home .flap { animation: ufc-flap 0.7s ease-in-out infinite; transform-origin: 50% 50%; }
-@media (prefers-reduced-motion: reduce) { .ufc-home .flap { animation: none; } }
+@keyframes ufc-flap {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.35);
+  }
+}
+.ufc-home .flap {
+  animation: ufc-flap 0.7s ease-in-out infinite;
+  transform-origin: 50% 50%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ufc-home .flap {
+    animation: none;
+  }
+}
 
 /* Cork board for the team wall */
 .ufc-home .cork {
@@ -395,7 +627,9 @@ html.lenis, html.lenis body { height: auto; }
   background-image:
     url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='c'><feTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='3' seed='8'/><feColorMatrix values='0 0 0 0 .32  0 0 0 0 .17  0 0 0 0 .06  0 0 0 1.5 -.5'/></filter><rect width='100%' height='100%' filter='url(%23c)'/></svg>"),
     url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='d'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 .86  0 0 0 0 .62  0 0 0 1.2 -.62'/></filter><rect width='100%' height='100%' filter='url(%23d)'/></svg>");
-  box-shadow: inset 0 0 100px rgba(70, 35, 10, 0.65), inset 0 0 0 2px rgba(0, 0, 0, 0.25);
+  box-shadow:
+    inset 0 0 100px rgba(70, 35, 10, 0.65),
+    inset 0 0 0 2px rgba(0, 0, 0, 0.25);
 }
 
 /* ───────────── Hero backdrop ───────────── */
@@ -433,7 +667,9 @@ html.lenis, html.lenis body { height: auto; }
 }
 
 /* A sticker with no white border: just a soft lift shadow. */
-.ufc-home .soft-shadow { filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.35)); }
+.ufc-home .soft-shadow {
+  filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.35));
+}
 
 /* Form fields in the sticker style */
 .ufc-home .field {
@@ -446,21 +682,83 @@ html.lenis, html.lenis body { height: auto; }
   font-size: 1rem;
   font-weight: 600;
   box-shadow: 3px 3px 0 var(--ink);
-  transition: box-shadow 0.2s, transform 0.2s;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
 }
-.ufc-home .field::placeholder { color: rgba(20, 20, 15, 0.4); font-weight: 500; }
-.ufc-home .field:focus { outline: none; transform: translate(-1px, -1px); box-shadow: 5px 5px 0 var(--signal-deep); }
-.ufc-home .btn:disabled { cursor: not-allowed; opacity: 0.55; transform: none; box-shadow: 2px 2px 0 var(--sh); }
+.ufc-home .field::placeholder {
+  color: rgba(20, 20, 15, 0.4);
+  font-weight: 500;
+}
+.ufc-home .field:focus {
+  outline: none;
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--signal-deep);
+}
+.ufc-home .btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+  box-shadow: 2px 2px 0 var(--sh);
+}
 
 /* Contribution calendar: cells pop in one week at a time. */
-@keyframes ufc-pop { from { opacity: 0; transform: scale(0.2); } to { opacity: 1; transform: scale(1); } }
-.ufc-home .cal-cell { transform-box: fill-box; transform-origin: center; animation: ufc-pop 0.45s cubic-bezier(0.3, 1.7, 0.5, 1) backwards; animation-delay: calc(var(--w) * 14ms); }
-.ufc-home .cal-cell:hover { stroke: var(--ink); stroke-width: 2.5px; }
-@media (prefers-reduced-motion: reduce) { .ufc-home .cal-cell { animation: none; } }
+@keyframes ufc-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.ufc-home .cal-cell {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ufc-pop 0.45s cubic-bezier(0.3, 1.7, 0.5, 1) backwards;
+  animation-delay: calc(var(--w) * 14ms);
+}
+.ufc-home .cal-cell:hover {
+  stroke: var(--ink);
+  stroke-width: 2.5px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ufc-home .cal-cell {
+    animation: none;
+  }
+}
 
 /* Leaderboard: bars grow in from the left, and the live dot breathes. */
-@keyframes ufc-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-.ufc-home .grow-bar { transform-origin: left center; animation: ufc-grow 1s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; animation-delay: var(--d, 0ms); }
-@keyframes ufc-rise { from { transform: scaleY(0); } to { transform: scaleY(1); } }
-.ufc-home .rise-block { transform-origin: bottom center; animation: ufc-rise 0.9s cubic-bezier(0.3, 1.4, 0.5, 1) backwards; animation-delay: var(--d, 0ms); }
-@media (prefers-reduced-motion: reduce) { .ufc-home .grow-bar, .ufc-home .rise-block { animation: none; } }
+@keyframes ufc-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.ufc-home .grow-bar {
+  transform-origin: left center;
+  animation: ufc-grow 1s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation-delay: var(--d, 0ms);
+}
+@keyframes ufc-rise {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+.ufc-home .rise-block {
+  transform-origin: bottom center;
+  animation: ufc-rise 0.9s cubic-bezier(0.3, 1.4, 0.5, 1) backwards;
+  animation-delay: var(--d, 0ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ufc-home .grow-bar,
+  .ufc-home .rise-block {
+    animation: none;
+  }
+}

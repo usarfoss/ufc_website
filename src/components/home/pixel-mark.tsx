@@ -4,15 +4,7 @@
  */
 const DEFAULT_LIT = [0, 4, 5, 7];
 
-export function PixelMark({
-  size = 22,
-  lit = DEFAULT_LIT,
-  className,
-}: {
-  size?: number;
-  lit?: number[];
-  className?: string;
-}) {
+export function PixelMark({ size = 22, lit = DEFAULT_LIT, className }: { size?: number; lit?: number[]; className?: string }) {
   const cell = size / 3;
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className={className} aria-hidden="true">

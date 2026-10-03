@@ -8,7 +8,13 @@ import { StickerArt, type ArtId } from "@/components/home/sticker-art";
 
 export type DashTone = "butter" | "mint" | "pink" | "lilac" | "sky";
 export const TONE_BG: Record<DashTone, string> = { butter: "#ffe36e", mint: "#9af2c6", pink: "#ffb3cf", lilac: "#c7b3ff", sky: "#9bd7ff" };
-const PAT: Record<DashTone, string> = { butter: "pat-dots", mint: "pat-grid", pink: "pat-gingham-pink", lilac: "pat-dots", sky: "pat-clouds" };
+const PAT: Record<DashTone, string> = {
+  butter: "pat-dots",
+  mint: "pat-grid",
+  pink: "pat-gingham-pink",
+  lilac: "pat-dots",
+  sky: "pat-clouds",
+};
 const EASE = [0.16, 1, 0.3, 1] as const;
 
 /** The big coloured card at the top of every dashboard page. */
@@ -55,9 +61,22 @@ export function PageHeader({
 }
 
 /** A sheet of paper, taped on. */
-export function Panel({ children, className = "", tape = true, tone = "butter" }: { children: ReactNode; className?: string; tape?: boolean; tone?: "butter" | "pink" | "sky" | "lilac" | "signal" }) {
+export function Panel({
+  children,
+  className = "",
+  tape = true,
+  tone = "butter",
+}: {
+  children: ReactNode;
+  className?: string;
+  tape?: boolean;
+  tone?: "butter" | "pink" | "sky" | "lilac" | "signal";
+}) {
   return (
-    <section className={`relative border-[2.5px] border-[var(--ink)] bg-[var(--cream)] p-6 text-[var(--ink)] shadow-[6px_6px_0_var(--ink)] sm:p-8 ${className}`} style={{ borderRadius: "1.25rem" }}>
+    <section
+      className={`relative border-[2.5px] border-[var(--ink)] bg-[var(--cream)] p-6 text-[var(--ink)] shadow-[6px_6px_0_var(--ink)] sm:p-8 ${className}`}
+      style={{ borderRadius: "1.25rem" }}
+    >
       {tape && <Tape tone={tone} className="-top-3 left-8" rotate={-4} />}
       {children}
     </section>
@@ -65,9 +84,22 @@ export function Panel({ children, className = "", tape = true, tone = "butter" }
 }
 
 /** The dark counterpart for charts that are drawn for a dark background. */
-export function InkPanel({ children, className = "", title, icon }: { children: ReactNode; className?: string; title: string; icon?: ReactNode }) {
+export function InkPanel({
+  children,
+  className = "",
+  title,
+  icon,
+}: {
+  children: ReactNode;
+  className?: string;
+  title: string;
+  icon?: ReactNode;
+}) {
   return (
-    <section className={`dotgrid relative border-[2.5px] border-[var(--ink)] bg-[var(--ink-2)] p-6 text-[var(--text)] shadow-[6px_6px_0_var(--signal)] sm:p-8 ${className}`} style={{ borderRadius: "1.25rem" }}>
+    <section
+      className={`dotgrid relative border-[2.5px] border-[var(--ink)] bg-[var(--ink-2)] p-6 text-[var(--text)] shadow-[6px_6px_0_var(--signal)] sm:p-8 ${className}`}
+      style={{ borderRadius: "1.25rem" }}
+    >
       <h2 className="mb-5 flex items-center gap-3 text-[1.4rem] leading-none">
         {icon}
         {title}
@@ -77,7 +109,17 @@ export function InkPanel({ children, className = "", title, icon }: { children: 
   );
 }
 
-export function Avatar({ src, name, size = 48, className = "" }: { src?: string | null; name?: string | null; size?: number; className?: string }) {
+export function Avatar({
+  src,
+  name,
+  size = 48,
+  className = "",
+}: {
+  src?: string | null;
+  name?: string | null;
+  size?: number;
+  className?: string;
+}) {
   const [broken, setBroken] = useState(false);
   const initial = (name?.trim()[0] ?? "?").toUpperCase();
   return (
@@ -101,7 +143,11 @@ export function Loading({ label = "fetching the good stuff" }: { label?: string 
   return (
     <div className="grid place-items-center py-24" role="status" aria-live="polite">
       <div className="text-center">
-        <motion.div className="mx-auto w-20" animate={{ y: [0, -14, 0], rotate: [-6, 6, -6] }} transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}>
+        <motion.div
+          className="mx-auto w-20"
+          animate={{ y: [0, -14, 0], rotate: [-6, 6, -6] }}
+          transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
+        >
           <StickerArt id="rocket" className="die-cut w-full" />
         </motion.div>
         <p className="hand mt-4 text-[1.8rem] leading-none text-[var(--ink)]/70">{label}…</p>
@@ -153,19 +199,28 @@ export function Pager({ page, pages, onChange, label }: { page: number; pages: n
         </button>
         {start > 1 && (
           <>
-            <button className="btn btn-dot btn-xs btn-paper" onClick={() => onChange(1)}>1</button>
+            <button className="btn btn-dot btn-xs btn-paper" onClick={() => onChange(1)}>
+              1
+            </button>
             {start > 2 && <span className="code px-1">…</span>}
           </>
         )}
         {nums.map((n) => (
-          <button key={n} aria-current={n === page ? "page" : undefined} className={`btn btn-dot btn-xs ${n === page ? "btn-ink" : "btn-paper"}`} onClick={() => onChange(n)}>
+          <button
+            key={n}
+            aria-current={n === page ? "page" : undefined}
+            className={`btn btn-dot btn-xs ${n === page ? "btn-ink" : "btn-paper"}`}
+            onClick={() => onChange(n)}
+          >
             <span className="code text-[0.8rem] font-bold">{n}</span>
           </button>
         ))}
         {end < pages && (
           <>
             {end < pages - 1 && <span className="code px-1">…</span>}
-            <button className="btn btn-dot btn-xs btn-paper" onClick={() => onChange(pages)}>{pages}</button>
+            <button className="btn btn-dot btn-xs btn-paper" onClick={() => onChange(pages)}>
+              {pages}
+            </button>
           </>
         )}
         <button className="btn btn-sm btn-paper !px-3" disabled={page >= pages} onClick={() => onChange(page + 1)} aria-label="Next page">
@@ -177,7 +232,19 @@ export function Pager({ page, pages, onChange, label }: { page: number; pages: n
   );
 }
 
-export function Modal({ open, onClose, title, children, tone = "butter" }: { open: boolean; onClose: () => void; title: string; children: ReactNode; tone?: DashTone }) {
+export function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  tone = "butter",
+}: {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  children: ReactNode;
+  tone?: DashTone;
+}) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -214,7 +281,9 @@ export function Modal({ open, onClose, title, children, tone = "butter" }: { ope
               <X size={16} strokeWidth={2.8} />
             </button>
             <h2 className="pr-12 text-[clamp(1.8rem,3vw,2.4rem)] leading-[1.02]">
-              <span className="marker rounded-sm px-1" style={{ ["--mark" as string]: TONE_BG[tone] }}>{title}</span>
+              <span className="marker rounded-sm px-1" style={{ ["--mark" as string]: TONE_BG[tone] }}>
+                {title}
+              </span>
             </h2>
             <div className="mt-6">{children}</div>
           </motion.div>

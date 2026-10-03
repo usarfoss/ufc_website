@@ -38,7 +38,15 @@ function Polaroid({ a, caption, tape = "butter" }: { a: Achievement; caption?: s
     <figure className="polaroid relative">
       <Tape tone={tape} className="-top-3 left-1/2 -translate-x-1/2" rotate={-3} />
       <div className="relative aspect-square w-full overflow-hidden bg-[#d9d6cb]">
-        <Image src={a.photo} alt={a.name} fill sizes="(min-width: 1024px) 24vw, 70vw" className="object-cover" style={{ objectPosition: a.focus }} draggable={false} />
+        <Image
+          src={a.photo}
+          alt={a.name}
+          fill
+          sizes="(min-width: 1024px) 24vw, 70vw"
+          className="object-cover"
+          style={{ objectPosition: a.focus }}
+          draggable={false}
+        />
       </div>
       <figcaption className="hand px-1 pb-2 pt-2 text-[1.25rem] leading-none">{caption ?? a.name.split(" ")[0]}</figcaption>
     </figure>
@@ -48,7 +56,10 @@ function Polaroid({ a, caption, tape = "butter" }: { a: Achievement; caption?: s
 function Hero() {
   return (
     <section className="dotgrid relative isolate overflow-hidden bg-[var(--ink)] text-[var(--text)]">
-      <div className="pointer-events-none absolute -right-[10%] top-[-10%] -z-10 size-[60vw] max-h-[800px] max-w-[800px] bg-[radial-gradient(closest-side,rgba(46,229,143,0.16),transparent_72%)]" aria-hidden="true" />
+      <div
+        className="pointer-events-none absolute -right-[10%] top-[-10%] -z-10 size-[60vw] max-h-[800px] max-w-[800px] bg-[radial-gradient(closest-side,rgba(46,229,143,0.16),transparent_72%)]"
+        aria-hidden="true"
+      />
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 pb-24 pt-40 sm:px-8 lg:grid-cols-12 lg:pb-32 lg:pt-44">
         <div className="lg:col-span-6">
           <Reveal>
@@ -65,8 +76,8 @@ function Hero() {
           </h1>
           <Reveal delay={0.1}>
             <p className="mt-9 max-w-md text-[1.18rem] leading-[1.65] text-[var(--text)]/80">
-              A club is only as good as what its members do next. Open source programs, internships, research labs and real jobs. Here are seven stories
-              so far, and we&apos;re proud of every one.
+              A club is only as good as what its members do next. Open source programs, internships, research labs and real jobs. Here are
+              seven stories so far, and we&apos;re proud of every one.
             </p>
           </Reveal>
           <div className="hand mt-8 flex flex-col items-start text-[1.7rem] text-[var(--butter)]">
@@ -110,7 +121,9 @@ function Story({ a, i, prev }: { a: Achievement; i: number; prev: string }) {
           <Reveal>
             <div className="flex items-end gap-5">
               <span className="serif die-num text-[clamp(7rem,13vw,12rem)] leading-[0.78]">{i + 1}</span>
-              <p className="code mb-3 rounded bg-[var(--ink)] px-2 py-1 text-[0.68rem] font-bold uppercase tracking-widest text-[var(--paper)]">{a.org}</p>
+              <p className="code mb-3 rounded bg-[var(--ink)] px-2 py-1 text-[0.68rem] font-bold uppercase tracking-widest text-[var(--paper)]">
+                {a.org}
+              </p>
             </div>
           </Reveal>
           <h2 className="mt-8 text-[clamp(2rem,4.2vw,3.6rem)] leading-[1.02]">
@@ -127,7 +140,12 @@ function Story({ a, i, prev }: { a: Achievement; i: number; prev: string }) {
                 <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3">
                   <p className="flex flex-wrap items-baseline gap-x-3 text-[clamp(1.6rem,2.6vw,2.2rem)]">
                     <span className="hand">at</span>
-                    <span className="marker rounded-sm px-1 font-extrabold tracking-[-0.03em]" style={{ ["--mark" as string]: "var(--cream)" }}>{r.org}</span>
+                    <span
+                      className="marker rounded-sm px-1 font-extrabold tracking-[-0.03em]"
+                      style={{ ["--mark" as string]: "var(--cream)" }}
+                    >
+                      {r.org}
+                    </span>
                   </p>
                   <Pin r={ri % 2 ? 4 : -4} drag={false} delay={0.2 + ri * 0.1}>
                     <OrgLogo logo={r.logo} org={r.org} height={72} />

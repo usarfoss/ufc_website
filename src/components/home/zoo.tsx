@@ -17,7 +17,13 @@ const img = (id: string, src: string, alt: string, w: number, h: number, outline
     </div>
   ),
 });
-const art = (id: ArtId, round = false): PileItem => ({ id, w: ART_SIZE[id][0], h: ART_SIZE[id][1], round, node: <StickerArt id={id} className="die-cut size-full" /> });
+const art = (id: ArtId, round = false): PileItem => ({
+  id,
+  w: ART_SIZE[id][0],
+  h: ART_SIZE[id][1],
+  round,
+  node: <StickerArt id={id} className="die-cut size-full" />,
+});
 
 /** Phones keep the first seven, so the best-known mascots (and the club's own in-jokes) come first. */
 const ITEMS: PileItem[] = [
@@ -39,7 +45,16 @@ const ITEMS: PileItem[] = [
     id: "kiki",
     w: 150,
     h: 192,
-    node: <Polaroid src="/collage/kiki.webp" alt="Kiki, the Krita mascot" caption="kiki (krita)" tone="lilac" sizes="160px" className="size-full" />,
+    node: (
+      <Polaroid
+        src="/collage/kiki.webp"
+        alt="Kiki, the Krita mascot"
+        caption="kiki (krita)"
+        tone="lilac"
+        sizes="160px"
+        className="size-full"
+      />
+    ),
   },
   art("heart"),
   art("burst"),
@@ -77,7 +92,10 @@ export function Zoo() {
       </div>
 
       {/* the floor: a dashed cut line along the bottom edge, behind the stickers that rest on it */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 border-t-4 border-dashed border-[var(--ink)]/70" aria-hidden="true" />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 border-t-4 border-dashed border-[var(--ink)]/70"
+        aria-hidden="true"
+      />
       {/* the physics world is the whole purple section, stacked just behind the text */}
       <StickerPile items={ITEMS} className="z-[1]" startWhenVisible sizeBoost={1.3} mobileScale={0.64} />
     </section>

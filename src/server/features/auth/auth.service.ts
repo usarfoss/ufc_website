@@ -1,7 +1,7 @@
-import 'server-only';
-import { invalidateCache } from '@/server/cache/cache';
-import { prisma } from '@/server/db/prisma';
-import { encryptToken } from '@/server/security/token-encryption';
+import "server-only";
+import { invalidateCache } from "@/server/cache/cache";
+import { prisma } from "@/server/db/prisma";
+import { encryptToken } from "@/server/security/token-encryption";
 
 export interface GitHubIdentity {
   id: number;
@@ -11,11 +11,8 @@ export interface GitHubIdentity {
   avatar_url?: string | null;
 }
 
-const resolveRole = (githubUsername: string): 'ADMIN' | 'MAINTAINER' => (
-  githubUsername.toLowerCase() === process.env.ADMIN_GITHUB_USERNAME?.toLowerCase()
-    ? 'ADMIN'
-    : 'MAINTAINER'
-);
+const resolveRole = (githubUsername: string): "ADMIN" | "MAINTAINER" =>
+  githubUsername.toLowerCase() === process.env.ADMIN_GITHUB_USERNAME?.toLowerCase() ? "ADMIN" : "MAINTAINER";
 
 /** Provisions and links the local profile to GitHub's immutable account identifier. */
 export const authService = {
@@ -24,11 +21,7 @@ export const authService = {
     const role = resolveRole(profile.login);
     const existingUser = await prisma.user.findFirst({
       where: {
-        OR: [
-          { githubId },
-          { githubUsername: profile.login },
-          ...(profile.email ? [{ email: profile.email }] : []),
-        ],
+        OR: [{ githubId }, { githubUsername: profile.login }, ...(profile.email ? [{ email: profile.email }] : [])],
       },
     });
 
@@ -49,7 +42,7 @@ export const authService = {
         where: { id: existingUser.id },
         data,
       });
-      await invalidateCache('members');
+      await invalidateCache("members");
       return user;
     }
 
@@ -58,7 +51,7 @@ export const authService = {
         ...data,
       },
     });
-    await invalidateCache('members');
+    await invalidateCache("members");
     return user;
   },
 };

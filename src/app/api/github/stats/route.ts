@@ -1,5 +1,5 @@
-import { prisma } from '@/server/db/prisma';
-import { json, withApiErrorHandling } from '@/server/http/api';
+import { prisma } from "@/server/db/prisma";
+import { json, withApiErrorHandling } from "@/server/http/api";
 
 export const GET = withApiErrorHandling(async () => {
   const users = await prisma.user.findMany({
@@ -10,9 +10,9 @@ export const GET = withApiErrorHandling(async () => {
   const data = users
     .map((user) => ({
       id: user.id,
-      username: user.githubUsername || user.email?.split('@')[0] || 'github-user',
-      name: user.name || 'Unknown User',
-      avatar: user.avatar || 'https://github.com/github.png',
+      username: user.githubUsername || user.email?.split("@")[0] || "github-user",
+      name: user.name || "Unknown User",
+      avatar: user.avatar || "https://github.com/github.png",
       stats: {
         commits: user.githubStats?.commits || 0,
         pullRequests: user.githubStats?.pullRequests || 0,
@@ -27,10 +27,7 @@ export const GET = withApiErrorHandling(async () => {
     .map((user, index) => ({
       ...user,
       rank: index + 1,
-      points: user.stats.commits
-        + (user.stats.pullRequests * 5)
-        + (user.stats.issues * 2)
-        + (user.stats.repositories * 3),
+      points: user.stats.commits + user.stats.pullRequests * 5 + user.stats.issues * 2 + user.stats.repositories * 3,
     }));
 
   return json({ success: true, data, lastUpdated: new Date().toISOString() });

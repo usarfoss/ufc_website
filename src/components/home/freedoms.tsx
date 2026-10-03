@@ -64,7 +64,15 @@ function RunScene({ show }: { show: boolean }) {
   return (
     <>
       <Item show={show} left={5} top={3} w={50} r={-5} z={2}>
-        <Polaroid src="/about-images/students_collab.jpg" alt="Students at a UFC session, laptops open" caption="show up. that's the whole rule." aspect="aspect-[3/4]" position="50% 30%" tone="pink" sizes="320px" />
+        <Polaroid
+          src="/about-images/students_collab.jpg"
+          alt="Students at a UFC session, laptops open"
+          caption="show up. that's the whole rule."
+          aspect="aspect-[3/4]"
+          position="50% 30%"
+          tone="pink"
+          sizes="320px"
+        />
       </Item>
       <Item show={show} left={50} top={5} w={47} r={7} z={3} delay={0.15}>
         <StickerArt id="ticket" className="die-cut w-full" />
@@ -88,19 +96,33 @@ function StudyScene({ show }: { show: boolean }) {
   return (
     <>
       <Item show={show} left={4} top={3} w={78} r={3} z={2}>
-        <Polaroid src="/about-images/foss.jpg" alt="Logos of well-known open-source projects" caption="you already use all of this." aspect="aspect-[3/2]" tone="butter" sizes="460px" />
+        <Polaroid
+          src="/about-images/foss.jpg"
+          alt="Logos of well-known open-source projects"
+          caption="you already use all of this."
+          aspect="aspect-[3/2]"
+          tone="butter"
+          sizes="460px"
+        />
       </Item>
       <Item show={show} left={18} top={12} w={26} r={-10} z={6} delay={0.25} drag={false}>
-        <motion.div animate={{ x: [0, 190, 90, 0], y: [0, 20, 80, 0], rotate: [-8, 10, -4, -8] }} transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}>
+        <motion.div
+          animate={{ x: [0, 190, 90, 0], y: [0, 20, 80, 0], rotate: [-8, 10, -4, -8] }}
+          transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
+        >
           <StickerArt id="magnifier" className="die-cut w-full" />
         </motion.div>
       </Item>
       <Item show={show} left={20} top={63} w={76} r={-2} z={4} delay={0.3}>
         <div className="paper code px-5 pb-5 pt-7 text-[0.78rem] leading-6">
           <Tape tone="sky" className="-top-3 left-8" rotate={-4} />
-          <div className="text-[#6a6a58]">// you use all of this every day.</div>
-          <div><span className="text-[var(--signal-deep)]">$</span> git clone --depth 1 &lt;anything&gt;</div>
-          <div><span className="text-[var(--signal-deep)]">$</span> grep -r &quot;how does this work&quot; ./src</div>
+          <div className="text-[#6a6a58]">{"// you use all of this every day."}</div>
+          <div>
+            <span className="text-[var(--signal-deep)]">$</span> git clone --depth 1 &lt;anything&gt;
+          </div>
+          <div>
+            <span className="text-[var(--signal-deep)]">$</span> grep -r &quot;how does this work&quot; ./src
+          </div>
           <div className="font-bold">→ 1,204 matches. start reading.</div>
         </div>
       </Item>
@@ -115,10 +137,24 @@ function ShareScene({ show }: { show: boolean }) {
   return (
     <>
       <Item show={show} left={3} top={3} w={39} r={-8} z={2}>
-        <Polaroid src="/event-images/OCC1.png" alt="Open Community Chintan #01 poster" caption="talk #01" aspect="aspect-[1587/2245]" tone="butter" sizes="260px" />
+        <Polaroid
+          src="/event-images/OCC1.png"
+          alt="Open Community Chintan #01 poster"
+          caption="talk #01"
+          aspect="aspect-[1587/2245]"
+          tone="butter"
+          sizes="260px"
+        />
       </Item>
       <Item show={show} left={37} top={12} w={39} r={6} z={3} delay={0.15}>
-        <Polaroid src="/event-images/OCC2.png" alt="Open Community Chintan #02 poster" caption="talk #02" aspect="aspect-[1587/2245]" tone="sky" sizes="260px" />
+        <Polaroid
+          src="/event-images/OCC2.png"
+          alt="Open Community Chintan #02 poster"
+          caption="talk #02"
+          aspect="aspect-[1587/2245]"
+          tone="sky"
+          sizes="260px"
+        />
       </Item>
       <Item show={show} left={4} top={67} w={52} r={-2} z={5} delay={0.35}>
         <PostIt color="butter">
@@ -146,7 +182,14 @@ function ImproveScene({ show }: { show: boolean }) {
   return (
     <>
       <Item show={show} left={2} top={2} w={43} r={-6} z={2}>
-        <Polaroid src="/foss-forge-2025.jpg" alt="FOSS Forge 2025 poster" caption="foss forge '25" aspect="aspect-[2942/4160]" tone="pink" sizes="280px" />
+        <Polaroid
+          src="/foss-forge-2025.jpg"
+          alt="FOSS Forge 2025 poster"
+          caption="foss forge '25"
+          aspect="aspect-[2942/4160]"
+          tone="pink"
+          sizes="280px"
+        />
       </Item>
       <Item show={show} left={38} top={26} w={60} r={3} z={4} delay={0.2}>
         <div className="paper code overflow-hidden text-[0.78rem] leading-6">
@@ -159,8 +202,14 @@ function ImproveScene({ show }: { show: boolean }) {
         </div>
       </Item>
       <Item show={show} left={46} top={64} w={46} r={-11} z={6} delay={0.55} drag>
-        <motion.div initial={false} animate={show ? { scale: [2.6, 1] } : { scale: 2.6 }} transition={{ delay: 0.7, duration: 0.35, ease: [0.2, 1.6, 0.4, 1] }}>
-          <Badge tone="butter" className="!text-lg">✓ merged into main</Badge>
+        <motion.div
+          initial={false}
+          animate={show ? { scale: [2.6, 1] } : { scale: 2.6 }}
+          transition={{ delay: 0.7, duration: 0.35, ease: [0.2, 1.6, 0.4, 1] }}
+        >
+          <Badge tone="butter" className="!text-lg">
+            ✓ merged into main
+          </Badge>
         </motion.div>
       </Item>
       <Item show={show} left={76} top={0} w={18} r={10} z={5} delay={0.4} drag={false}>
@@ -181,7 +230,10 @@ const SCENE_BODY = [RunScene, StudyScene, ShareScene, ImproveScene];
 
 function Copy({ f, show }: { f: Freedom; show: boolean }) {
   return (
-    <motion.div animate={show ? { opacity: 1, y: 0 } : { opacity: 0, y: 36 }} transition={{ duration: 0.6, ease: EASE, delay: show ? 0.1 : 0 }}>
+    <motion.div
+      animate={show ? { opacity: 1, y: 0 } : { opacity: 0, y: 36 }}
+      transition={{ duration: 0.6, ease: EASE, delay: show ? 0.1 : 0 }}
+    >
       <div className="flex items-end gap-5">
         <span className="serif die-num text-[clamp(5.2rem,16vw,15rem)] leading-[0.8]">{f.n}</span>
         <div className="pb-2 text-[clamp(2.2rem,5.4vw,5rem)] leading-none lg:pb-4">
@@ -190,7 +242,9 @@ function Copy({ f, show }: { f: Freedom; show: boolean }) {
       </div>
       <p className="serif mt-3 max-w-lg text-[clamp(1.25rem,2.3vw,2.1rem)] leading-[1.14] lg:mt-8">{f.rule}</p>
       <p className="mt-2 max-w-md text-[0.88rem] leading-snug text-[var(--ink)]/80 sm:text-[0.95rem] lg:mt-4 lg:text-[1.02rem] lg:leading-relaxed">
-        <span className="code mr-2 rounded bg-[var(--ink)] px-1.5 py-0.5 text-[0.66rem] uppercase tracking-widest text-[var(--paper)]">at ufc</span>
+        <span className="code mr-2 rounded bg-[var(--ink)] px-1.5 py-0.5 text-[0.66rem] uppercase tracking-widest text-[var(--paper)]">
+          at ufc
+        </span>
         {f.ours}
       </p>
       <ul className="mt-3 flex flex-wrap gap-2 lg:mt-5">
@@ -208,6 +262,24 @@ function Copy({ f, show }: { f: Freedom; show: boolean }) {
   );
 }
 
+/** Eases the page to `target`. Lives outside the component because it reads the clock, which components must not do while rendering. */
+function smoothScrollTo(target: number, handle: { current: number }) {
+  const from = window.scrollY;
+  cancelAnimationFrame(handle.current);
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return window.scrollTo(0, target);
+  const dur = Math.min(1400, 450 + Math.abs(target - from) * 0.35);
+  const t0 = performance.now();
+  const stop = () => cancelAnimationFrame(handle.current); // the reader grabbed the wheel or the screen: let go
+  window.addEventListener("wheel", stop, { once: true, passive: true });
+  window.addEventListener("touchstart", stop, { once: true, passive: true });
+  const step = (now: number) => {
+    const k = Math.min(1, (now - t0) / dur);
+    window.scrollTo(0, from + (target - from) * (1 - Math.pow(1 - k, 3)));
+    if (k < 1) handle.current = requestAnimationFrame(step);
+  };
+  handle.current = requestAnimationFrame(step);
+}
+
 /** The pinned, wiped stage. Runs at every screen size: copy on top and collage below on phones, side by side from `lg` up. */
 function Stage() {
   const ref = useRef<HTMLDivElement>(null);
@@ -219,7 +291,12 @@ function Stage() {
   const r1 = useTransform(p, [0.17, 0.28], [0, 175]);
   const r2 = useTransform(p, [0.42, 0.53], [0, 175]);
   const r3 = useTransform(p, [0.67, 0.78], [0, 175]);
-  const clips = [null, useMotionTemplate`circle(${r1}% at 86% 100%)`, useMotionTemplate`circle(${r2}% at 86% 100%)`, useMotionTemplate`circle(${r3}% at 86% 100%)`];
+  const clips = [
+    null,
+    useMotionTemplate`circle(${r1}% at 86% 100%)`,
+    useMotionTemplate`circle(${r2}% at 86% 100%)`,
+    useMotionTemplate`circle(${r3}% at 86% 100%)`,
+  ];
 
   useMotionValueEvent(p, "change", (v) => {
     let a = 0;
@@ -236,22 +313,7 @@ function Stage() {
     if (!el) return;
     // offsetTop would be relative to the <section>, not the page, so measure against the document instead.
     const top = el.getBoundingClientRect().top + window.scrollY;
-    const target = top + (el.offsetHeight - window.innerHeight) * STOPS[i];
-    const from = window.scrollY;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    cancelAnimationFrame(tween.current);
-    if (reduced) return window.scrollTo(0, target);
-    const dur = Math.min(1400, 450 + Math.abs(target - from) * 0.35);
-    const t0 = performance.now();
-    const stop = () => cancelAnimationFrame(tween.current); // the reader grabbed the wheel: let go
-    window.addEventListener("wheel", stop, { once: true, passive: true });
-    window.addEventListener("touchstart", stop, { once: true, passive: true });
-    const step = (now: number) => {
-      const k = Math.min(1, (now - t0) / dur);
-      window.scrollTo(0, from + (target - from) * (1 - Math.pow(1 - k, 3)));
-      if (k < 1) tween.current = requestAnimationFrame(step);
-    };
-    tween.current = requestAnimationFrame(step);
+    smoothScrollTo(top + (el.offsetHeight - window.innerHeight) * STOPS[i], tween);
   };
 
   return (
@@ -314,21 +376,19 @@ export function Freedoms() {
             as in <span className="serif text-[var(--signal-deep)]">beer.</span> It&apos;s free
           </MaskLine>
           <MaskLine inView delay={0.2}>
-            as in{" "}
-            <span className="serif underline decoration-[var(--signal)] decoration-[0.06em] underline-offset-[0.12em]">freedom</span>
+            as in <span className="serif underline decoration-[var(--signal)] decoration-[0.06em] underline-offset-[0.12em]">freedom</span>
             <span className="text-[var(--ink)]/35"> — four of them.</span>
           </MaskLine>
         </h2>
         <Reveal delay={0.1}>
           <p className="mt-8 max-w-xl text-lg leading-relaxed text-[var(--ink)]/65">
-            The Free Software Foundation numbers them from zero, because programmers do. We built a club around each one — scroll to
-            meet them.
+            The Free Software Foundation numbers them from zero, because programmers do. We built a club around each one — scroll to meet
+            them.
           </p>
         </Reveal>
       </div>
 
       <Stage />
-
     </section>
   );
 }

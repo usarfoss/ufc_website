@@ -25,7 +25,9 @@ export function FooterArt() {
         aria-label="Back to top"
       >
         <StickerArt id="rocket" className="die-cut w-full" />
-        <span className="hand absolute left-1/2 top-full mt-1 hidden w-28 -translate-x-1/2 -rotate-3 text-center text-xl leading-none text-[var(--butter)] sm:block">back to the top ↑</span>
+        <span className="hand absolute left-1/2 top-full mt-1 hidden w-28 -translate-x-1/2 -rotate-3 text-center text-xl leading-none text-[var(--butter)] sm:block">
+          back to the top ↑
+        </span>
       </motion.button>
 
       <div className="pointer-events-none select-none overflow-hidden pt-16 text-center" aria-hidden="true">

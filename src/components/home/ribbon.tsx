@@ -4,7 +4,17 @@ import { motion, useAnimationFrame, useMotionValue, useScroll, useSpring, useTra
 import { RIBBON_WORDS } from "./data";
 import { StickerArt, type ArtId } from "./sticker-art";
 
-const KINDS = ["software people", "designers", "hardware hackers", "roboticists", "ML tinkerers", "writers", "organisers", "first-timers", "everyone"];
+const KINDS = [
+  "software people",
+  "designers",
+  "hardware hackers",
+  "roboticists",
+  "ML tinkerers",
+  "writers",
+  "organisers",
+  "first-timers",
+  "everyone",
+];
 const CHARMS: ArtId[] = ["heart", "bug", "floppy", "coffee", "sparkle", "rocket", "play", "fork"];
 const wrap = (min: number, max: number, v: number) => {
   const range = max - min;
@@ -80,7 +90,14 @@ export function Ribbon() {
         Open to {KINDS.join(", ")}. {RIBBON_WORDS.join(", ")}.
       </p>
       <Strip words={KINDS} rotate={-1.8} speed={4} className="top-[-3.9rem] bg-[var(--signal)] text-[var(--ink)] sm:top-[-4.4rem]" />
-      <Strip words={RIBBON_WORDS} rotate={1.6} speed={-3.2} offset={-20} serif className="top-[-0.7rem] bg-[var(--butter)] text-[var(--ink)] sm:top-[-0.9rem]" />
+      <Strip
+        words={RIBBON_WORDS}
+        rotate={1.6}
+        speed={-3.2}
+        offset={-20}
+        serif
+        className="top-[-0.7rem] bg-[var(--butter)] text-[var(--ink)] sm:top-[-0.9rem]"
+      />
     </div>
   );
 }

@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
-import * as d3 from 'd3';
+import React, { useEffect, useMemo, useRef } from "react";
+import { useApi } from "@/components/dashboard/use-api";
+import * as d3 from "d3";
 
 interface LeetCodeHeatmapProps {
   username: string;
@@ -13,188 +14,148 @@ interface SubmissionDay {
   count: number;
 }
 
-export default function LeetCodeHeatmap({ username, className = '' }: LeetCodeHeatmapProps) {
+export default function LeetCodeHeatmap({ username, className = "" }: LeetCodeHeatmapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<SubmissionDay[]>([]);
-
-  useEffect(() => {
-    if (!username) {
-      setError('No LeetCode username provided');
-      setLoading(false);
-      return;
-    }
-
-    fetchSubmissions();
-  }, [username]);
-
-  const fetchSubmissions = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await fetch(`/api/leetcode/submissions?username=${username}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch LeetCode submissions');
-      }
-
-      const result = await response.json();
-      setData(result.submissions || []);
-    } catch (err) {
-      console.error('Error fetching LeetCode submissions:', err);
-      setError('Unable to load submission data');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    data: body,
+    error,
+    loading,
+  } = useApi<{ submissions?: SubmissionDay[] }>(username ? `/api/leetcode/submissions?username=${encodeURIComponent(username)}` : null, {
+    errorMessage: "Unable to load submission data",
+  });
+  const data = useMemo(() => body?.submissions ?? [], [body]);
 
   useEffect(() => {
     if (!data.length || !svgRef.current) return;
 
-    renderHeatmap();
-  }, [data]);
-
-  const renderHeatmap = () => {
-    if (!svgRef.current) return;
-
     const svg = d3.select(svgRef.current);
-    svg.selectAll('*').remove();
+    svg.selectAll("*").remove();
 
     const cellSize = 12;
     const cellGap = 3;
     const weeks = 53;
     const days = 7;
-    
+
     const width = weeks * (cellSize + cellGap);
     const height = days * (cellSize + cellGap) + 20;
 
-    svg.attr('width', '100%')
-       .attr('height', height)
-       .attr('viewBox', `0 0 ${width} ${height}`)
-       .attr('preserveAspectRatio', 'xMinYMin meet');
+    svg.attr("width", "100%").attr("height", height).attr("viewBox", `0 0 ${width} ${height}`).attr("preserveAspectRatio", "xMinYMin meet");
 
-    const g = svg.append('g').attr('transform', 'translate(0, 20)');
+    const g = svg.append("g").attr("transform", "translate(0, 20)");
 
     // Color scale - LeetCode orange theme
-    const colorScale = d3.scaleQuantize<string>()
-      .domain([0, d3.max(data, d => d.count) || 10])
-      .range(['#3a2d1f', '#5a4a2f', '#8a6a3f', '#ffa116']);
+    const colorScale = d3
+      .scaleQuantize<string>()
+      .domain([0, d3.max(data, (d) => d.count) || 10])
+      .range(["#3a2d1f", "#5a4a2f", "#8a6a3f", "#ffa116"]);
 
     // Group data by date
-    const dataByDate = new Map(data.map(d => [d.date, d]));
-    
+    const dataByDate = new Map(data.map((d) => [d.date, d]));
+
     // Generate last 365 days
     const today = new Date();
     const oneYearAgo = new Date(today);
     oneYearAgo.setFullYear(today.getFullYear() - 1);
 
     const cells: { date: Date; count: number; week: number; day: number }[] = [];
-    
+
     for (let i = 0; i < 365; i++) {
       const date = new Date(oneYearAgo);
       date.setDate(oneYearAgo.getDate() + i);
-      
-      const dateStr = date.toISOString().split('T')[0];
+
+      const dateStr = date.toISOString().split("T")[0];
       const dayData = dataByDate.get(dateStr);
-      
+
       const dayOfWeek = date.getDay();
       const weekNumber = Math.floor(i / 7);
-      
+
       cells.push({
         date,
         count: dayData?.count || 0,
         week: weekNumber,
-        day: dayOfWeek
+        day: dayOfWeek,
       });
     }
 
     // Create tooltip
-    const tooltip = d3.select('body')
-      .append('div')
-      .attr('class', 'leetcode-heatmap-tooltip')
-      .style('position', 'absolute')
-      .style('visibility', 'hidden')
-      .style('background-color', 'rgba(0, 0, 0, 0.9)')
-      .style('color', 'white')
-      .style('padding', '8px 12px')
-      .style('border-radius', '6px')
-      .style('font-size', '12px')
-      .style('pointer-events', 'none')
-      .style('z-index', '1000')
-      .style('border', '1px solid rgba(255, 161, 22, 0.5)');
+    const tooltip = d3
+      .select("body")
+      .append("div")
+      .attr("class", "leetcode-heatmap-tooltip")
+      .style("position", "absolute")
+      .style("visibility", "hidden")
+      .style("background-color", "rgba(0, 0, 0, 0.9)")
+      .style("color", "white")
+      .style("padding", "8px 12px")
+      .style("border-radius", "6px")
+      .style("font-size", "12px")
+      .style("pointer-events", "none")
+      .style("z-index", "1000")
+      .style("border", "1px solid rgba(255, 161, 22, 0.5)");
 
     // Draw cells
-    g.selectAll('rect')
+    g.selectAll("rect")
       .data(cells)
       .enter()
-      .append('rect')
-      .attr('x', d => d.week * (cellSize + cellGap))
-      .attr('y', d => d.day * (cellSize + cellGap))
-      .attr('width', cellSize)
-      .attr('height', cellSize)
-      .attr('rx', 2)
-      .attr('fill', d => d.count === 0 ? '#1a1a1a' : colorScale(d.count))
-      .attr('stroke', 'rgba(255, 161, 22, 0.2)')
-      .attr('stroke-width', 1)
-      .on('mouseover', function(event, d) {
-        d3.select(this)
-          .attr('stroke', '#ffa116')
-          .attr('stroke-width', 2);
-        
-        tooltip
-          .style('visibility', 'visible')
-          .html(`
+      .append("rect")
+      .attr("x", (d) => d.week * (cellSize + cellGap))
+      .attr("y", (d) => d.day * (cellSize + cellGap))
+      .attr("width", cellSize)
+      .attr("height", cellSize)
+      .attr("rx", 2)
+      .attr("fill", (d) => (d.count === 0 ? "#1a1a1a" : colorScale(d.count)))
+      .attr("stroke", "rgba(255, 161, 22, 0.2)")
+      .attr("stroke-width", 1)
+      .on("mouseover", function (event, d) {
+        d3.select(this).attr("stroke", "#ffa116").attr("stroke-width", 2);
+
+        tooltip.style("visibility", "visible").html(`
             <div>
-              <strong>${d.count} submission${d.count !== 1 ? 's' : ''}</strong><br/>
-              ${d.date.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
+              <strong>${d.count} submission${d.count !== 1 ? "s" : ""}</strong><br/>
+              ${d.date.toLocaleDateString("en-US", { weekday: "short", year: "numeric", month: "short", day: "numeric" })}
             </div>
           `);
       })
-      .on('mousemove', function(event) {
-        tooltip
-          .style('top', (event.pageY - 10) + 'px')
-          .style('left', (event.pageX + 10) + 'px');
+      .on("mousemove", function (event) {
+        tooltip.style("top", event.pageY - 10 + "px").style("left", event.pageX + 10 + "px");
       })
-      .on('mouseout', function() {
-        d3.select(this)
-          .attr('stroke', 'rgba(255, 161, 22, 0.2)')
-          .attr('stroke-width', 1);
-        
-        tooltip.style('visibility', 'hidden');
+      .on("mouseout", function () {
+        d3.select(this).attr("stroke", "rgba(255, 161, 22, 0.2)").attr("stroke-width", 1);
+
+        tooltip.style("visibility", "hidden");
       });
 
     // Add month labels
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const monthLabels = svg.append('g').attr('transform', 'translate(0, 10)');
-    
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthLabels = svg.append("g").attr("transform", "translate(0, 10)");
+
     let currentMonth = oneYearAgo.getMonth();
     let monthX = 0;
-    
+
     for (let week = 0; week < weeks; week++) {
       const date = new Date(oneYearAgo);
       date.setDate(oneYearAgo.getDate() + week * 7);
       const month = date.getMonth();
-      
+
       if (month !== currentMonth) {
-        monthLabels.append('text')
-          .attr('x', monthX)
-          .attr('y', 0)
-          .attr('fill', '#8b949e')
-          .attr('font-size', '10px')
+        monthLabels
+          .append("text")
+          .attr("x", monthX)
+          .attr("y", 0)
+          .attr("fill", "#8b949e")
+          .attr("font-size", "10px")
           .text(months[currentMonth]);
-        
+
         currentMonth = month;
         monthX = week * (cellSize + cellGap);
       }
     }
 
-    // Cleanup tooltip on unmount
+    // Remove the tooltip we appended to <body> when the data changes or the heatmap unmounts.
     return () => {
       tooltip.remove();
     };
-  };
+  }, [data]);
 
   if (loading) {
     return (
@@ -204,10 +165,10 @@ export default function LeetCodeHeatmap({ username, className = '' }: LeetCodeHe
     );
   }
 
-  if (error) {
+  if (error || !username) {
     return (
       <div className={`text-center p-8 ${className}`}>
-        <p className="text-gray-400 text-sm">{error}</p>
+        <p className="text-gray-400 text-sm">{error ?? "No LeetCode username provided"}</p>
       </div>
     );
   }

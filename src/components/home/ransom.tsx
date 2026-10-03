@@ -64,7 +64,13 @@ export function Ransom({
   const seen = useInView(ref, { once: true, margin: "0px 0px -8% 0px" });
   const go = play ?? seen;
   return (
-    <span ref={ref} className={`inline-flex items-end ${className ?? ""}`} style={{ gap: "0.03em", fontSize: `${scale}em` }} aria-label={text} role="text">
+    <span
+      ref={ref}
+      className={`inline-flex items-end ${className ?? ""}`}
+      style={{ gap: "0.03em", fontSize: `${scale}em` }}
+      aria-label={text}
+      role="text"
+    >
       {[...text].map((ch, i) => {
         const t = tiles[i];
         const space = ch === " ";
@@ -85,7 +91,12 @@ export function Ransom({
             initial={{ y: "-1.4em", rotate: t.r - 22, opacity: 0 }}
             animate={go ? { y: 0, rotate: t.r, opacity: 1 } : { y: "-1.4em", rotate: t.r - 22, opacity: 0 }}
             transition={{ type: "spring", stiffness: 150, damping: 13, delay: delay + i * 0.07 }}
-            whileHover={{ rotate: t.r + (i % 2 ? 7 : -7), y: "-0.12em", scale: 1.1, transition: { type: "spring", stiffness: 400, damping: 10 } }}
+            whileHover={{
+              rotate: t.r + (i % 2 ? 7 : -7),
+              y: "-0.12em",
+              scale: 1.1,
+              transition: { type: "spring", stiffness: 400, damping: 10 },
+            }}
           >
             {space ? " " : ch}
           </motion.span>

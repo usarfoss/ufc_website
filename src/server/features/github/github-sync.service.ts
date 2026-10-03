@@ -1,21 +1,21 @@
-import 'server-only';
-import { type ActivityType, type Prisma } from '@prisma/client';
-import { invalidateCache } from '@/server/cache/cache';
-import { prisma } from '@/server/db/prisma';
-import { createGitHubService, type GitHubActivity } from '@/server/integrations/github.service';
-import { decryptToken } from '@/server/security/token-encryption';
+import "server-only";
+import { type ActivityType, type Prisma } from "@prisma/client";
+import { invalidateCache } from "@/server/cache/cache";
+import { prisma } from "@/server/db/prisma";
+import { createGitHubService, type GitHubActivity } from "@/server/integrations/github.service";
+import { decryptToken } from "@/server/security/token-encryption";
 
 const activityTypeFor = (activity: GitHubActivity): ActivityType | null => {
   switch (activity.type.toLowerCase()) {
-    case 'push':
-    case 'commit':
-      return 'COMMIT';
-    case 'pullrequest':
-    case 'pull_request':
-      return 'PULL_REQUEST';
-    case 'issues':
-    case 'issue':
-      return 'ISSUE';
+    case "push":
+    case "commit":
+      return "COMMIT";
+    case "pullrequest":
+    case "pull_request":
+      return "PULL_REQUEST";
+    case "issues":
+    case "issue":
+      return "ISSUE";
     default:
       return null;
   }
@@ -33,7 +33,7 @@ export async function syncGitHubUser(userId: string) {
   });
 
   if (!user?.githubUsername || !user.githubTokenCiphertext) {
-    throw new Error('GitHub authorization is missing for this user.');
+    throw new Error("GitHub authorization is missing for this user.");
   }
 
   const github = createGitHubService(decryptToken(user.githubTokenCiphertext));
@@ -44,18 +44,20 @@ export async function syncGitHubUser(userId: string) {
 
     if (!type) return [];
 
-    return [{
-      sourceKey: `github:${activity.sourceId}`,
-      type,
-      userId: user.id,
-      description: activity.message,
-      metadata: {
-        source: 'github',
-        repo: activity.repo,
-        occurredAt: activity.date,
+    return [
+      {
+        sourceKey: `github:${activity.sourceId}`,
+        type,
+        userId: user.id,
+        description: activity.message,
+        metadata: {
+          source: "github",
+          repo: activity.repo,
+          occurredAt: activity.date,
+        },
+        createdAt: new Date(activity.date),
       },
-      createdAt: new Date(activity.date),
-    }];
+    ];
   });
 
   await prisma.$transaction(async (transaction) => {
@@ -98,19 +100,23 @@ export async function syncGitHubUser(userId: string) {
     // The same GitHub event can be observed again on a later job run. Upserting
     // keeps its title/message accurate instead of leaving the initial fallback
     // (for example, "Pull request in owner/repo") permanently in the feed.
-    await Promise.all(activities.map((activity) => transaction.activity.upsert({
-      where: { sourceKey: activity.sourceKey },
-      create: activity,
-      update: {
-        type: activity.type,
-        description: activity.description,
-        metadata: activity.metadata,
-        createdAt: activity.createdAt,
-      },
-    })));
+    await Promise.all(
+      activities.map((activity) =>
+        transaction.activity.upsert({
+          where: { sourceKey: activity.sourceKey },
+          create: activity,
+          update: {
+            type: activity.type,
+            description: activity.description,
+            metadata: activity.metadata,
+            createdAt: activity.createdAt,
+          },
+        }),
+      ),
+    );
   });
 
-  await invalidateCache('activity-feed', 'dashboard', 'leaderboard', 'members');
+  await invalidateCache("activity-feed", "dashboard", "leaderboard", "members");
 
   return {
     userId: user.id,

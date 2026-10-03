@@ -27,13 +27,14 @@ export function Bazaar() {
             <Reveal delay={0.1}>
               <div className="mt-10 space-y-5 text-[1.12rem] leading-[1.65] text-[var(--text)]/80">
                 <p>
-                  The idea is simple: if you can <Mark>see</Mark> how something works, you can <Mark tone="var(--pink)">fix</Mark> it —
-                  and if you can fix it, you can <Mark tone="#9af2c6">share</Mark> the fix. That turns software into a commons: built by
+                  The idea is simple: if you can <Mark>see</Mark> how something works, you can <Mark tone="var(--pink)">fix</Mark> it — and
+                  if you can fix it, you can <Mark tone="#9af2c6">share</Mark> the fix. That turns software into a commons: built by
                   strangers, for strangers.
                 </p>
                 <p>
-                  Eric Raymond called the closed way <em className="serif text-[1.15em] text-[var(--text)]">the cathedral</em> — a few people, behind doors. The
-                  open way is <em className="serif text-[1.15em] text-[var(--signal)]">the bazaar</em>: everybody turns up, argues, trades and ships.
+                  Eric Raymond called the closed way <em className="serif text-[1.15em] text-[var(--text)]">the cathedral</em> — a few
+                  people, behind doors. The open way is <em className="serif text-[1.15em] text-[var(--signal)]">the bazaar</em>: everybody
+                  turns up, argues, trades and ships.
                 </p>
                 <p>
                   And look who turned up first. The compiler, the code that flew Apollo, the very first program — none of it came from one
@@ -114,12 +115,8 @@ export function Bazaar() {
                 <Tape tone="butter" className="-top-3 left-8" rotate={-6} />
                 <Tape tone="sky" className="-top-2 right-8" rotate={5} />
                 <p className="code text-[0.7rem] uppercase tracking-widest text-[var(--signal-deep)]">n. · open source</p>
-                <p className="serif mt-2 text-[1.55rem] leading-[1.12]">
-                  Code anyone can see, use, change and share.
-                </p>
-                <p className="hand mt-3 text-[1.35rem] leading-[1.05] text-[#3a3a2e]">
-                  …which quietly means anyone can show up, too.
-                </p>
+                <p className="serif mt-2 text-[1.55rem] leading-[1.12]">Code anyone can see, use, change and share.</p>
+                <p className="hand mt-3 text-[1.35rem] leading-[1.05] text-[#3a3a2e]">…which quietly means anyone can show up, too.</p>
               </div>
             </Pin>
 
@@ -132,7 +129,12 @@ export function Bazaar() {
             </Pin>
 
             <Pin r={-6} delay={0.4} className="lg:absolute lg:left-[40%] lg:top-[75%] lg:w-[19%]" z={6} hint="drag me">
-              <Sticker src="/collage/oshw.webp" alt="The open-source-hardware gear logo" className="aspect-[685/720] w-full" sizes="160px" />
+              <Sticker
+                src="/collage/oshw.webp"
+                alt="The open-source-hardware gear logo"
+                className="aspect-[685/720] w-full"
+                sizes="160px"
+              />
             </Pin>
 
             <Pin r={-4} delay={0.45} className="lg:absolute lg:left-[5%] lg:top-[88%]" z={7} hint="drag me">
@@ -159,7 +161,9 @@ export function Bazaar() {
               <PostIt color={n.color} className="min-h-[18rem] !text-[1.45rem]">
                 <Tape tone="signal" className="-top-3 left-1/2 -translate-x-1/2" rotate={-2} />
                 <span className="block text-[1.7rem] leading-[1.02]">{n.text}</span>
-                <span className="mt-3 block font-[family-name:var(--font-body)] text-[0.88rem] font-medium leading-[1.4] opacity-80">{n.more}</span>
+                <span className="mt-3 block font-[family-name:var(--font-body)] text-[0.88rem] font-medium leading-[1.4] opacity-80">
+                  {n.more}
+                </span>
                 {n.by && <span className="code mt-3 block text-[0.62rem] uppercase leading-snug tracking-wider opacity-60">— {n.by}</span>}
               </PostIt>
             </Pin>

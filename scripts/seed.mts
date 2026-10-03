@@ -30,11 +30,57 @@ type Person = {
 
 // Handles start with "seed-" so github.com/<handle>.png is a 404 and the UI falls back to an initial instead of a stranger's photo.
 const PEOPLE: Person[] = [
-  { name: "Aarav Mehta", handle: "seed-aarav", location: "Delhi", bio: "Rust curious, chai dependent. Fixes docs for fun.", leetcode: "seed-aarav", gh: { commits: 412, pullRequests: 38, issues: 21, repositories: 19, followers: 44 }, lc: { easy: 62, medium: 41, hard: 9, ranking: 48210 }, busy: 0.85, joinedDaysAgo: 120 },
-  { name: "Ishita Rao", handle: "seed-ishita", location: "Noida", bio: "Frontend, design systems and an unreasonable number of stickers.", gh: { commits: 268, pullRequests: 55, issues: 14, repositories: 12, followers: 61 }, busy: 0.7, joinedDaysAgo: 98 },
-  { name: "Kabir Sethi", handle: "seed-kabir", location: "Gurugram", bio: "Competitive programmer who got dragged into open source.", leetcode: "seed-kabir", gh: { commits: 96, pullRequests: 11, issues: 6, repositories: 7, followers: 15 }, lc: { easy: 140, medium: 118, hard: 37, ranking: 9120 }, busy: 0.45, joinedDaysAgo: 76 },
-  { name: "Tanvi Joshi", handle: "seed-tanvi", location: "Delhi", bio: "Hardware by day, firmware by night. KiCad evangelist.", gh: { commits: 171, pullRequests: 22, issues: 31, repositories: 15, followers: 28 }, busy: 0.55, joinedDaysAgo: 54 },
-  { name: "Rohan Bhatia", handle: "seed-rohan", location: "Faridabad", bio: "First-year. Opened a first pull request last month and hasn't stopped.", leetcode: "seed-rohan", gh: { commits: 38, pullRequests: 6, issues: 3, repositories: 4, followers: 5 }, lc: { easy: 33, medium: 9, hard: 1, ranking: 211400 }, busy: 0.25, joinedDaysAgo: 21 },
+  {
+    name: "Aarav Mehta",
+    handle: "seed-aarav",
+    location: "Delhi",
+    bio: "Rust curious, chai dependent. Fixes docs for fun.",
+    leetcode: "seed-aarav",
+    gh: { commits: 412, pullRequests: 38, issues: 21, repositories: 19, followers: 44 },
+    lc: { easy: 62, medium: 41, hard: 9, ranking: 48210 },
+    busy: 0.85,
+    joinedDaysAgo: 120,
+  },
+  {
+    name: "Ishita Rao",
+    handle: "seed-ishita",
+    location: "Noida",
+    bio: "Frontend, design systems and an unreasonable number of stickers.",
+    gh: { commits: 268, pullRequests: 55, issues: 14, repositories: 12, followers: 61 },
+    busy: 0.7,
+    joinedDaysAgo: 98,
+  },
+  {
+    name: "Kabir Sethi",
+    handle: "seed-kabir",
+    location: "Gurugram",
+    bio: "Competitive programmer who got dragged into open source.",
+    leetcode: "seed-kabir",
+    gh: { commits: 96, pullRequests: 11, issues: 6, repositories: 7, followers: 15 },
+    lc: { easy: 140, medium: 118, hard: 37, ranking: 9120 },
+    busy: 0.45,
+    joinedDaysAgo: 76,
+  },
+  {
+    name: "Tanvi Joshi",
+    handle: "seed-tanvi",
+    location: "Delhi",
+    bio: "Hardware by day, firmware by night. KiCad evangelist.",
+    gh: { commits: 171, pullRequests: 22, issues: 31, repositories: 15, followers: 28 },
+    busy: 0.55,
+    joinedDaysAgo: 54,
+  },
+  {
+    name: "Rohan Bhatia",
+    handle: "seed-rohan",
+    location: "Faridabad",
+    bio: "First-year. Opened a first pull request last month and hasn't stopped.",
+    leetcode: "seed-rohan",
+    gh: { commits: 38, pullRequests: 6, issues: 3, repositories: 4, followers: 5 },
+    lc: { easy: 33, medium: 9, hard: 1, ranking: 211400 },
+    busy: 0.25,
+    joinedDaysAgo: 21,
+  },
 ];
 
 const key = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -61,7 +107,16 @@ async function seed() {
     const user = await prisma.user.upsert({
       where: { githubId: p.handle },
       update: { name: p.name, bio: p.bio, location: p.location, leetcodeUsername: p.leetcode ?? null },
-      create: { email, name: p.name, githubId: p.handle, githubUsername: p.handle, leetcodeUsername: p.leetcode ?? null, location: p.location, bio: p.bio, joinedAt },
+      create: {
+        email,
+        name: p.name,
+        githubId: p.handle,
+        githubUsername: p.handle,
+        leetcodeUsername: p.leetcode ?? null,
+        location: p.location,
+        bio: p.bio,
+        joinedAt,
+      },
     });
 
     const cal = calendar(i + 1, p.busy);

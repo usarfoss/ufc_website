@@ -1,0 +1,10 @@
+.next
+node_modules
+.private
+public
+prisma/migrations
+src/generated
+package-lock.json
+next-env.d.ts
+*.tsbuildinfo
+qstash

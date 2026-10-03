@@ -1,20 +1,23 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
+const FINE_POINTER = "(hover: hover) and (pointer: fine)";
+const subscribeFine = (notify: () => void) => {
+  const mq = window.matchMedia(FINE_POINTER);
+  mq.addEventListener("change", notify);
+  return () => mq.removeEventListener("change", notify);
+};
+
 /** True on devices with a mouse. Dragging stickers on touch screens would hijack page scroll. */
 export function useFinePointer() {
-  const [fine, setFine] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(hover: hover) and (pointer: fine)");
-    setFine(mq.matches);
-    const on = (e: MediaQueryListEvent) => setFine(e.matches);
-    mq.addEventListener("change", on);
-    return () => mq.removeEventListener("change", on);
-  }, []);
-  return fine;
+  return useSyncExternalStore(
+    subscribeFine,
+    () => window.matchMedia(FINE_POINTER).matches,
+    () => false, // the server (and first paint) assume touch, so the page never promises a drag it can't do
+  );
 }
 
 type TapeTone = "butter" | "lilac" | "pink" | "sky" | "signal";
@@ -28,11 +31,7 @@ const TONE: Record<TapeTone, string> = {
 
 export function Tape({ tone = "butter", className, rotate = -4 }: { tone?: TapeTone; className?: string; rotate?: number }) {
   return (
-    <span
-      aria-hidden="true"
-      className={`tape ${className ?? ""}`}
-      style={{ ["--tape" as string]: TONE[tone], rotate: `${rotate}deg` }}
-    />
+    <span aria-hidden="true" className={`tape ${className ?? ""}`} style={{ ["--tape" as string]: TONE[tone], rotate: `${rotate}deg` }} />
   );
 }
 
@@ -131,7 +130,10 @@ export function PostIt({
   className?: string;
 }) {
   return (
-    <div className={`postit hand p-4 pb-6 text-[1.35rem] leading-[1.05] sm:text-[1.5rem] ${className ?? ""}`} style={{ ["--note" as string]: NOTE_COLORS[color] }}>
+    <div
+      className={`postit hand p-4 pb-6 text-[1.35rem] leading-[1.05] sm:text-[1.5rem] ${className ?? ""}`}
+      style={{ ["--note" as string]: NOTE_COLORS[color] }}
+    >
       {children}
     </div>
   );
@@ -147,15 +149,7 @@ export function Sticker({ src, alt, className, sizes = "200px" }: { src: string;
 }
 
 /** A pill-shaped text sticker set in the pixel face. */
-export function Badge({
-  children,
-  tone = "butter",
-  className,
-}: {
-  children: ReactNode;
-  tone?: TapeTone;
-  className?: string;
-}) {
+export function Badge({ children, tone = "butter", className }: { children: ReactNode; tone?: TapeTone; className?: string }) {
   return (
     <span
       className={`die-cut pixel inline-block rounded-full px-4 py-1.5 text-sm uppercase text-[#14140f] ${className ?? ""}`}

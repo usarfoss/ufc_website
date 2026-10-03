@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "eslint .",
     "db:seed": "tsx scripts/seed.mts",
-    "db:unseed": "tsx scripts/seed.mts unseed"
+    "db:unseed": "tsx scripts/seed.mts unseed",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@octokit/rest": "^22.0.1",
@@ -45,11 +48,14 @@
     "@types/node": "^26",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@typescript/native": "npm:typescript@^7.0.2",
     "@upstash/qstash-cli": "^2.37.18",
-    "eslint": "^10.9.1",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.8",
+    "prettier": "^3.9.9",
     "tailwindcss": "^4",
     "tsx": "^4.23.13",
-    "typescript": "^7.0.2"
+    "typescript": "npm:@typescript/typescript6@6.0.2"
   },
   "overrides": {
     "deepmerge-ts": "^8.0.0"

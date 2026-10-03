@@ -130,16 +130,20 @@ export function StickerPile({
       for (let i = 0; i < 360; i++) Engine.update(engine, 16);
       entries.forEach(place);
     }
-    const begin = () => entries.forEach((e, i) => timers.push(window.setTimeout(() => spawn(e), (startWhenVisible ? 150 : 1100) + i * 240)));
+    const begin = () =>
+      entries.forEach((e, i) => timers.push(window.setTimeout(() => spawn(e), (startWhenVisible ? 150 : 1100) + i * 240)));
     let startIo: IntersectionObserver | null = null;
     if (!reduced) {
       if (startWhenVisible) {
-        startIo = new IntersectionObserver(([en]) => {
-          if (en.isIntersecting) {
-            begin();
-            startIo?.disconnect();
-          }
-        }, { threshold: 0.35 });
+        startIo = new IntersectionObserver(
+          ([en]) => {
+            if (en.isIntersecting) {
+              begin();
+              startIo?.disconnect();
+            }
+          },
+          { threshold: 0.35 },
+        );
         startIo.observe(box);
       } else begin();
     }
@@ -319,7 +323,7 @@ export function StickerPile({
       World.clear(world, false);
       Engine.clear(engine);
     };
-  }, [items]);
+  }, [items, leftInset, startWhenVisible, sizeBoost, wideBoost, mobileScale, avoidSelector]);
 
   return (
     <div ref={host} className={`pointer-events-none absolute inset-0 overflow-hidden ${className ?? ""}`}>

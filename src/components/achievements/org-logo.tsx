@@ -16,7 +16,16 @@ const ALT: Record<Logo, string> = {
 const FILE: Partial<Record<Logo, string>> = { nsut: "nsut-clear" };
 
 /** Natural width / height of each file, so the logo keeps its shape. */
-const RATIO: Record<Logo, number> = { kiwix: 1, gsoc: 1, fossunited: 600 / 472, zomato: 1, apple: 488 / 600, nsut: 1, owasp: 600 / 178, drdo: 1 };
+const RATIO: Record<Logo, number> = {
+  kiwix: 1,
+  gsoc: 1,
+  fossunited: 600 / 472,
+  zomato: 1,
+  apple: 488 / 600,
+  nsut: 1,
+  owasp: 600 / 178,
+  drdo: 1,
+};
 
 /** A company logo, sitting directly on the page with a soft shadow. No box around it. */
 export function OrgLogo({ logo, org, height = 64 }: { logo?: Logo; org: string; height?: number }) {

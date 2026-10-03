@@ -53,12 +53,21 @@ export const EVENTS: EventItem[] = [
     tone: "butter",
     summary: "Where it all started. The founding orientation, where we introduced the club and told everyone what we wanted it to be.",
     tags: ["founding", "orientation", "community"],
-    image: { src: "/about-images/team.jpg", alt: "UFC members introducing themselves on stage at the orientation", aspect: "aspect-[4/3]", position: "50% 30%" },
+    image: {
+      src: "/about-images/team.jpg",
+      alt: "UFC members introducing themselves on stage at the orientation",
+      aspect: "aspect-[4/3]",
+      position: "50% 30%",
+    },
     overview: [
       "Genesis was the first time everyone was in one room. We introduced the club, explained what we were trying to build and who it was for, and put the team on a slide so people knew who to bug with questions.",
       "It was a room full of curious people and a whiteboard full of ideas. We told them the one thing that mattered: this club is for people who want to build things, not only hear about building things.",
     ],
-    highlights: ["We introduced the club and its vision", "First time the whole community met", "Set the tone: build, don't just learn about building"],
+    highlights: [
+      "We introduced the club and its vision",
+      "First time the whole community met",
+      "Set the tone: build, don't just learn about building",
+    ],
     whoFor: "Anyone at USAR who was even a little curious about open source. No experience needed.",
   },
   {
@@ -72,9 +81,14 @@ export const EVENTS: EventItem[] = [
     location: "USAR Campus, GGSIPU EDC",
     type: "Workshop",
     tone: "sky",
-    summary: "A hands-on workshop on Git, GitHub and how to contribute to open source. Live demos, a first pull request and a lot of questions.",
+    summary:
+      "A hands-on workshop on Git, GitHub and how to contribute to open source. Live demos, a first pull request and a lot of questions.",
     tags: ["git", "github", "open source", "version control"],
-    image: { src: "/event-images/git-gud.webp", alt: "Git Gud poster: Git and GitHub intro, October 10. Learn, try, grow.", aspect: "aspect-[2458/1704]" },
+    image: {
+      src: "/event-images/git-gud.webp",
+      alt: "Git Gud poster: Git and GitHub intro, October 10. Learn, try, grow.",
+      aspect: "aspect-[2458/1704]",
+    },
     overview: [
       "Git Gud was a hands-on meetup for people who had never touched open source. We went through Git and GitHub from scratch, with live demos and plenty of time to ask the questions everybody is secretly wondering.",
       "The goal was simple: leave with enough confidence to open a real pull request on a real project. Beginners and people with some experience were both welcome, and we helped anyone who didn't have a GitHub account yet get one.",
@@ -102,7 +116,10 @@ export const EVENTS: EventItem[] = [
         ],
       },
     ],
-    registration: { label: "Registration page (from when it ran)", href: "https://fossunited.org/c/university-school-of-automation-and-robotics/git-gudd/rsvp" },
+    registration: {
+      label: "Registration page (from when it ran)",
+      href: "https://fossunited.org/c/university-school-of-automation-and-robotics/git-gudd/rsvp",
+    },
   },
   {
     slug: "foss-forge-2025",
@@ -115,7 +132,8 @@ export const EVENTS: EventItem[] = [
     location: "USAR Campus, GGSIPU EDC",
     type: "Flagship",
     tone: "pink",
-    summary: "Our flagship festival during ELYSIAN 2025. Two days of Git Clash, a Pokémon YAML Showdown and a Repo Sprint, with a live leaderboard.",
+    summary:
+      "Our flagship festival during ELYSIAN 2025. Two days of Git Clash, a Pokémon YAML Showdown and a Repo Sprint, with a live leaderboard.",
     tags: ["open source", "competition", "git", "teams"],
     image: { src: "/foss-forge-2025.jpg", alt: "FOSS Forge 2025 poster", aspect: "aspect-[2942/4160]" },
     overview: [
@@ -128,7 +146,8 @@ export const EVENTS: EventItem[] = [
       "Day 2: the Repo Sprint finals",
       "Points for individuals and for teams",
     ],
-    whoFor: "Teams of three. Some programming knowledge helped, but the rounds were designed so people at different levels could all score.",
+    whoFor:
+      "Teams of three. Some programming knowledge helped, but the rounds were designed so people at different levels could all score.",
     bring: ["A laptop", "A GitHub account", "A team of three", "Some basic programming knowledge"],
     rounds: [
       {
@@ -136,7 +155,13 @@ export const EVENTS: EventItem[] = [
         when: "Day 1",
         tagline: "Commit Storm",
         body: "Teams took on curated issues, from simple to properly hard, against the clock. Pull requests were judged live and the leaderboard moved as they landed.",
-        scoring: ["Valid PR: 10 points", "Medium issue: 5 bonus", "Hard issue: 10 bonus", "Earliest accepted PRs: 5 bonus each", "Clean Git workflow: up to 30 points per team"],
+        scoring: [
+          "Valid PR: 10 points",
+          "Medium issue: 5 bonus",
+          "Hard issue: 10 bonus",
+          "Earliest accepted PRs: 5 bonus each",
+          "Clean Git workflow: up to 30 points per team",
+        ],
       },
       {
         name: "Pokémon YAML Showdown",
@@ -150,7 +175,12 @@ export const EVENTS: EventItem[] = [
         when: "Day 2",
         tagline: "Build from base repos",
         body: "Teams were handed base repositories and had the day to show what they could do: features, UX, documentation and polish.",
-        scoring: ["High-impact feature or creative solution: 30 points", "Code quality and documentation: 25 points", "UI and UX improvement: 20 points", "Valid PRs merged and verified: 25 points"],
+        scoring: [
+          "High-impact feature or creative solution: 30 points",
+          "Code quality and documentation: 25 points",
+          "UI and UX improvement: 20 points",
+          "Valid PRs merged and verified: 25 points",
+        ],
       },
     ],
     schedule: [
@@ -187,9 +217,14 @@ export const EVENTS: EventItem[] = [
     location: "USAR Campus, GGSIPU EDC",
     type: "Hackathon",
     tone: "lilac",
-    summary: "Build with TRAE came to New Delhi with MiniMax: a session on AI-native coding and agents, then a mini hackathon where teams built and demoed projects in a few hours.",
+    summary:
+      "Build with TRAE came to New Delhi with MiniMax: a session on AI-native coding and agents, then a mini hackathon where teams built and demoed projects in a few hours.",
     tags: ["AI", "AI-native coding", "hackathon", "TRAE", "MiniMax"],
-    image: { src: "/event-images/build-with-trae.webp", alt: "Poster for Build with TRAE at New Delhi with MiniMax, 28th March. Experience the future of AI-native coding.", aspect: "aspect-square" },
+    image: {
+      src: "/event-images/build-with-trae.webp",
+      alt: "Poster for Build with TRAE at New Delhi with MiniMax, 28th March. Experience the future of AI-native coding.",
+      aspect: "aspect-square",
+    },
     overview: [
       "Build with TRAE is a series of developer events, and this stop was in New Delhi, with MiniMax. The theme was the future of AI-native coding: using AI as more than a fancy autocomplete, and letting it act as an agent that works through your tasks while you steer.",
       "It finished with a mini hackathon. Teams had a few hours to build something with AI-assisted workflows and then demoed what they made, all in a single sitting.",
@@ -210,7 +245,11 @@ export const EVENTS: EventItem[] = [
     tone: "mint",
     summary: "The creator of Precogly on open threat modeling, how the project works and how you can contribute to it.",
     tags: ["security", "threat modeling", "online", "talk"],
-    image: { src: "/event-images/OCC1.png", alt: "Poster for Open Community Chintan #01: threat modeling and Precogly", aspect: "aspect-[1587/2245]" },
+    image: {
+      src: "/event-images/OCC1.png",
+      alt: "Poster for Open Community Chintan #01: threat modeling and Precogly",
+      aspect: "aspect-[1587/2245]",
+    },
     overview: [
       "The first Open Community Chintan was an introduction to open threat modeling, followed by a deep dive into Precogly: what it is, why it was built, how it works and how to contribute. It was beginner friendly, with room to go deep if you wanted to.",
       "Open Community Chintans are our online talk series. Different topics, different speakers, real conversations. No polished corporate panels, just people with ideas worth sharing.",
@@ -237,7 +276,11 @@ export const EVENTS: EventItem[] = [
     tone: "butter",
     summary: "Jigyasu Rajput on how open source, GSoC and remote work opened doors, all from a Tier 3 college in Ghaziabad.",
     tags: ["GSoC", "careers", "remote work", "online", "talk"],
-    image: { src: "/event-images/OCC2.png", alt: "Poster for Open Community Chintan #02: all roads lead to open source", aspect: "aspect-[1587/2245]" },
+    image: {
+      src: "/event-images/OCC2.png",
+      alt: "Poster for Open Community Chintan #02: all roads lead to open source",
+      aspect: "aspect-[1587/2245]",
+    },
     overview: [
       "The second Chintan was for every college student in India who wants a remote tech job, wants to get into open source or GSoC, or just wants out of the placement rat race.",
       "Jigyasu is a third-year student at a Tier 3 college in Ghaziabad who works remotely at a Japanese AI company, did GSoC with the Python Software Foundation and mentors open source at Newton School. He is documenting the whole journey so others don't have to figure it out alone.",

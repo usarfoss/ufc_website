@@ -31,7 +31,11 @@ export const CHAPTERS: Chapter[] = [
       "Pretty early on we got FOSS United involved. They're a non-profit that supports open source communities across India, and they back the club today.",
       "That changed things for us. We were no longer just a few friends with a group chat, we were part of something bigger. Our chapter page there is also where we put up Git Gud.",
     ],
-    link: { label: "Our FOSS United chapter", href: "https://fossunited.org/c/university-school-of-automation-and-robotics", external: true },
+    link: {
+      label: "Our FOSS United chapter",
+      href: "https://fossunited.org/c/university-school-of-automation-and-robotics",
+      external: true,
+    },
   },
   {
     n: "03",

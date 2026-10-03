@@ -1,8 +1,8 @@
-import 'server-only';
-import type { NextAuthOptions } from 'next-auth';
-import GitHubProvider from 'next-auth/providers/github';
-import { authService } from '@/server/features/auth/auth.service';
-import { enqueueGitHubSync } from '@/server/jobs/github-sync';
+import "server-only";
+import type { NextAuthOptions } from "next-auth";
+import GitHubProvider from "next-auth/providers/github";
+import { authService } from "@/server/features/auth/auth.service";
+import { enqueueGitHubSync } from "@/server/jobs/github-sync";
 
 interface GitHubProfile {
   id: number;
@@ -13,43 +13,43 @@ interface GitHubProfile {
 }
 
 const asGitHubProfile = (profile: unknown): GitHubProfile | null => {
-  if (!profile || typeof profile !== 'object') {
+  if (!profile || typeof profile !== "object") {
     return null;
   }
 
   const candidate = profile as Partial<GitHubProfile>;
 
-  return typeof candidate.id === 'number' && typeof candidate.login === 'string'
+  return typeof candidate.id === "number" && typeof candidate.login === "string"
     ? {
-      id: candidate.id,
-      login: candidate.login,
-      name: candidate.name ?? null,
-      email: candidate.email ?? null,
-      avatar_url: candidate.avatar_url ?? null,
-    }
+        id: candidate.id,
+        login: candidate.login,
+        name: candidate.name ?? null,
+        email: candidate.email ?? null,
+        avatar_url: candidate.avatar_url ?? null,
+      }
     : null;
 };
 
 export const authOptions: NextAuthOptions = {
   providers: [
     GitHubProvider({
-      clientId: process.env.GITHUB_ID ?? '',
-      clientSecret: process.env.GITHUB_SECRET ?? '',
+      clientId: process.env.GITHUB_ID ?? "",
+      clientSecret: process.env.GITHUB_SECRET ?? "",
       authorization: {
         params: {
-          scope: 'read:user user:email read:org',
+          scope: "read:user user:email read:org",
         },
       },
     }),
   ],
   session: {
-    strategy: 'jwt',
+    strategy: "jwt",
   },
   callbacks: {
     async signIn({ account, profile }) {
       const githubProfile = asGitHubProfile(profile);
 
-      if (account?.provider !== 'github' || !account.access_token || !githubProfile) {
+      if (account?.provider !== "github" || !account.access_token || !githubProfile) {
         return false;
       }
 
@@ -57,15 +57,15 @@ export const authOptions: NextAuthOptions = {
       // Wait only for QStash to acknowledge persistence of the job—not for the
       // GitHub sync itself. A fire-and-forget publish can be terminated when a
       // serverless auth request completes, leaving a new user unsynchronised.
-      await enqueueGitHubSync(user.id, 'login').catch((error) => {
-        console.error('Unable to enqueue the initial GitHub sync:', error);
+      await enqueueGitHubSync(user.id, "login").catch((error) => {
+        console.error("Unable to enqueue the initial GitHub sync:", error);
       });
       return true;
     },
     async jwt({ token, account, profile }) {
       const githubProfile = asGitHubProfile(profile);
 
-      if (account?.provider === 'github' && account.access_token && githubProfile) {
+      if (account?.provider === "github" && account.access_token && githubProfile) {
         const user = await authService.upsertGitHubUser(githubProfile, account.access_token);
         token.userId = user.id;
         token.role = user.role;
@@ -77,15 +77,11 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      if (session.user && typeof token.userId === 'string') {
+      if (session.user && typeof token.userId === "string") {
         session.user.id = token.userId;
-        session.user.role = typeof token.role === 'string' ? token.role.toLowerCase() : 'member';
-        session.user.githubUsername = typeof token.githubUsername === 'string'
-          ? token.githubUsername
-          : undefined;
-        session.user.leetcodeUsername = typeof token.leetcodeUsername === 'string'
-          ? token.leetcodeUsername
-          : undefined;
+        session.user.role = typeof token.role === "string" ? token.role.toLowerCase() : "member";
+        session.user.githubUsername = typeof token.githubUsername === "string" ? token.githubUsername : undefined;
+        session.user.leetcodeUsername = typeof token.leetcodeUsername === "string" ? token.leetcodeUsername : undefined;
       }
 
       return session;

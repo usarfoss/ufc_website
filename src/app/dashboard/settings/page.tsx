@@ -21,7 +21,14 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-10">
-      <PageHeader eyebrow="§ settings · your account" title="Your" accent="settings." tone="sky" art="sun" sub="Your account and integration status, nothing hidden." />
+      <PageHeader
+        eyebrow="§ settings · your account"
+        title="Your"
+        accent="settings."
+        tone="sky"
+        art="sun"
+        sub="Your account and integration status, nothing hidden."
+      />
 
       <div className="grid items-start gap-8 lg:grid-cols-2">
         <Pin r={-1} drag={false}>
@@ -40,7 +47,9 @@ export default function SettingsPage() {
             </dl>
             <button onClick={() => void logout()} className="btn btn-pink mt-6">
               Sign out
-              <span className="disc"><LogOut size={15} strokeWidth={2.6} /></span>
+              <span className="disc">
+                <LogOut size={15} strokeWidth={2.6} />
+              </span>
             </button>
           </Panel>
         </Pin>
@@ -54,15 +63,21 @@ export default function SettingsPage() {
             </h2>
             <p className="mt-5 text-[1.12rem] font-semibold leading-snug">
               {user?.githubUsername ? (
-                <>Connected as <span className="marker rounded-sm px-1" style={{ ["--mark" as string]: "#9af2c6" }}>@{user.githubUsername}</span>.</>
+                <>
+                  Connected as{" "}
+                  <span className="marker rounded-sm px-1" style={{ ["--mark" as string]: "#9af2c6" }}>
+                    @{user.githubUsername}
+                  </span>
+                  .
+                </>
               ) : (
                 "No GitHub account is connected right now."
               )}
             </p>
             <p className="mt-4 flex items-start gap-3 text-[0.95rem] leading-relaxed text-[var(--ink)]/70">
               <RefreshCw size={18} strokeWidth={2.4} className="mt-0.5 shrink-0" />
-              Your GitHub data syncs on its own, in the background, after you sign in and on a regular refresh. There's no manual sync button because you don't
-              need one.
+              Your GitHub data syncs on its own, in the background, after you sign in and on a regular refresh. There&apos;s no manual sync
+              button because you don&apos;t need one.
             </p>
           </div>
         </Pin>

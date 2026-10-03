@@ -8,14 +8,41 @@ const hand = { fontFamily: "var(--f-hand)", fontWeight: 700 } as const;
 const pixel = { fontFamily: "var(--f-pixel)", fontWeight: 700 } as const;
 
 export type ArtId =
-  | "heart" | "bug" | "floppy" | "coffee" | "burst" | "lgtm" | "bubble" | "magnifier" | "play"
-  | "plane" | "rocket" | "fork" | "ticket" | "sparkle" | "seal" | "sun";
+  | "heart"
+  | "bug"
+  | "floppy"
+  | "coffee"
+  | "burst"
+  | "lgtm"
+  | "bubble"
+  | "magnifier"
+  | "play"
+  | "plane"
+  | "rocket"
+  | "fork"
+  | "ticket"
+  | "sparkle"
+  | "seal"
+  | "sun";
 
 /** Natural pixel size of each piece of art, used by the physics pile. */
 export const ART_SIZE: Record<ArtId, [number, number]> = {
-  heart: [96, 92], bug: [96, 104], floppy: [92, 92], coffee: [92, 100], burst: [116, 116], lgtm: [128, 70],
-  bubble: [188, 112], magnifier: [100, 100], play: [92, 92], plane: [112, 100], rocket: [78, 120], fork: [92, 96],
-  ticket: [176, 98], sparkle: [70, 70], seal: [150, 150], sun: [130, 130],
+  heart: [96, 92],
+  bug: [96, 104],
+  floppy: [92, 92],
+  coffee: [92, 100],
+  burst: [116, 116],
+  lgtm: [128, 70],
+  bubble: [188, 112],
+  magnifier: [100, 100],
+  play: [92, 92],
+  plane: [112, 100],
+  rocket: [78, 120],
+  fork: [92, 96],
+  ticket: [176, 98],
+  sparkle: [70, 70],
+  seal: [150, 150],
+  sun: [130, 130],
 };
 
 /** Original sticker illustrations. Flat colour, thick outline; add the .die-cut class at the call site for the white border. */
@@ -64,22 +91,33 @@ export function StickerArt({ id, className }: { id: ArtId; className?: string })
       )}
       {id === "burst" && (
         <g {...S}>
-          <path d="m58 4 9 16 17-8 2 19 19 3-10 16 14 13-18 7 4 19-19-3-5 18-14-13-14 13-5-18-19 3 4-19-18-7 14-13-10-16 19-3 2-19 17 8z" fill="#ffe36e" />
-          <text x="58" y="66" textAnchor="middle" fontSize="23" fill={INK} stroke="none" style={pixel}>FREE!</text>
+          <path
+            d="m58 4 9 16 17-8 2 19 19 3-10 16 14 13-18 7 4 19-19-3-5 18-14-13-14 13-5-18-19 3 4-19-18-7 14-13-10-16 19-3 2-19 17 8z"
+            fill="#ffe36e"
+          />
+          <text x="58" y="66" textAnchor="middle" fontSize="23" fill={INK} stroke="none" style={pixel}>
+            FREE!
+          </text>
         </g>
       )}
       {id === "lgtm" && (
         <g {...S}>
           <rect x="5" y="9" width="118" height="52" rx="14" fill="#2ee58f" />
-          <text x="48" y="44" textAnchor="middle" fontSize="27" fill={INK} stroke="none" style={pixel}>LGTM</text>
+          <text x="48" y="44" textAnchor="middle" fontSize="27" fill={INK} stroke="none" style={pixel}>
+            LGTM
+          </text>
           <path d="m88 36 8 8 16-18" strokeWidth="6" />
         </g>
       )}
       {id === "bubble" && (
         <g {...S}>
           <path d="M20 8h138a14 14 0 0 1 14 14v46a14 14 0 0 1-14 14H70L40 104V82H20A14 14 0 0 1 6 68V22A14 14 0 0 1 20 8z" fill="#fff" />
-          <text x="89" y="44" textAnchor="middle" fontSize="27" fill={INK} stroke="none" style={hand}>works on</text>
-          <text x="89" y="72" textAnchor="middle" fontSize="27" fill={INK} stroke="none" style={hand}>my machine</text>
+          <text x="89" y="44" textAnchor="middle" fontSize="27" fill={INK} stroke="none" style={hand}>
+            works on
+          </text>
+          <text x="89" y="72" textAnchor="middle" fontSize="27" fill={INK} stroke="none" style={hand}>
+            my machine
+          </text>
         </g>
       )}
       {id === "magnifier" && (
@@ -124,14 +162,18 @@ export function StickerArt({ id, className }: { id: ArtId; className?: string })
           <path d="M10 14h156v22a10 10 0 0 0 0 26v22H10V62a10 10 0 0 0 0-26z" fill="#fff" />
           <path d="M122 14v70" strokeDasharray="2 7" strokeWidth="2.6" />
           <rect x="10" y="14" width="108" height="14" fill="#ff7aa8" stroke="none" />
-          <text x="64" y="52" textAnchor="middle" fontSize="22" fill={INK} stroke="none" style={pixel}>ADMIT</text>
-          <text x="64" y="76" textAnchor="middle" fontSize="22" fill={INK} stroke="none" style={pixel}>ANYONE</text>
-          <text x="144" y="56" textAnchor="middle" fontSize="20" fill={INK} stroke="none" style={pixel}>№0</text>
+          <text x="64" y="52" textAnchor="middle" fontSize="22" fill={INK} stroke="none" style={pixel}>
+            ADMIT
+          </text>
+          <text x="64" y="76" textAnchor="middle" fontSize="22" fill={INK} stroke="none" style={pixel}>
+            ANYONE
+          </text>
+          <text x="144" y="56" textAnchor="middle" fontSize="20" fill={INK} stroke="none" style={pixel}>
+            №0
+          </text>
         </g>
       )}
-      {id === "sparkle" && (
-        <path {...S} d="M35 4C38 24 46 32 66 35 46 38 38 46 35 66 32 46 24 38 4 35 24 32 32 24 35 4z" fill="#ffe36e" />
-      )}
+      {id === "sparkle" && <path {...S} d="M35 4C38 24 46 32 66 35 46 38 38 46 35 66 32 46 24 38 4 35 24 32 32 24 35 4z" fill="#ffe36e" />}
       {id === "seal" && (
         <g>
           <defs>
@@ -144,8 +186,28 @@ export function StickerArt({ id, className }: { id: ArtId; className?: string })
               <textPath href={`#ring-${uid}`}>OPEN SOURCE ✦ OPEN MINDS ✦ OPEN SOURCE ✦ OPEN MINDS ✦</textPath>
             </text>
           </g>
-          {[[63, 63, 1], [75, 63, 0], [87, 63, 1], [63, 75, 0], [75, 75, 1], [87, 75, 0], [63, 87, 1], [75, 87, 0], [87, 87, 1]].map(([x, y, on]) => (
-            <rect key={`${x}-${y}`} x={x - 4.5} y={y - 4.5} width="9" height="9" rx="1.5" fill={on ? "#2ee58f" : "none"} stroke={on ? "none" : "#2ee58f"} strokeOpacity=".5" />
+          {[
+            [63, 63, 1],
+            [75, 63, 0],
+            [87, 63, 1],
+            [63, 75, 0],
+            [75, 75, 1],
+            [87, 75, 0],
+            [63, 87, 1],
+            [75, 87, 0],
+            [87, 87, 1],
+          ].map(([x, y, on]) => (
+            <rect
+              key={`${x}-${y}`}
+              x={x - 4.5}
+              y={y - 4.5}
+              width="9"
+              height="9"
+              rx="1.5"
+              fill={on ? "#2ee58f" : "none"}
+              stroke={on ? "none" : "#2ee58f"}
+              strokeOpacity=".5"
+            />
           ))}
         </g>
       )}

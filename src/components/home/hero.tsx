@@ -32,13 +32,17 @@ export function Hero() {
             <span className="mr-2 inline-block size-2 animate-pulse rounded-full bg-[var(--ink)]" />
             open to everyone
           </Badge>
-          <span className="hand -rotate-1 text-[1.55rem] leading-none text-[var(--butter)]">a student community at USAR · GGSIPU, Delhi</span>
+          <span className="hand -rotate-1 text-[1.55rem] leading-none text-[var(--butter)]">
+            a student community at USAR · GGSIPU, Delhi
+          </span>
         </motion.div>
 
         <h1 className="relative text-[clamp(3.3rem,15.5vw,5.6rem)] leading-[0.86] tracking-[-0.038em] sm:text-[clamp(4.2rem,10.2vw,10.2rem)]">
           <MaskLine delay={0.15}>Open Source,</MaskLine>
           <span className="mt-[0.08em] flex flex-wrap items-end gap-x-[0.2em]">
-            <MaskLine delay={0.28} className="!w-auto">Open</MaskLine>
+            <MaskLine delay={0.28} className="!w-auto">
+              Open
+            </MaskLine>
             <Ransom text="Minds." seed={2} delay={0.7} scale={0.84} className="-rotate-1 pb-[0.02em]" />
           </span>
 
@@ -55,17 +59,23 @@ export function Hero() {
           <p className="text-[1.18rem] leading-[1.55] text-[var(--text)]/85 sm:text-[1.28rem]">
             We read code, break it, fix it and give it back. UFC is where <Mark>curious students</Mark> become{" "}
             <Mark tone="var(--pink)">contributors</Mark> —{" "}
-            <span className="underline decoration-[var(--signal)] decoration-wavy decoration-2 underline-offset-[7px]">in public, together,</span>{" "}
+            <span className="underline decoration-[var(--signal)] decoration-wavy decoration-2 underline-offset-[7px]">
+              in public, together,
+            </span>{" "}
             and with nobody asking permission.
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-5">
             <a href="#join" onClick={go("join")} className="btn btn-signal lit">
               Join the network
-              <span className="disc"><ArrowRight size={15} strokeWidth={2.6} /></span>
+              <span className="disc">
+                <ArrowRight size={15} strokeWidth={2.6} />
+              </span>
             </a>
             <a href="#manifesto" onClick={go("manifesto")} className="btn btn-ghost">
               Read the manifesto
-              <span className="disc"><ArrowDown size={15} strokeWidth={2.6} /></span>
+              <span className="disc">
+                <ArrowDown size={15} strokeWidth={2.6} />
+              </span>
             </a>
           </div>
         </motion.div>

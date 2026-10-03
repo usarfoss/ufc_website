@@ -39,9 +39,20 @@ function Burst({ n }: { n: number }) {
           <motion.span
             key={i}
             className="absolute block"
-            style={{ width: 8 + (i % 3) * 3, height: 12 + (i % 2) * 6, background: CONFETTI[i % CONFETTI.length], borderRadius: i % 4 ? 2 : 99 }}
+            style={{
+              width: 8 + (i % 3) * 3,
+              height: 12 + (i % 2) * 6,
+              background: CONFETTI[i % CONFETTI.length],
+              borderRadius: i % 4 ? 2 : 99,
+            }}
             initial={{ x: 0, y: 0, rotate: 0, opacity: 1, scale: 1 }}
-            animate={{ x: Math.cos(a) * d, y: Math.sin(a) * d - 40 + 90, rotate: (i % 2 ? 1 : -1) * (200 + i * 22), opacity: 0, scale: 0.6 }}
+            animate={{
+              x: Math.cos(a) * d,
+              y: Math.sin(a) * d - 40 + 90,
+              rotate: (i % 2 ? 1 : -1) * (200 + i * 22),
+              opacity: 0,
+              scale: 0.6,
+            }}
             transition={{ duration: 1.1 + (i % 4) * 0.1, ease: [0.2, 0.7, 0.3, 1] }}
           />
         );
@@ -132,7 +143,9 @@ function Flyer() {
             >
               <span className="flex h-full flex-col items-center justify-between">
                 <span className="pixel text-xl [writing-mode:vertical-rl] rotate-180">{t.label}</span>
-                <span className="code text-[0.58rem] uppercase tracking-wider opacity-60 [writing-mode:vertical-rl] rotate-180">{t.note}</span>
+                <span className="code text-[0.58rem] uppercase tracking-wider opacity-60 [writing-mode:vertical-rl] rotate-180">
+                  {t.note}
+                </span>
                 <ArrowUpRight className="size-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </span>
             </a>
@@ -155,7 +168,9 @@ export function Join() {
           <p className="eyebrow mb-8">§ 07 — the invitation</p>
         </Reveal>
         <Pin r={-8} delay={0.3} className="absolute right-6 top-24 z-10 hidden md:block lg:right-[8%] lg:top-28" hint="drag me">
-          <Badge tone="butter" className="!text-base">no experience needed</Badge>
+          <Badge tone="butter" className="!text-base">
+            no experience needed
+          </Badge>
         </Pin>
         <Pin r={9} delay={0.45} className="absolute right-[18%] top-[16rem] z-10 hidden w-24 lg:block xl:w-32" hint="drag me">
           <Sticker src="/collage/ferris.webp" alt="Ferris, the Rust crab" className="aspect-[3/2] w-full" sizes="140px" />
@@ -194,7 +209,11 @@ export function Join() {
             </div>
             <p className="mt-16 text-sm text-[var(--ink)]/70">
               Already in?{" "}
-              <Link href="/login" className="lnk font-bold underline decoration-[var(--ink)]/40 decoration-2 underline-offset-4 hover:no-underline" style={{ ["--hl" as string]: "var(--butter)" }}>
+              <Link
+                href="/login"
+                className="lnk font-bold underline decoration-[var(--ink)]/40 decoration-2 underline-offset-4 hover:no-underline"
+                style={{ ["--hl" as string]: "var(--butter)" }}
+              >
                 Sign in with GitHub
               </Link>{" "}
               to see your dashboard and the leaderboard.

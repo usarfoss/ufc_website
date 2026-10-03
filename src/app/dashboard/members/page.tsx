@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Calendar, MapPin, Search } from "lucide-react";
 import { GithubIcon } from "@/components/ui/social-icons";
 import { Pin, Tape } from "@/components/home/scrap";
+import { useApi } from "@/components/dashboard/use-api";
 import { Avatar, Empty, ErrorPanel, Loading, PageHeader, Pager } from "@/components/dashboard/ui";
 
 interface Member {
@@ -24,35 +25,21 @@ const PER_PAGE = 20;
 const TAPES = ["butter", "pink", "sky", "lilac", "signal"] as const;
 const TILT = [-1.4, 1, -0.8, 1.5, -1.1, 0.8];
 
+type MembersResponse = { members?: Member[]; total?: number; totalPages?: number };
+
 export default function MembersPage() {
-  const [members, setMembers] = useState<Member[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [pages, setPages] = useState(0);
-
-  const fetchMembers = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const q = search ? `&search=${encodeURIComponent(search)}` : "";
-      const res = await fetch(`/api/dashboard/members?limit=${PER_PAGE}&offset=${(page - 1) * PER_PAGE}${q}`);
-      if (!res.ok) throw new Error("Failed to fetch members");
-      const data = await res.json();
-      setMembers(data.members || []);
-      setTotal(data.total || 0);
-      setPages(data.totalPages || 0);
-    } catch (err) {
-      console.error("Error fetching members:", err);
-      setError("We couldn't load the member list just now.");
-    } finally {
-      setLoading(false);
-    }
-  }, [page, search]);
-
-  useEffect(() => void fetchMembers(), [fetchMembers]);
+  const q = search ? `&search=${encodeURIComponent(search)}` : "";
+  const { data, error, loading, reload } = useApi<MembersResponse>(
+    `/api/dashboard/members?limit=${PER_PAGE}&offset=${(page - 1) * PER_PAGE}${q}`,
+    {
+      errorMessage: "We couldn't load the member list just now.",
+    },
+  );
+  const members = data?.members ?? [];
+  const total = data?.total ?? 0;
+  const pages = data?.totalPages ?? 0;
 
   return (
     <div className="space-y-10">
@@ -62,7 +49,11 @@ export default function MembersPage() {
         accent="people."
         tone="lilac"
         art="heart"
-        sub={total ? `${total} ${total === 1 ? "person" : "people"} building in the open together.` : "Everyone who has signed in, in one place."}
+        sub={
+          total
+            ? `${total} ${total === 1 ? "person" : "people"} building in the open together.`
+            : "Everyone who has signed in, in one place."
+        }
       >
         <label className="relative block w-full max-w-md">
           <span className="sr-only">Search members</span>
@@ -83,9 +74,13 @@ export default function MembersPage() {
       {loading ? (
         <Loading label="finding everyone" />
       ) : error ? (
-        <ErrorPanel title="Couldn't load members" message={error} onRetry={fetchMembers} />
+        <ErrorPanel title="Couldn't load members" message={error} onRetry={reload} />
       ) : members.length === 0 ? (
-        <Empty art="heart" title={search ? "Nobody found" : "No members yet"} body={search ? `Nobody matches "${search}". Try a different name.` : "Be the first one in."} />
+        <Empty
+          art="heart"
+          title={search ? "Nobody found" : "No members yet"}
+          body={search ? `Nobody matches "${search}". Try a different name.` : "Be the first one in."}
+        />
       ) : (
         <ul className="grid gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
           {members.map((m, i) => (
@@ -109,9 +104,15 @@ export default function MembersPage() {
 
                   <ul className="mt-4 space-y-1.5 text-[0.88rem] text-[var(--ink)]/65">
                     {m.location && (
-                      <li className="flex items-center gap-2"><MapPin size={14} strokeWidth={2.4} />{m.location}</li>
+                      <li className="flex items-center gap-2">
+                        <MapPin size={14} strokeWidth={2.4} />
+                        {m.location}
+                      </li>
                     )}
-                    <li className="flex items-center gap-2"><Calendar size={14} strokeWidth={2.4} />Joined {new Date(m.joinedAt).toLocaleDateString()}</li>
+                    <li className="flex items-center gap-2">
+                      <Calendar size={14} strokeWidth={2.4} />
+                      Joined {new Date(m.joinedAt).toLocaleDateString()}
+                    </li>
                   </ul>
 
                   {m.githubStats && (
@@ -121,7 +122,11 @@ export default function MembersPage() {
                         ["PRs", m.githubStats.pullRequests, "#ffe36e"],
                         ["issues", m.githubStats.issues, "#ffb3cf"],
                       ].map(([label, n, bg]) => (
-                        <div key={label as string} className="rounded-xl border-2 border-[var(--ink)] py-1.5 leading-none shadow-[2px_2px_0_var(--ink)]" style={{ background: bg as string }}>
+                        <div
+                          key={label as string}
+                          className="rounded-xl border-2 border-[var(--ink)] py-1.5 leading-none shadow-[2px_2px_0_var(--ink)]"
+                          style={{ background: bg as string }}
+                        >
                           <div className="text-[1.15rem] font-extrabold">{n}</div>
                           <div className="code mt-1 text-[0.58rem] font-bold uppercase tracking-widest text-[var(--ink)]/65">{label}</div>
                         </div>
@@ -145,7 +150,16 @@ export default function MembersPage() {
         </ul>
       )}
 
-      <Pager page={page} pages={pages} onChange={setPage} label={total ? `${(page - 1) * PER_PAGE + 1} to ${Math.min(page * PER_PAGE, total)} of ${total} members${search ? ` matching "${search}"` : ""}` : undefined} />
+      <Pager
+        page={page}
+        pages={pages}
+        onChange={setPage}
+        label={
+          total
+            ? `${(page - 1) * PER_PAGE + 1} to ${Math.min(page * PER_PAGE, total)} of ${total} members${search ? ` matching "${search}"` : ""}`
+            : undefined
+        }
+      />
     </div>
   );
 }

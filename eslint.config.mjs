@@ -1,17 +1,10 @@
-export default [
-  {
-    ignores: ['.next/**', 'node_modules/**', 'prisma/migrations/**', '**/*.{ts,tsx}'],
-  },
-  {
-    files: ['**/*.{js,mjs,cjs}'],
-    languageOptions: {
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
-    },
-  },
+import coreWebVitals from "eslint-config-next/core-web-vitals";
+import typescript from "eslint-config-next/typescript";
+
+const eslintConfig = [
+  { ignores: [".next/**", "node_modules/**", "prisma/migrations/**", ".private/**", "src/generated/**", "next-env.d.ts", "public/**"] },
+  ...coreWebVitals,
+  ...typescript,
 ];
+
+export default eslintConfig;

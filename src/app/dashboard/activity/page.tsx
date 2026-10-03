@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Activity, Calendar, GitCommit, GitPullRequest, type LucideIcon } from "lucide-react";
+import { useApi } from "@/components/dashboard/use-api";
 import { Avatar, Empty, ErrorPanel, Loading, PageHeader, Pager, TONE_BG, type DashTone } from "@/components/dashboard/ui";
 
 interface ActivityItem {
@@ -24,58 +25,44 @@ const KINDS: Record<string, { icon: LucideIcon; tone: DashTone }> = {
 
 const PER_PAGE = 20;
 
+type FeedResponse = { activities?: ActivityItem[]; total?: number };
+
 export default function ActivityPage() {
-  const [items, setItems] = useState<ActivityItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
+  const { data, error, loading, reload, refresh } = useApi<FeedResponse>(
+    `/api/dashboard/global-activities?limit=${PER_PAGE}&offset=${(page - 1) * PER_PAGE}`,
+    { timeoutMs: 30_000, errorMessage: "We couldn't load the activity feed just now." },
+  );
+  const items = data?.activities ?? [];
+  const total = data?.total ?? 0;
   const pages = Math.ceil(total / PER_PAGE);
 
-  const fetchActivities = useCallback(async () => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30_000);
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await fetch(`/api/dashboard/global-activities?limit=${PER_PAGE}&offset=${(page - 1) * PER_PAGE}`, { signal: controller.signal });
-      if (!res.ok) throw new Error("Failed to fetch activities");
-      const data = await res.json();
-      setItems(data.activities || []);
-      setTotal(data.total || 0);
-    } catch (err) {
-      if (err instanceof Error && err.name === "AbortError") setError("That took too long. Please try again.");
-      else {
-        console.error("Error fetching activities:", err);
-        setError("We couldn't load the activity feed just now.");
-      }
-    } finally {
-      clearTimeout(timeout);
-      setLoading(false);
-    }
-  }, [page]);
-
-  useEffect(() => void fetchActivities(), [fetchActivities]);
-
-  // Re-fetch when the server says the feed changed.
+  // Re-fetch (quietly) when the server says the feed changed.
   useEffect(() => {
     const stream = new EventSource("/api/stream/dashboard");
     const onVersions = (event: MessageEvent<string>) => {
       const payload = JSON.parse(event.data) as { versions?: { "activity-feed"?: number } };
-      if (payload.versions?.["activity-feed"] !== undefined) void fetchActivities();
+      if (payload.versions?.["activity-feed"] !== undefined) refresh();
     };
     stream.addEventListener("versions", onVersions);
     return () => stream.close();
-  }, [fetchActivities]);
+  }, [refresh]);
 
   return (
     <div className="space-y-10">
-      <PageHeader eyebrow="§ activity · what everyone's up to" title="Community" accent="activity." tone="mint" art="rocket" sub="Commits, pull requests and issues from across the club, as they happen." />
+      <PageHeader
+        eyebrow="§ activity · what everyone's up to"
+        title="Community"
+        accent="activity."
+        tone="mint"
+        art="rocket"
+        sub="Commits, pull requests and issues from across the club, as they happen."
+      />
 
       {loading ? (
         <Loading label="loading the feed" />
       ) : error ? (
-        <ErrorPanel title="Couldn't load the feed" message={error} onRetry={fetchActivities} />
+        <ErrorPanel title="Couldn't load the feed" message={error} onRetry={reload} />
       ) : items.length === 0 ? (
         <Empty art="rocket" title="No activity yet" body="Start contributing and it will show up here." />
       ) : (
@@ -85,15 +72,26 @@ export default function ActivityPage() {
             const Icon = kind.icon;
             const avatar = a.user?.avatar || (a.user?.githubUsername ? `https://github.com/${a.user.githubUsername}.png` : null);
             return (
-              <li key={`${a.id}-${a.timestamp}-${i}`} className="flex items-start gap-4 rounded-2xl border-[2.5px] border-[var(--ink)] bg-[var(--cream)] p-4 shadow-[4px_4px_0_var(--ink)] sm:p-5">
+              <li
+                key={`${a.id}-${a.timestamp}-${i}`}
+                className="flex items-start gap-4 rounded-2xl border-[2.5px] border-[var(--ink)] bg-[var(--cream)] p-4 shadow-[4px_4px_0_var(--ink)] sm:p-5"
+              >
                 <span className="relative shrink-0">
-                  {a.user ? <Avatar src={avatar} name={a.user.name} size={48} /> : (
-                    <span className="grid size-12 place-items-center rounded-full border-2 border-[var(--ink)]" style={{ background: TONE_BG[kind.tone] }}>
+                  {a.user ? (
+                    <Avatar src={avatar} name={a.user.name} size={48} />
+                  ) : (
+                    <span
+                      className="grid size-12 place-items-center rounded-full border-2 border-[var(--ink)]"
+                      style={{ background: TONE_BG[kind.tone] }}
+                    >
                       <Icon size={20} strokeWidth={2.4} />
                     </span>
                   )}
                   {a.user && (
-                    <span className="absolute -bottom-1 -right-1 grid size-6 place-items-center rounded-full border-2 border-[var(--ink)]" style={{ background: TONE_BG[kind.tone] }}>
+                    <span
+                      className="absolute -bottom-1 -right-1 grid size-6 place-items-center rounded-full border-2 border-[var(--ink)]"
+                      style={{ background: TONE_BG[kind.tone] }}
+                    >
                       <Icon size={12} strokeWidth={2.8} />
                     </span>
                   )}
@@ -109,12 +107,26 @@ export default function ActivityPage() {
                     {a.message}
                   </p>
                   <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                    {a.repo && <span className="code rounded-md border-2 border-[var(--ink)] px-1.5 text-[0.72rem] font-bold" style={{ background: TONE_BG[kind.tone] }}>{a.repo}</span>}
-                    {a.target && a.target !== a.repo && <span className="code rounded-md border-2 border-[var(--ink)] bg-white px-1.5 text-[0.72rem] font-bold">{a.target}</span>}
+                    {a.repo && (
+                      <span
+                        className="code rounded-md border-2 border-[var(--ink)] px-1.5 text-[0.72rem] font-bold"
+                        style={{ background: TONE_BG[kind.tone] }}
+                      >
+                        {a.repo}
+                      </span>
+                    )}
+                    {a.target && a.target !== a.repo && (
+                      <span className="code rounded-md border-2 border-[var(--ink)] bg-white px-1.5 text-[0.72rem] font-bold">
+                        {a.target}
+                      </span>
+                    )}
                     <span className="text-[0.85rem] text-[var(--ink)]/55">{a.time}</span>
                   </p>
                 </div>
-                <span className="code hidden shrink-0 rounded-full border-2 border-[var(--ink)] px-3 py-0.5 text-[0.68rem] font-bold uppercase tracking-widest sm:block" style={{ background: TONE_BG[kind.tone] }}>
+                <span
+                  className="code hidden shrink-0 rounded-full border-2 border-[var(--ink)] px-3 py-0.5 text-[0.68rem] font-bold uppercase tracking-widest sm:block"
+                  style={{ background: TONE_BG[kind.tone] }}
+                >
                   {a.type.replace("_", " ")}
                 </span>
               </li>
@@ -123,7 +135,12 @@ export default function ActivityPage() {
         </ul>
       )}
 
-      <Pager page={page} pages={pages} onChange={setPage} label={total ? `${(page - 1) * PER_PAGE + 1} to ${Math.min(page * PER_PAGE, total)} of ${total} activities` : undefined} />
+      <Pager
+        page={page}
+        pages={pages}
+        onChange={setPage}
+        label={total ? `${(page - 1) * PER_PAGE + 1} to ${Math.min(page * PER_PAGE, total)} of ${total} activities` : undefined}
+      />
     </div>
   );
 }

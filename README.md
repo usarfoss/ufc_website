@@ -1,5 +1,6 @@
 # 🟢 UFC – USAR FOSS Club
-> *“Build. Break. Collaborate. Repeat.”*  
+
+> _“Build. Break. Collaborate. Repeat.”_
 
 ![UFC Banner](./yohoho.jpeg)
 
@@ -8,46 +9,49 @@ We’re a **student-driven open-source community** at **University School of Aut
 
 ---
 
-## 🌐 About UFC  
+## 🌐 About UFC
 
 UFC is more than just a club - it’s a **community of developers, designers, and creators** who believe in **open knowledge and free learning**.
 
-### **What We Do**  
-- 🛠️ Build **real-world projects** & open-source tools  
-- 🌍 Contribute to the **global open-source ecosystem**  
-- ⚡ Host **Dev Nights, CTFs, DSA jams, and hackathons**  
-- 📈 Maintain a **GitHub-integrated leaderboard** for contributors  
-- 🎯 Focus on **peer-to-peer growth** with **rotating roles** → *no strict hierarchy*
+### **What We Do**
+
+- 🛠️ Build **real-world projects** & open-source tools
+- 🌍 Contribute to the **global open-source ecosystem**
+- ⚡ Host **Dev Nights, CTFs, DSA jams, and hackathons**
+- 📈 Maintain a **GitHub-integrated leaderboard** for contributors
+- 🎯 Focus on **peer-to-peer growth** with **rotating roles** → _no strict hierarchy_
 
 ---
 
-## 🚀 UFC Club Website  
+## 🚀 UFC Club Website
 
-Our website is the **central hub** for everything UFC:  
-- 📌 **Events & Roadmaps** → Upcoming workshops, hackathons, and meetups  
-- 🏆 **Leaderboard** → Track your GitHub contributions in real time  
-- 🧩 **Projects** → Discover, join, and showcase open-source projects  
-- 💬 **Community Spaces** → Discord, WhatsApp, and forums for discussions  
+Our website is the **central hub** for everything UFC:
+
+- 📌 **Events & Roadmaps** → Upcoming workshops, hackathons, and meetups
+- 🏆 **Leaderboard** → Track your GitHub contributions in real time
+- 🧩 **Projects** → Discover, join, and showcase open-source projects
+- 💬 **Community Spaces** → Discord, WhatsApp, and forums for discussions
 
 ---
 
-## 🧠 Projects & Events  
+## 🧠 Projects & Events
 
 We focus on **hands-on learning** through real contributions and challenges.
 
-### **Ongoing Projects**  
-| Project             | Tech Stack            | Status        | Description |
-|---------------------|-----------------------|---------------|-------------|
-| UFC Club Website    | Next.js, Tailwind, Node.js | 🚧 In Progress | Central hub for events, leaderboard, and contributions |
-| GitHub Leaderboard  | Node.js, MongoDB, GitHub API | 🟢 Active | Tracks UFC members’ contributions in real time |
-| Typing Arena        | React, WebSockets    | 🟢 Active    | Speed typing battles with live leaderboard |
-| Club Tools          | Mixed               | 🟡 Planned   | Internal tools like CTF platform, PR validators, dashboards |
+### **Ongoing Projects**
+
+| Project            | Tech Stack                   | Status         | Description                                                 |
+| ------------------ | ---------------------------- | -------------- | ----------------------------------------------------------- |
+| UFC Club Website   | Next.js, Tailwind, Node.js   | 🚧 In Progress | Central hub for events, leaderboard, and contributions      |
+| GitHub Leaderboard | Node.js, MongoDB, GitHub API | 🟢 Active      | Tracks UFC members’ contributions in real time              |
+| Typing Arena       | React, WebSockets            | 🟢 Active      | Speed typing battles with live leaderboard                  |
+| Club Tools         | Mixed                        | 🟡 Planned     | Internal tools like CTF platform, PR validators, dashboards |
 
 ---
 
-## 🤝 How to Contribute  
+## 🤝 How to Contribute
 
-We ❤️ contributions! Here’s how you can get started:  
+We ❤️ contributions! Here’s how you can get started:
 
 ```bash
 # 1. Fork the repo
@@ -61,11 +65,11 @@ git checkout -b feature-name
 # 4. Make your changes & commit
 git commit -m "Added: new feature"
 
-# 5. Push and open a PR 
+# 5. Push and open a PR
 git push origin feature-name
-````
+```
 
-🔹 Check our [CONTRIBUTING.md](./CONTRIBUTING.md) *(coming soon)* for contribution guidelines.
+🔹 Check our [CONTRIBUTING.md](./CONTRIBUTING.md) _(coming soon)_ for contribution guidelines.
 
 ---
 
@@ -80,8 +84,8 @@ We maintain a **live contribution tracker** powered by GitHub APIs.
 
 Stay connected with UFC across platforms:
 
-* 🟢 **WhatsApp Community:** [Join Here](https://chat.whatsapp.com/LecJGvvE67JAwPCa3scYqP)
-* 💬 **Discord Server:** [Join Here](https://discord.com/invite/7HrTYAUpdd)
+- 🟢 **WhatsApp Community:** [Join Here](https://chat.whatsapp.com/LecJGvvE67JAwPCa3scYqP)
+- 💬 **Discord Server:** [Join Here](https://discord.com/invite/7HrTYAUpdd)
 
 ---
 

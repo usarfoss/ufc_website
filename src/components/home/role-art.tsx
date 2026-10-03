@@ -32,7 +32,12 @@ export function RoleArt({ id, className }: { id: RoleId; className?: string }) {
       {id === "hardware" && (
         <g {...common}>
           <rect x="31" y="31" width="64" height="64" rx="8" fill={INK} opacity="0.22" />
-          <path d="M44 18v14M60 18v14M76 18v14M44 88v14M60 88v14M76 88v14M18 44h14M18 60h14M18 76h14M88 44h14M88 60h14M88 76h14" stroke="#ffb400" strokeWidth="6" strokeLinecap="butt" />
+          <path
+            d="M44 18v14M60 18v14M76 18v14M44 88v14M60 88v14M76 88v14M18 44h14M18 60h14M18 76h14M88 44h14M88 60h14M88 76h14"
+            stroke="#ffb400"
+            strokeWidth="6"
+            strokeLinecap="butt"
+          />
           <rect x="28" y="28" width="64" height="64" rx="8" fill="#2d3b33" />
           <circle cx="40" cy="40" r="4" fill="#ecefe4" stroke="none" />
           <path d="m64 40-14 22h10l-4 18 16-24H62z" fill="#2ee58f" />
@@ -42,8 +47,20 @@ export function RoleArt({ id, className }: { id: RoleId; className?: string }) {
         <g {...common}>
           <circle cx="63" cy="65" r="46" fill={INK} opacity="0.22" />
           <circle cx="58" cy="60" r="46" fill="#9bd7ff" />
-          <path d="M28 40 58 32M28 40 58 62M28 60 58 32M28 60 58 62M28 60 58 90M28 80 58 62M28 80 58 90M58 32 90 46M58 62 90 46M58 62 90 76M58 90 90 76" strokeWidth="2" />
-          {[[28, 40], [28, 60], [28, 80], [58, 32], [58, 62], [58, 90], [90, 46], [90, 76]].map(([x, y]) => (
+          <path
+            d="M28 40 58 32M28 40 58 62M28 60 58 32M28 60 58 62M28 60 58 90M28 80 58 62M28 80 58 90M58 32 90 46M58 62 90 46M58 62 90 76M58 90 90 76"
+            strokeWidth="2"
+          />
+          {[
+            [28, 40],
+            [28, 60],
+            [28, 80],
+            [58, 32],
+            [58, 62],
+            [58, 90],
+            [90, 46],
+            [90, 76],
+          ].map(([x, y]) => (
             <circle key={`${x}-${y}`} cx={x} cy={y} r="7" fill="#fff" />
           ))}
           <circle cx="90" cy="46" r="3.5" fill="#2ee58f" stroke="none" />
@@ -64,7 +81,12 @@ export function RoleArt({ id, className }: { id: RoleId; className?: string }) {
       )}
       {id === "people" && (
         <g {...common}>
-          <path d="M18 24h64a8 8 0 0 1 8 8v30a8 8 0 0 1-8 8H48l-14 14V70h-16a8 8 0 0 1-8-8V32a8 8 0 0 1 8-8z" fill={INK} opacity="0.22" transform="translate(5 5)" />
+          <path
+            d="M18 24h64a8 8 0 0 1 8 8v30a8 8 0 0 1-8 8H48l-14 14V70h-16a8 8 0 0 1-8-8V32a8 8 0 0 1 8-8z"
+            fill={INK}
+            opacity="0.22"
+            transform="translate(5 5)"
+          />
           <path d="M14 20h64a8 8 0 0 1 8 8v30a8 8 0 0 1-8 8H44L30 80V66H14a8 8 0 0 1-8-8V28a8 8 0 0 1 8-8z" fill="#ffb3cf" />
           <circle cx="30" cy="43" r="3.4" fill={INK} stroke="none" />
           <circle cx="46" cy="43" r="3.4" fill={INK} stroke="none" />
