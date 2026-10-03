@@ -1,0 +1,36 @@
+UFC Website
+Copyright 2025 USAR FOSS Club (UFC)
+University School of Automation and Robotics, GGSIPU
+https://github.com/usarfoss/ufc_website
+
+This product includes the source code, layout and design system of the UFC website,
+written by the members of UFC.
+
+If you reuse our code, components or design in your own project, please keep this
+NOTICE file with it (Apache License 2.0, section 4) and give us credit somewhere people
+can see it, for example in your README or site footer:
+
+    Built on the UFC website by USAR FOSS Club, https://github.com/usarfoss/ufc_website
+
+What the Apache License covers
+------------------------------
+The source code in this repository, including the React components, the scrapbook design
+system (src/components/home/home.css and the sticker, tape and polaroid components) and
+the original SVG artwork drawn for the site.
+
+What it does not cover
+----------------------
+1. Third party artwork. The open source mascots, logos and portraits used as stickers
+   (Tux, the GNU head, Ferris, the Go gopher, Wilber, Inkscape, Git, Ada Lovelace, Grace
+   Hopper, Margaret Hamilton and others) belong to their creators and keep their own
+   licenses. Every one is credited in third_party.md. Check the license there before you
+   reuse it.
+2. Company and organisation logos (public/logos). These are trademarks of their owners.
+3. Photos of our members, event photos and event posters (public/team-images,
+   public/about-images, public/event-images). They are not licensed for reuse. Please ask
+   us first.
+
+Third party software
+--------------------
+This project depends on open source packages that keep their own licenses. See
+package.json and the licenses shipped inside each package.

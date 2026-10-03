@@ -515,12 +515,6 @@ export const CREDITS: Credit[] = [
     href: "https://commons.wikimedia.org/wiki/File:OpenStreetMap-Logo-2006.svg",
   },
   {
-    what: "Raspberry Pi 2",
-    who: "Multicherry",
-    license: "CC BY-SA 4.0",
-    href: "https://commons.wikimedia.org/wiki/File:Raspberry_Pi_2_Model_B_v1.1_top_new_(bg_cut_out).jpg",
-  },
-  {
     what: "Kiwix logo",
     who: "The other Kiwix guy",
     license: "CC BY-SA 4.0",

@@ -1,0 +1,44 @@
+# Third party assets
+
+The UFC website code is under the [Apache License 2.0](./LICENSE). The images below were made by other people and keep their own licenses. We use them with credit, and you need to do the same if you reuse them. Click through to the source to read the exact terms before you copy anything.
+
+A note on edits: we resized these, cut the backgrounds out of some, and converted them to WebP. Under Creative Commons and the GPL, an edited copy carries the same license as the original. So the CC BY-SA and GPL images below are still CC BY-SA and GPL in the form they appear here.
+
+## Sticker wall and collage (`public/collage`)
+
+| File            | What it is                | Creator                                  | License                                                         | Source                                                                                                                          |
+| --------------- | ------------------------- | ---------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `ada.webp`      | Ada Lovelace, portrait    | Alfred Edward Chalon                     | Public domain                                                   | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ada_Lovelace_portrait.jpg)                                          |
+| `hopper.webp`   | Grace Hopper              | James S. Davis, U.S. Navy                | Public domain                                                   | [Wikimedia Commons](<https://commons.wikimedia.org/wiki/File:Commodore_Grace_M._Hopper,_USN_(covered).jpg>)                     |
+| `hamilton.webp` | Margaret Hamilton         | NASA / MIT, restored by Adam Cuerden     | Public domain                                                   | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Margaret_Hamilton_-_restoration.jpg)                                |
+| `tux.webp`      | Tux, the Linux mascot     | Larry Ewing, Simon Budig, Garrett LeSage | Free to use with credit to Larry Ewing and The GIMP             | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Tux.svg)                                                            |
+| `gnu.webp`      | The GNU head              | Aurelio A. Heckert                       | [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Heckert_GNU_white.svg)                                              |
+| `oshw.webp`     | Open Source Hardware gear | Mateo Zlatar / OSHWA                     | Public domain                                                   | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Open-source-hardware-logo.svg)                                      |
+| `arduino.webp`  | Arduino Uno               | SparkFun Electronics                     | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)       | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Arduino_Uno_-_R3.jpg)                                               |
+| `wilber.webp`   | Wilber, the GIMP mascot   | The GIMP Development Team / Gaaarg       | GPL                                                             | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Wilber-huge-alpha_cropped.png)                                      |
+| `kiki.webp`     | Kiki, the Krita mascot    | Tyson Tan                                | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Kiki_the_Cyber_Squirrel_mascot_of_Krita_cropped_square_profile.png) |
+| `ferris.webp`   | Ferris, the Rust crab     | Karen Rustad Tölva                       | [CC0](https://creativecommons.org/publicdomain/zero/1.0/)       | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Original_Ferris.svg)                                                |
+| `gopher.webp`   | The Go gopher             | Renee French                             | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)       | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Go_gopher_frontpage.png)                                            |
+| `git.webp`      | The Git logo              | Jason Long                               | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)       | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Git-logo.svg)                                                       |
+| `inkscape.webp` | The Inkscape logo         | Inkscape developers                      | Public domain                                                   | [Wikimedia Commons](<https://commons.wikimedia.org/wiki/File:Inkscape_logo_(2-colour).svg>)                                     |
+| `kicad.webp`    | The KiCad logo            | KiCad Developers Team                    | GPLv3                                                           | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:KiCad_logo_square.svg)                                              |
+| `osm.webp`      | The OpenStreetMap logo    | OpenStreetMap / TobWen / Gustavf         | [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:OpenStreetMap-Logo-2006.svg)                                        |
+
+## Logos of organisations (`public/logos`)
+
+These are trademarks of their owners. The files are from Wikimedia Commons where they are marked as public domain or freely licensed, but the trademark still belongs to the company. We show them only to say where our members have been, not to suggest that any of these organisations endorse UFC. Do not use them in a way that implies they endorse you.
+
+| File              | Organisation          | Creator                                       | License                                                         | Source                                                                                               |
+| ----------------- | --------------------- | --------------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `kiwix.webp`      | Kiwix                 | The other Kiwix guy                           | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Kiwix_logo_v3.svg)                       |
+| `gsoc.webp`       | Google Summer of Code | Google                                        | Public domain, trademark of Google                              | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Google_Summer_of_Code_sun_logo_2022.svg) |
+| `fossunited.webp` | FOSS United           | Jeswin Jose                                   | Public domain                                                   | [Wikimedia Commons](<https://commons.wikimedia.org/wiki/File:FOSS_United_Logo_(Black).svg>)          |
+| `zomato.webp`     | Zomato                | Zomato                                        | Public domain, trademark of Zomato                              | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Zomato.svg)                              |
+| `apple.webp`      | Apple                 | Rob Janoff                                    | Public domain, trademark of Apple                               | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Apple_logo_black.svg)                    |
+| `nsut-clear.webp` | NSUT                  | Unknown author                                | Public domain                                                   | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:NSUT_logo.png)                           |
+| `owasp.webp`      | OWASP                 | OWASP                                         | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:OWASP_black_logo.svg)                    |
+| `drdo.webp`       | DRDO                  | Defence Research and Development Organisation | Emblem and trademark of DRDO, Government of India               | [drdo.gov.in](https://www.drdo.gov.in)                                                               |
+
+## Fonts
+
+All fonts are loaded from Google Fonts through `next/font`, and are free under the [SIL Open Font License 1.1](https://openfontlicense.org): Bricolage Grotesque, Fraunces, DM Sans, Space Mono, Caveat and Pixelify Sans.
