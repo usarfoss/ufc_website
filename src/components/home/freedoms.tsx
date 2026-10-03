@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { motion, useMotionTemplate, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
+import { m, useMotionTemplate, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
 import { FREEDOMS, type Freedom } from "./data";
 import { EASE, MaskLine, Reveal } from "./motion-primitives";
 import { Badge, PostIt, Polaroid, Tape, useFinePointer } from "./scrap";
@@ -41,7 +41,7 @@ function Item({
   const fine = useFinePointer();
   const out = { opacity: 0, y: 140, rotate: r + 30, scale: 0.55 };
   return (
-    <motion.div
+    <m.div
       data-sticker
       className={`absolute ${fine && drag ? "cursor-grab active:cursor-grabbing" : ""}`}
       style={{ left: `${left}%`, top: `${top}%`, width: `${w}%`, zIndex: z }}
@@ -54,7 +54,7 @@ function Item({
       whileDrag={{ scale: 1.08, rotate: 0, zIndex: 60 }}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -76,9 +76,9 @@ function RunScene({ show }: { show: boolean }) {
         <StickerArt id="ticket" className="die-cut w-full" />
       </Item>
       <Item show={show} left={56} top={40} w={22} r={-8} z={4} delay={0.3}>
-        <motion.div animate={{ scale: [1, 1.14, 1] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}>
+        <m.div animate={{ scale: [1, 1.14, 1] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}>
           <StickerArt id="play" className="die-cut w-full" />
-        </motion.div>
+        </m.div>
       </Item>
       <Item show={show} left={40} top={64} w={55} r={3} z={5} delay={0.4}>
         <PostIt color="mint">
@@ -104,12 +104,12 @@ function StudyScene({ show }: { show: boolean }) {
         />
       </Item>
       <Item show={show} left={18} top={12} w={26} r={-10} z={6} delay={0.25} drag={false}>
-        <motion.div
+        <m.div
           animate={{ x: [0, 190, 90, 0], y: [0, 20, 80, 0], rotate: [-8, 10, -4, -8] }}
           transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
         >
           <StickerArt id="magnifier" className="die-cut w-full" />
-        </motion.div>
+        </m.div>
       </Item>
       <Item show={show} left={20} top={63} w={76} r={-2} z={4} delay={0.3}>
         <div className="paper code px-5 pb-5 pt-7 text-[0.78rem] leading-6">
@@ -164,13 +164,13 @@ function ShareScene({ show }: { show: boolean }) {
         <Badge tone="signal">pass it on</Badge>
       </Item>
       {show && (
-        <motion.div
+        <m.div
           className="pointer-events-none absolute z-[7] w-[15%]"
           animate={{ left: ["-18%", "108%"], top: ["72%", "34%", "52%", "8%"], rotate: [14, -14, 8, -20] }}
           transition={{ repeat: Infinity, duration: 10, ease: "easeInOut", repeatDelay: 1 }}
         >
           <StickerArt id="plane" className="die-cut w-full" />
-        </motion.div>
+        </m.div>
       )}
     </>
   );
@@ -200,7 +200,7 @@ function ImproveScene({ show }: { show: boolean }) {
         </div>
       </Item>
       <Item show={show} left={46} top={64} w={46} r={-11} z={6} delay={0.55} drag>
-        <motion.div
+        <m.div
           initial={false}
           animate={show ? { scale: [2.6, 1] } : { scale: 2.6 }}
           transition={{ delay: 0.7, duration: 0.35, ease: [0.2, 1.6, 0.4, 1] }}
@@ -208,17 +208,17 @@ function ImproveScene({ show }: { show: boolean }) {
           <Badge tone="butter" className="!text-lg">
             ✓ merged into main
           </Badge>
-        </motion.div>
+        </m.div>
       </Item>
       <Item show={show} left={76} top={0} w={18} r={10} z={5} delay={0.4} drag={false}>
-        <motion.div animate={{ y: [0, -20, 0], rotate: [-6, 6, -6] }} transition={{ repeat: Infinity, duration: 2.8, ease: "easeInOut" }}>
+        <m.div animate={{ y: [0, -20, 0], rotate: [-6, 6, -6] }} transition={{ repeat: Infinity, duration: 2.8, ease: "easeInOut" }}>
           <StickerArt id="rocket" className="die-cut w-full" />
-        </motion.div>
+        </m.div>
       </Item>
       <Item show={show} left={5} top={72} w={19} r={-10} z={5} delay={0.5}>
-        <motion.div animate={{ rotate: [0, 12, -12, 0] }} transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}>
+        <m.div animate={{ rotate: [0, 12, -12, 0] }} transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}>
           <StickerArt id="fork" className="die-cut w-full" />
-        </motion.div>
+        </m.div>
       </Item>
     </>
   );
@@ -228,10 +228,7 @@ const SCENE_BODY = [RunScene, StudyScene, ShareScene, ImproveScene];
 
 function Copy({ f, show }: { f: Freedom; show: boolean }) {
   return (
-    <motion.div
-      animate={show ? { opacity: 1, y: 0 } : { opacity: 0, y: 36 }}
-      transition={{ duration: 0.6, ease: EASE, delay: show ? 0.1 : 0 }}
-    >
+    <m.div animate={show ? { opacity: 1, y: 0 } : { opacity: 0, y: 36 }} transition={{ duration: 0.6, ease: EASE, delay: show ? 0.1 : 0 }}>
       <div className="flex items-end gap-5">
         <span className="serif die-num text-[clamp(5.2rem,16vw,15rem)] leading-[0.8]">{f.n}</span>
         <div className="pb-2 text-[clamp(2.2rem,5.4vw,5rem)] leading-none lg:pb-4">
@@ -256,7 +253,7 @@ function Copy({ f, show }: { f: Freedom; show: boolean }) {
           </li>
         ))}
       </ul>
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -317,13 +314,13 @@ function Stage() {
   return (
     <div ref={ref} className="relative" style={{ height: `${FREEDOMS.length * 85 + 15}vh` }}>
       <TornEdge color="var(--paper)" className="absolute inset-x-0 top-0 z-30 -translate-y-px" />
-      <div className="sticky top-0 h-[100svh] overflow-hidden">
+      <div className="cv-auto sticky top-0 h-[100svh] overflow-hidden">
         {FREEDOMS.map((f, i) => {
           const sc = SCENES[i];
           const Body = SCENE_BODY[i];
           const show = active === i;
           return (
-            <motion.div
+            <m.div
               key={f.n}
               className={`absolute inset-0 ${sc.pat}`}
               style={{ backgroundColor: sc.bg, clipPath: clips[i] ?? undefined, zIndex: i + 1 }}
@@ -345,7 +342,7 @@ function Stage() {
                       ))}
                     </div>
                     <div className="relative h-[3px] flex-1 bg-[var(--ink)]/20">
-                      <motion.div className="absolute inset-y-0 left-0 w-full origin-left bg-[var(--ink)]" style={{ scaleX: bar }} />
+                      <m.div className="absolute inset-y-0 left-0 w-full origin-left bg-[var(--ink)]" style={{ scaleX: bar }} />
                     </div>
                   </div>
                 </div>
@@ -353,7 +350,7 @@ function Stage() {
                   <Body show={show} />
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           );
         })}
       </div>

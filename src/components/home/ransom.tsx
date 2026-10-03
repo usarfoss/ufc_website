@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { m, useInView } from "framer-motion";
 
 type Face = "display" | "serif" | "pixel" | "hand" | "code";
 type Tile = { bg: string; face: Face; r: number; dy: number; clip: number };
@@ -75,7 +75,7 @@ export function Ransom({
         const t = tiles[i];
         const space = ch === " ";
         return (
-          <motion.span
+          <m.span
             key={`${ch}-${i}`}
             aria-hidden="true"
             className="relative inline-block select-none text-[#14140f]"
@@ -99,7 +99,7 @@ export function Ransom({
             }}
           >
             {space ? " " : ch}
-          </motion.span>
+          </m.span>
         );
       })}
     </span>

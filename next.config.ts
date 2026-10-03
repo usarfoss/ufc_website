@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
   // no `tsc` binary. Next's default CLI-based setup check looks for that binary, so tell it to use the API instead.
   experimental: { useTypeScriptCli: false },
   images: {
+    // AVIF is a lot smaller than WebP for the photos and posters; browsers that can't read it get WebP.
+    formats: ["image/avif", "image/webp"],
+    // Pictures only change when a file is renamed (that is how we bust the cache), so let browsers keep them for a month.
+    minimumCacheTTL: 60 * 60 * 24 * 30,
     remotePatterns: [
       {
         protocol: "https",

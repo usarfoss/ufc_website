@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { motion, useMotionValue, useMotionValueEvent, useScroll, useTransform, type MotionValue } from "framer-motion";
+import { m, useMotionValue, useMotionValueEvent, useScroll, useTransform, type MotionValue } from "framer-motion";
 import { Pin, Tape } from "./scrap";
 
 type Pt = { x: number; y: number };
@@ -23,10 +23,10 @@ function Knot({ y, tipY, x }: { y: number; tipY: MotionValue<number>; x: number 
   const on = useTransform(tipY, (v) => (v >= y - 4 ? 1 : 0));
   const scale = useTransform(on, (v) => (v ? 1 : 0.4));
   return (
-    <motion.g style={{ opacity: on, scale, transformOrigin: `${x}px ${y}px` }}>
+    <m.g style={{ opacity: on, scale, transformOrigin: `${x}px ${y}px` }}>
       <circle cx={x} cy={y} r="11" fill="#d6332c" stroke="#14140f" strokeWidth="2.5" />
       <circle cx={x - 3.5} cy={y - 3.5} r="3" fill="#fff" opacity=".65" />
-    </motion.g>
+    </m.g>
   );
 }
 
@@ -155,7 +155,7 @@ export function Thread({
             <Knot key={i} x={k.x} y={k.y} tipY={tipY} />
           ))}
           {/* the pencil: tip on the thread, body leaning up and to the right */}
-          <motion.g
+          <m.g
             style={{
               x: needleX,
               y: needleY,
@@ -191,7 +191,7 @@ export function Thread({
               {/* eraser */}
               <path d="M-10 -176 V-188 Q-10 -196 0 -196 Q10 -196 10 -188 V-176 Z" fill="#ffb3cf" />
             </g>
-          </motion.g>
+          </m.g>
         </svg>
       )}
       {children}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bricolage_Grotesque, Caveat, DM_Sans, Fraunces, Pixelify_Sans, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/app/providers";
+import { REVEAL_SCRIPT } from "@/components/home/reveal-script";
 
 // Landing-page type system: a chunky grotesque for display, a wonky soft serif for emphasis, a warm sans for reading, a quirky mono for labels.
 const bricolage = Bricolage_Grotesque({
@@ -13,7 +14,7 @@ const bricolage = Bricolage_Grotesque({
 const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["latin"],
-  style: ["normal", "italic"],
+  style: ["italic"], // only ever used in italic (the .serif class), so the upright file is never shipped
   axes: ["SOFT", "WONK", "opsz"],
 });
 
@@ -183,12 +184,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <noscript>
+          <style>{`[data-reveal="r"]{opacity:1!important;transform:none!important}[data-reveal="m"]>.mask-line{transform:none!important}`}</style>
+        </noscript>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       </head>
       <body
         className={`${bricolage.variable} ${fraunces.variable} ${dmSans.variable} ${spaceMono.variable} ${caveat.variable} ${pixelify.variable} antialiased`}
       >
         <AppProviders>{children}</AppProviders>
+        <script dangerouslySetInnerHTML={{ __html: REVEAL_SCRIPT }} />
       </body>
     </html>
   );

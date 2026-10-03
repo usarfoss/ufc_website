@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring } from "framer-motion";
+import { AnimatePresence, m, useMotionValueEvent, useScroll, useSpring } from "framer-motion";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import { LINKS, NAV_LINKS, SECTIONS } from "./data";
 import { Logo } from "./logo";
@@ -46,7 +46,7 @@ function MenuOverlay({ origin, onClose, onHome }: { origin: { x: number; y: numb
   };
 
   return (
-    <motion.div
+    <m.div
       data-lenis-prevent
       className="pat-dots fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-[var(--butter)] text-[var(--ink)]"
       initial={{ clipPath: `circle(0px at ${origin.x}px ${origin.y}px)` }}
@@ -60,7 +60,7 @@ function MenuOverlay({ origin, onClose, onHome }: { origin: { x: number; y: numb
       <div className="mx-auto grid min-h-full max-w-7xl gap-10 px-5 pb-12 pt-28 sm:px-8 sm:pt-32 lg:grid-cols-12 lg:items-center">
         <ul className="min-w-0 lg:col-span-7">
           {[{ label: "Home", href: "/" }, ...NAV_LINKS].map((l, i) => (
-            <motion.li
+            <m.li
               key={l.href}
               initial={{ opacity: 0, y: 60, rotate: 3 }}
               animate={{ opacity: 1, y: 0, rotate: 0 }}
@@ -80,22 +80,17 @@ function MenuOverlay({ origin, onClose, onHome }: { origin: { x: number; y: numb
                 </span>
                 <ArrowUpRight className="size-[0.55em] -translate-x-2 self-center opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100" />
               </Link>
-            </motion.li>
+            </m.li>
           ))}
         </ul>
 
         <div className="lg:col-span-5">
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="eyebrow mb-4 text-[var(--ink)]/60"
-          >
+          <m.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="eyebrow mb-4 text-[var(--ink)]/60">
             jump to a chapter
-          </motion.p>
+          </m.p>
           <ul className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
             {SECTIONS.map((s, i) => (
-              <motion.li
+              <m.li
                 key={s.id}
                 initial={{ opacity: 0, x: 24 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -110,11 +105,11 @@ function MenuOverlay({ origin, onClose, onHome }: { origin: { x: number; y: numb
                     {s.label}
                   </span>
                 </button>
-              </motion.li>
+              </m.li>
             ))}
           </ul>
 
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.85, duration: 0.6, ease: EASE }}
@@ -128,22 +123,22 @@ function MenuOverlay({ origin, onClose, onHome }: { origin: { x: number; y: numb
                 </span>
               </a>
             ))}
-          </motion.div>
+          </m.div>
         </div>
       </div>
 
       {/* decor */}
       <div className="pointer-events-none absolute bottom-6 right-6 hidden w-24 lg:block" aria-hidden="true">
-        <motion.div animate={{ y: [0, -14, 0], rotate: [6, 12, 6] }} transition={{ repeat: Infinity, duration: 3.4, ease: "easeInOut" }}>
+        <m.div animate={{ y: [0, -14, 0], rotate: [6, 12, 6] }} transition={{ repeat: Infinity, duration: 3.4, ease: "easeInOut" }}>
           <StickerArt id="rocket" className="die-cut w-full" />
-        </motion.div>
+        </m.div>
       </div>
       <div className="pointer-events-none absolute right-[6%] top-28 hidden w-24 lg:block" aria-hidden="true">
-        <motion.div animate={{ rotate: [-8, 8, -8] }} transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut" }}>
+        <m.div animate={{ rotate: [-8, 8, -8] }} transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut" }}>
           <StickerArt id="burst" className="die-cut w-full" />
-        </motion.div>
+        </m.div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -191,7 +186,7 @@ export function SiteNav() {
 
   return (
     <>
-      <motion.header
+      <m.header
         animate={{ y: hidden ? "-130%" : 0 }}
         transition={{ duration: 0.45, ease: EASE }}
         className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-6 sm:pt-4"
@@ -234,7 +229,7 @@ export function SiteNav() {
               return (
                 <li key={l.href} className={`relative ${"wide" in l ? "hidden lg:block" : ""}`}>
                   {active && (
-                    <motion.span
+                    <m.span
                       layoutId="nav-active"
                       className="absolute inset-0 rounded-xl border-2 border-[var(--ink)] bg-[var(--ink)] shadow-[3px_3px_0_var(--signal)]"
                       style={{ rotate: "-2deg" }}
@@ -258,7 +253,7 @@ export function SiteNav() {
                     </Link>
                   )}
                   {hovered === l.href && !active && (
-                    <motion.span
+                    <m.span
                       layoutId="nav-blob"
                       className="absolute inset-0 rounded-xl border-2 border-[var(--ink)] bg-[var(--butter)] shadow-[2px_2px_0_var(--ink)]"
                       style={{ rotate: "-2deg" }}
@@ -268,7 +263,7 @@ export function SiteNav() {
                   {/* a hand-written caption hangs under the link on hover */}
                   <AnimatePresence>
                     {hovered === l.href && (
-                      <motion.span
+                      <m.span
                         initial={{ opacity: 0, y: -6, rotate: -4 }}
                         animate={{ opacity: 1, y: 0, rotate: i % 2 ? 2 : -3 }}
                         exit={{ opacity: 0, y: -4 }}
@@ -284,7 +279,7 @@ export function SiteNav() {
                           />
                           <span className="hand">{l.hint}</span>
                         </span>
-                      </motion.span>
+                      </m.span>
                     )}
                   </AnimatePresence>
                 </li>
@@ -295,7 +290,7 @@ export function SiteNav() {
           <div className="flex items-center gap-2 justify-self-end sm:gap-3">
             <AnimatePresence mode="wait">
               {section && (
-                <motion.button
+                <m.button
                   key={section.id}
                   onClick={() => scrollToId(section.id)}
                   initial={{ opacity: 0, y: 14, rotate: -6 }}
@@ -308,7 +303,7 @@ export function SiteNav() {
                   <Badge tone="butter" className="!px-3 !py-1 !text-[0.78rem] !shadow-none">
                     §{section.n} · {section.label}
                   </Badge>
-                </motion.button>
+                </m.button>
               )}
             </AnimatePresence>
 
@@ -353,13 +348,13 @@ export function SiteNav() {
           </div>
 
           {/* reading progress, as a strip of tape along the bottom edge */}
-          <motion.span
+          <m.span
             aria-hidden="true"
             className="pointer-events-none absolute -bottom-[7px] left-5 right-5 h-[4px] origin-left rounded-full bg-[var(--signal)] shadow-[0_0_0_2px_var(--ink)]"
             style={{ scaleX: progress }}
           />
         </nav>
-      </motion.header>
+      </m.header>
 
       <AnimatePresence>{menuOpen && <MenuOverlay origin={origin} onClose={() => setMenuOpen(false)} onHome={onHome} />}</AnimatePresence>
     </>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Badge, Tape } from "@/components/home/scrap";
 import { StickerArt, type ArtId } from "@/components/home/sticker-art";
@@ -37,7 +37,7 @@ export function PageHeader({
   children?: ReactNode;
 }) {
   return (
-    <motion.header
+    <m.header
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, ease: EASE }}
@@ -55,7 +55,7 @@ export function PageHeader({
       </h1>
       {sub && <p className="mt-4 max-w-2xl text-[1.1rem] leading-[1.6] text-[var(--ink)]/75">{sub}</p>}
       {children && <div className="mt-6 flex flex-wrap items-center gap-3">{children}</div>}
-    </motion.header>
+    </m.header>
   );
 }
 
@@ -142,13 +142,13 @@ export function Loading({ label = "fetching the good stuff" }: { label?: string 
   return (
     <div className="grid place-items-center py-24" role="status" aria-live="polite">
       <div className="text-center">
-        <motion.div
+        <m.div
           className="mx-auto w-20"
           animate={{ y: [0, -14, 0], rotate: [-6, 6, -6] }}
           transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
         >
           <StickerArt id="rocket" className="die-cut w-full" />
-        </motion.div>
+        </m.div>
         <p className="hand mt-4 text-[1.8rem] leading-none text-[var(--ink)]/70">{label}…</p>
       </div>
     </div>
@@ -260,7 +260,7 @@ export function Modal({
   return (
     <AnimatePresence>
       {open && (
-        <motion.div
+        <m.div
           data-lenis-prevent
           className="fixed inset-0 z-[70] grid place-items-center overflow-y-auto bg-[rgba(9,12,10,0.65)] p-4 backdrop-blur-sm"
           initial={{ opacity: 0 }}
@@ -271,7 +271,7 @@ export function Modal({
           aria-modal="true"
           aria-label={title}
         >
-          <motion.div
+          <m.div
             initial={{ y: 40, rotate: -2, scale: 0.95, opacity: 0 }}
             animate={{ y: 0, rotate: -0.6, scale: 1, opacity: 1 }}
             exit={{ y: 20, scale: 0.97, opacity: 0 }}
@@ -291,8 +291,8 @@ export function Modal({
               </span>
             </h2>
             <div className="mt-6">{children}</div>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </AnimatePresence>
   );
@@ -320,7 +320,7 @@ export function useToast() {
   const node = (
     <AnimatePresence>
       {msg && (
-        <motion.div
+        <m.div
           key={msg.id}
           role="status"
           initial={{ y: 40, opacity: 0, rotate: 3 }}
@@ -332,7 +332,7 @@ export function useToast() {
           <Badge tone={msg.ok ? "signal" : "pink"} className="!block !rounded-2xl !px-5 !py-3 !text-[0.9rem] !normal-case !leading-snug">
             {msg.text}
           </Badge>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

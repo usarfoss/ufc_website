@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Crown, Search, TrendingUp, Users } from "lucide-react";
 import { useAuth } from "@/features/auth/auth-provider";
 import { GithubIcon } from "@/components/ui/social-icons";
@@ -69,7 +69,7 @@ function PodiumSlot({ row, def, by }: { row?: Row; def: (typeof PODIUM)[number];
   return (
     <div className={`${def.order} flex min-w-0 flex-col items-center`}>
       {row ? (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.55 + (def.place === 1 ? 0.15 : 0), type: "spring", stiffness: 140, damping: 14 }}
@@ -79,7 +79,7 @@ function PodiumSlot({ row, def, by }: { row?: Row; def: (typeof PODIUM)[number];
           <Avatar src={row.avatar} name={row.name} size={def.place === 1 ? 92 : 72} className="shadow-[3px_3px_0_var(--ink)]" />
           <p className="mt-3 w-full truncate text-[clamp(1rem,1.8vw,1.35rem)] font-extrabold leading-tight">{row.name}</p>
           {row.githubUsername && <p className="code w-full truncate text-[0.7rem] font-bold text-[var(--ink)]/55">@{row.githubUsername}</p>}
-        </motion.div>
+        </m.div>
       ) : (
         <div className="flex w-full flex-col items-center px-1 text-center">
           <span className="grid size-16 place-items-center rounded-full border-2 border-dashed border-[var(--ink)]/45 text-2xl font-extrabold text-[var(--ink)]/40">
@@ -347,7 +347,7 @@ export default function LeaderboardPage() {
                     const mine = isMe(r);
                     const medal = r.place <= 3 ? MEDAL_BG[r.place] : undefined;
                     return (
-                      <motion.li
+                      <m.li
                         key={r.id}
                         layout="position"
                         initial={{ opacity: 0, x: -16 }}
@@ -421,7 +421,7 @@ export default function LeaderboardPage() {
                             />
                           </div>
                         </div>
-                      </motion.li>
+                      </m.li>
                     );
                   })}
                 </ol>

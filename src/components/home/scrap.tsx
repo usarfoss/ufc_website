@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore, type ReactNode } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 const FINE_POINTER = "(hover: hover) and (pointer: fine)";
 const subscribeFine = (notify: () => void) => {
@@ -59,7 +59,7 @@ export function Pin({
   const fine = useFinePointer();
   const canDrag = drag && fine;
   return (
-    <motion.div
+    <m.div
       data-sticker
       onDragStartCapture={(e) => e.preventDefault()}
       className={`${className ?? ""} ${canDrag ? "cursor-grab active:cursor-grabbing" : ""}`}
@@ -76,7 +76,7 @@ export function Pin({
       title={canDrag ? hint : undefined}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }
 

@@ -721,3 +721,101 @@ html.lenis body {
     animation: none;
   }
 }
+
+/* Scroll reveals. Plain CSS so they never wait for JavaScript; reveal-script.ts adds data-in. */
+[data-reveal="r"] {
+  opacity: 0;
+  transform: translateY(var(--ry, 28px));
+  transition:
+    opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) var(--rd, 0s),
+    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) var(--rd, 0s);
+}
+[data-reveal="r"][data-in] {
+  opacity: 1;
+  transform: none;
+}
+.mask-line {
+  display: block;
+  transform: translateY(112%);
+}
+.mask-line-now {
+  animation: ufc-mask 1.1s cubic-bezier(0.16, 1, 0.3, 1) var(--md, 0s) both;
+}
+@keyframes ufc-mask {
+  from {
+    transform: translateY(112%);
+  }
+  to {
+    transform: none;
+  }
+}
+[data-reveal="m"][data-in] > .mask-line {
+  transform: none;
+  transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1) var(--md, 0s);
+}
+/* People who ask their device for less motion get the content with no sliding. */
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal="r"] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .mask-line,
+  [data-reveal="m"][data-in] > .mask-line {
+    transform: none;
+    transition: none;
+  }
+  .mask-line-now,
+  .enter,
+  .enter-fade {
+    animation: none;
+  }
+}
+/* No IntersectionObserver: just show everything. */
+html[data-no-io] [data-reveal="r"] {
+  opacity: 1;
+  transform: none;
+}
+html[data-no-io] [data-reveal="m"] > .mask-line {
+  transform: none;
+}
+
+/* Entrance for first-screen content, driven by CSS so it plays before React has loaded. */
+.enter {
+  animation: ufc-enter var(--dur, 0.8s) cubic-bezier(0.16, 1, 0.3, 1) var(--d, 0s) both;
+}
+@keyframes ufc-enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--y, 14px));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.enter-fade {
+  animation: ufc-fade var(--dur, 1s) ease var(--d, 0s) both;
+}
+@keyframes ufc-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Things nobody can see stop costing anything.
+   - Sections scrolled off screen (data-off, set by HomeShell) pause their CSS animations.
+   - .cv-auto skips rendering a heavy, fixed-size block (a pinned stage, a sticker pile) while it is off screen. Unlike
+     `visibility: hidden` the content stays in the accessibility tree and the tab order, and nothing about the layout changes. */
+[data-off],
+[data-off] *,
+[data-off] *::before,
+[data-off] *::after {
+  animation-play-state: paused !important;
+}
+.cv-auto {
+  content-visibility: auto;
+}

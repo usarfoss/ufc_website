@@ -78,29 +78,42 @@ export function Team() {
     const el = board.current;
     if (!el) return;
     let raf = 0;
-    let visible = true;
-    const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
-    io.observe(el);
+    // Only touch the SVG when a string really moved. Rewriting an unchanged path still makes the browser repaint it, and these
+    // strings span the whole wall, so doing that sixty times a second was the single most expensive thing on the page.
+    // Positions snap to a quarter pixel, far below anything the eye can see, so a card's gentle sway doesn't count as movement.
+    const snap = (n: number) => Math.round(n * 4) / 4;
+    const last: string[] = [];
+    const draw = () => {
+      const br = el.getBoundingClientRect();
+      const pts = Array.from(el.querySelectorAll<HTMLElement>("[data-pin]")).map((p) => {
+        const r = p.getBoundingClientRect();
+        return { x: snap(r.left + r.width / 2 - br.left), y: snap(r.top + r.height / 2 - br.top) };
+      });
+      STRINGS.forEach(([a, b], i) => {
+        const A = pts[a];
+        const B = pts[b];
+        if (!A || !B) return;
+        const dist = Math.hypot(A.x - B.x, A.y - B.y);
+        const d = `M${A.x} ${A.y} Q${snap((A.x + B.x) / 2)} ${snap((A.y + B.y) / 2 + Math.min(70, dist * 0.14))} ${B.x} ${B.y}`;
+        if (last[i] === d) return;
+        last[i] = d;
+        paths.current[i]?.setAttribute("d", d); // shadow
+        paths.current[i + STRINGS.length]?.setAttribute("d", d); // string
+      });
+    };
     const loop = () => {
-      if (visible) {
-        const br = el.getBoundingClientRect();
-        const pts = Array.from(el.querySelectorAll<HTMLElement>("[data-pin]")).map((p) => {
-          const r = p.getBoundingClientRect();
-          return { x: r.left + r.width / 2 - br.left, y: r.top + r.height / 2 - br.top };
-        });
-        STRINGS.forEach(([a, b], i) => {
-          const A = pts[a];
-          const B = pts[b];
-          if (!A || !B) return;
-          const dist = Math.hypot(A.x - B.x, A.y - B.y);
-          const d = `M${A.x.toFixed(1)} ${A.y.toFixed(1)} Q${((A.x + B.x) / 2).toFixed(1)} ${((A.y + B.y) / 2 + Math.min(70, dist * 0.14)).toFixed(1)} ${B.x.toFixed(1)} ${B.y.toFixed(1)}`;
-          paths.current[i]?.setAttribute("d", d); // shadow
-          paths.current[i + STRINGS.length]?.setAttribute("d", d); // string
-        });
-      }
+      draw();
       raf = requestAnimationFrame(loop);
     };
-    raf = requestAnimationFrame(loop);
+    // Only redraw while the board is on screen; off screen there is no loop at all.
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !raf) raf = requestAnimationFrame(loop);
+      else if (!e.isIntersecting) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    });
+    io.observe(el);
     return () => {
       cancelAnimationFrame(raf);
       io.disconnect();

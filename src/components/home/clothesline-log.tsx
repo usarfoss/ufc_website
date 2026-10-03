@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useScroll, useSpring, useTransform, useVelocity, type MotionValue } from "framer-motion";
+import { m, useScroll, useSpring, useTransform, useVelocity, type MotionValue } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { COMMITS, type Commit } from "./data";
 import { StickerArt } from "./sticker-art";
@@ -75,7 +75,7 @@ function HangingCard({ c, i, sway, d }: { c: Commit; i: number; sway: MotionValu
           animationDelay: `${-i * 0.9}s`,
         }}
       >
-        <motion.div
+        <m.div
           style={{ rotate: rot, transformOrigin: "50% 0" }}
           whileHover={{ scale: 1.04, zIndex: 20 }}
           transition={{ type: "spring", stiffness: 300, damping: 18 }}
@@ -113,7 +113,7 @@ function HangingCard({ c, i, sway, d }: { c: Commit; i: number; sway: MotionValu
               ))}
             </ul>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     </div>
   );
@@ -195,7 +195,7 @@ export function ClotheslineLog() {
   return (
     <section ref={ref} className="relative" style={{ height: travel + vp.h }}>
       <TornEdge color="var(--paper)" className="absolute inset-x-0 top-0 z-30" />
-      <div className="sticky top-0 h-[100svh] overflow-hidden bg-[linear-gradient(to_bottom,#6cbcff,#bfe3ff_58%,#e6f4ff)] text-[var(--ink)]">
+      <div className="cv-auto sticky top-0 h-[100svh] overflow-hidden bg-[linear-gradient(to_bottom,#6cbcff,#bfe3ff_58%,#e6f4ff)] text-[var(--ink)]">
         <Clouds />
 
         <div className="absolute right-[4%] top-[4.6rem] z-[5] w-16 sm:w-28 xl:w-36">
@@ -213,7 +213,7 @@ export function ClotheslineLog() {
         </div>
 
         {/* the clothesline */}
-        <motion.div
+        <m.div
           className="absolute left-0 z-10"
           style={{ x, top: vp.w < 640 ? "clamp(190px, 27vh, 240px)" : "clamp(215px, 29vh, 285px)", width: TRACK_W }}
         >
@@ -243,13 +243,13 @@ export function ClotheslineLog() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </m.div>
 
         {/* scroll progress */}
         <div className="absolute inset-x-0 bottom-5 z-20 mx-auto flex max-w-7xl items-center gap-4 px-5 sm:px-8">
           <span className="hand text-xl">keep scrolling →</span>
           <div className="relative h-[3px] flex-1 bg-[var(--ink)]/20">
-            <motion.div className="absolute inset-y-0 left-0 w-full origin-left bg-[var(--ink)]" style={{ scaleX: bar }} />
+            <m.div className="absolute inset-y-0 left-0 w-full origin-left bg-[var(--ink)]" style={{ scaleX: bar }} />
           </div>
           <span className="code text-xs">
             {LOG[0].date.split(" ").pop()} → {LOG[LOG.length - 1].date.split(" ").pop()}

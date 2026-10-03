@@ -37,7 +37,7 @@ export function OrgLogo({ logo, org, height = 64 }: { logo?: Logo; org: string; 
       width={Math.round(height * RATIO[logo])}
       height={height}
       className="w-auto object-contain drop-shadow-[0_6px_6px_rgba(20,20,15,0.28)]"
-      style={{ height }}
+      style={{ height, width: "auto" }}
       draggable={false}
     />
   );

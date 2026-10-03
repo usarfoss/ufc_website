@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { ArrowUpRight, Check, Copy } from "lucide-react";
 import { LINKS } from "./data";
 import { MaskLine, Reveal } from "./motion-primitives";
@@ -36,7 +36,7 @@ function Burst({ n }: { n: number }) {
         const a = (i / 22) * Math.PI * 2 + (i % 3) * 0.2;
         const d = 70 + (i % 5) * 26;
         return (
-          <motion.span
+          <m.span
             key={i}
             className="absolute block"
             style={{

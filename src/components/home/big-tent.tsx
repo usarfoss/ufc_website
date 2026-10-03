@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { ROLES, type Role } from "./data";
 import { EASE, MaskLine, Reveal } from "./motion-primitives";
 import { RoleArt } from "./role-art";
@@ -12,7 +12,7 @@ const MARK = { mint: "#9af2c6", pink: "var(--pink)", lilac: "var(--lilac)", butt
 
 function RoleNote({ role }: { role: Role }) {
   return (
-    <motion.div
+    <m.div
       key={role.id}
       initial={{ opacity: 0, y: 40, rotate: -5, scale: 0.94 }}
       animate={{ opacity: 1, y: 0, rotate: -1.2, scale: 1 }}
@@ -59,7 +59,7 @@ function RoleNote({ role }: { role: Role }) {
       {/* the mascots of this tribe */}
       <div className="pointer-events-none absolute -bottom-14 right-3 flex items-end sm:right-8" aria-hidden="true">
         {role.stickers.map((src, i) => (
-          <motion.div
+          <m.div
             key={src}
             className="die-cut relative -ml-3 size-[4.4rem] sm:size-[5.4rem]"
             initial={{ opacity: 0, y: 40, scale: 0.4, rotate: 0 }}
@@ -67,10 +67,10 @@ function RoleNote({ role }: { role: Role }) {
             transition={{ type: "spring", stiffness: 160, damping: 11, delay: 0.35 + i * 0.1 }}
           >
             <Image src={`/collage/${src}.webp`} alt="" fill sizes="90px" className="object-contain" draggable={false} />
-          </motion.div>
+          </m.div>
         ))}
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 

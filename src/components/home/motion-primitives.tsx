@@ -1,9 +1,13 @@
-"use client";
-
-import { useRef, type ElementType, type ReactNode } from "react";
-import { motion, useInView } from "framer-motion";
+import type { CSSProperties, ElementType, ReactNode } from "react";
 
 export const EASE = [0.16, 1, 0.3, 1] as const;
+
+/**
+ * Reveal and MaskLine are plain markup plus CSS (see home.css). A tiny inline script in the root layout
+ * (reveal-script.ts) adds `data-in` once they scroll into view. They never wait for React or framer-motion,
+ * so the words are on screen as soon as the HTML and CSS arrive, even on a slow phone.
+ * The script can add `data-in` before React hydrates, hence suppressHydrationWarning on the two wrappers.
+ */
 
 /** Fades and lifts its children in once, when they scroll into view. */
 export function Reveal({
@@ -18,15 +22,14 @@ export function Reveal({
   className?: string;
 }) {
   return (
-    <motion.div
+    <div
+      data-reveal="r"
+      suppressHydrationWarning
       className={className}
-      initial={{ opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-12% 0px" }}
-      transition={{ duration: 0.9, delay, ease: EASE }}
+      style={{ ["--rd" as string]: `${delay}s`, ["--ry" as string]: `${y}px` } as CSSProperties}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 
@@ -45,21 +48,16 @@ export function MaskLine({
   /** Wait for scroll-into-view instead of animating on mount. */
   inView?: boolean;
 }) {
-  // Observe the (unclipped) wrapper: the sliding child starts fully outside its own mask,
-  // so an observer on it would never see it intersect.
-  const ref = useRef<HTMLElement>(null);
-  const seen = useInView(ref, { once: true, margin: "-10% 0px" });
-  const shown = inView ? seen : true;
+  // The wrapper (never moved) is what gets observed: the sliding child starts fully outside its own mask.
   return (
-    <Tag ref={ref} className={`block overflow-hidden pb-[0.12em] -mb-[0.12em] ${className ?? ""}`}>
-      <motion.span
-        className="block"
-        initial={{ y: "112%" }}
-        animate={{ y: shown ? 0 : "112%" }}
-        transition={{ duration: 1.1, delay, ease: EASE }}
-      >
+    <Tag
+      data-reveal={inView ? "m" : undefined}
+      suppressHydrationWarning
+      className={`block overflow-hidden pb-[0.12em] -mb-[0.12em] ${className ?? ""}`}
+    >
+      <span className={`mask-line ${inView ? "" : "mask-line-now"}`} style={{ ["--md" as string]: `${delay}s` } as CSSProperties}>
         {children}
-      </motion.span>
+      </span>
     </Tag>
   );
 }

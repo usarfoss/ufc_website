@@ -1,15 +1,18 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState } from "react";
 import { Activity, Calendar, GitCommit, GitPullRequest, Star, Trophy, type LucideIcon } from "lucide-react";
 import { useAuth } from "@/features/auth/auth-provider";
 import { useApi } from "@/components/dashboard/use-api";
 import GitHubHeatmap from "@/components/ui/github-heatmap";
-import LeetCodeHeatmap from "@/components/ui/leetcode-heatmap";
 import { GithubIcon } from "@/components/ui/social-icons";
 import { Pin, Tape } from "@/components/home/scrap";
 import { Avatar, Empty, ErrorPanel, InkPanel, Loading, PageHeader, Pager, Panel, pageRange } from "@/components/dashboard/ui";
 import { TONE_BG, type Tone } from "@/data/tones";
+
+// d3 is only needed by members who have linked LeetCode, so it is fetched when that card renders rather than with the page.
+const LeetCodeHeatmap = dynamic(() => import("@/components/ui/leetcode-heatmap"), { ssr: false });
 
 interface Stat {
   value: string;

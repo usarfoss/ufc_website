@@ -204,11 +204,11 @@ export const TEAM: Member[] = [
     focus: "50% 38%",
   },
   {
-    name: "Harshit",
-    role: "Tech Lead",
-    img: "/team-images/harshit.jpg",
-    line: "“I dont care.” (He cares deeply. About everything.)",
-    focus: "50% 22%",
+    name: "Moksh",
+    role: "Oldie",
+    img: "/team-images/moksh.jpg",
+    line: "Trained a model to predict his wake-up time. Accuracy: 0%.",
+    focus: "50% 20%",
   },
   {
     name: "Mridul",
@@ -246,13 +246,12 @@ export const TEAM: Member[] = [
     focus: "50% 10%",
   },
   {
-    name: "Meyank",
-    role: "Operations Lead",
-    img: "/team-images/meyank.jpg",
-    line: "Keeps the whole club organised. Cannot explain his own desktop.",
-    focus: "50% 15%",
+    name: "Piyush Gupta",
+    role: "Oldie",
+    img: "/team-images/piyush.jpg",
+    line: "Legend says he once closed an issue by deleting the issue.",
+    focus: "50% 25%",
   },
-
   // oldies
   {
     name: "Dhruv Sharma",
@@ -297,18 +296,26 @@ export const TEAM: Member[] = [
     focus: "50% 35%",
   },
   {
-    name: "Piyush Gupta",
-    role: "Oldie",
-    img: "/team-images/piyush.jpg",
-    line: "Legend says he once closed an issue by deleting the issue.",
-    focus: "50% 25%",
+    name: "Meyank",
+    role: "Operations Lead",
+    img: "/team-images/meyank.jpg",
+    line: "Keeps the whole club organised. Cannot explain his own desktop.",
+    focus: "50% 15%",
+  },
+
+  {
+    name: "Harshit",
+    role: "Tech Lead",
+    img: "/team-images/harshit.jpg",
+    line: "“I dont care.” (He cares deeply. About everything.)",
+    focus: "50% 22%",
   },
   {
-    name: "Moksh",
+    name: "Gursimar Singh",
     role: "Oldie",
-    img: "/team-images/moksh.jpg",
-    line: "Trained a model to predict his wake-up time. Accuracy: 0%.",
-    focus: "50% 20%",
+    img: "/team-images/gursimar.jpg",
+    line: "Now ships code at Zomato. The delivery is always on time.",
+    focus: "50% 35%",
   },
 ];
 

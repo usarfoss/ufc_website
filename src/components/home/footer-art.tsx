@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useAnimationControls } from "framer-motion";
+import { m, useAnimationControls } from "framer-motion";
 import { Ransom } from "./ransom";
 import { StickerArt } from "./sticker-art";
 
@@ -17,7 +17,7 @@ export function FooterArt() {
 
   return (
     <div className="relative">
-      <motion.button
+      <m.button
         onClick={launch}
         animate={controls}
         whileHover={{ y: -6, rotate: -4 }}
@@ -28,7 +28,7 @@ export function FooterArt() {
         <span className="hand absolute left-1/2 top-full mt-1 hidden w-28 -translate-x-1/2 -rotate-3 text-center text-xl leading-none text-[var(--butter)] sm:block">
           back to the top ↑
         </span>
-      </motion.button>
+      </m.button>
 
       <div className="pointer-events-none select-none overflow-hidden pt-16 text-center" aria-hidden="true">
         <div className="-mb-[0.12em] text-[clamp(7rem,30vw,28rem)] leading-[0.8]">

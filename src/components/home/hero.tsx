@@ -1,9 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { ArrowDown, ArrowRight } from "lucide-react";
 import { HeroBackdrop } from "./hero-backdrop";
-import { EASE, MaskLine } from "./motion-primitives";
+import { MaskLine } from "./motion-primitives";
 import { HeroPile } from "./hero-pile";
 import { Ransom } from "./ransom";
 import { Badge, Mark, Scribble } from "./scrap";
@@ -20,11 +19,9 @@ export function Hero() {
       <HeroBackdrop />
 
       <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col justify-end px-5 pb-[14rem] pt-28 sm:px-8 sm:pb-44 sm:pt-32 lg:pb-28">
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1, ease: EASE }}
-          className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2"
+        <div
+          className="enter mb-6 flex flex-wrap items-center gap-x-4 gap-y-2"
+          style={{ ["--d" as string]: "0.1s", ["--y" as string]: "14px" }}
         >
           <Badge tone="signal" className="!px-3.5 !py-1 !text-[0.78rem]">
             <span className="mr-2 inline-block size-2 animate-pulse rounded-full bg-[var(--ink)]" />
@@ -33,7 +30,7 @@ export function Hero() {
           <span className="hand -rotate-1 text-[1.55rem] leading-none text-[var(--butter)]">
             a student community at USAR · GGSIPU, Delhi
           </span>
-        </motion.div>
+        </div>
 
         <h1 className="relative text-[clamp(3.3rem,15.5vw,5.6rem)] leading-[0.86] tracking-[-0.038em] sm:text-[clamp(4.2rem,10.2vw,10.2rem)]">
           <MaskLine delay={0.15}>Open Source,</MaskLine>
@@ -47,12 +44,10 @@ export function Hero() {
           <StickerArt id="sparkle" className="twinkle pointer-events-none absolute right-[30%] top-[80%] hidden w-[0.2em] sm:block" />
         </h1>
 
-        <motion.div
+        <div
           data-pile-avoid
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.9, ease: EASE }}
-          className="mt-8 max-w-[33rem] lg:mt-10"
+          className="enter mt-8 max-w-[33rem] lg:mt-10"
+          style={{ ["--d" as string]: "0.9s", ["--y" as string]: "24px", ["--dur" as string]: "0.9s" }}
         >
           <p className="text-[1.18rem] leading-[1.55] text-[var(--text)]/85 sm:text-[1.28rem]">
             We read code, break it, fix it and give it back. UFC is where <Mark>curious students</Mark> become{" "}
@@ -76,21 +71,19 @@ export function Hero() {
               </span>
             </a>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* Stickers fall in from the top and pile up along the floor. */}
       <HeroPile />
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2.6, duration: 1 }}
-        className="hand pointer-events-none absolute right-6 top-[34%] z-[7] hidden flex-col items-center text-[1.7rem] text-[var(--butter)] lg:flex xl:right-14"
+      <div
+        className="enter-fade hand pointer-events-none absolute right-6 top-[34%] z-[7] hidden flex-col items-center text-[1.7rem] text-[var(--butter)] lg:flex xl:right-14"
+        style={{ ["--d" as string]: "2.6s" }}
       >
         <span className="max-w-[10rem] -rotate-3 text-center leading-none">go on, grab a sticker and throw it!</span>
         <Scribble dir="down" className="mt-1 h-14 w-16" />
-      </motion.div>
+      </div>
     </section>
   );
 }
