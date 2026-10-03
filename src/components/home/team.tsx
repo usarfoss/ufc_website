@@ -31,12 +31,12 @@ function PushPin({ tone }: { tone: string }) {
 /** "HELLO my name is", the conference sticker, hand-lettered. */
 function NameTag({ first }: { first: string }) {
   return (
-    <div className="absolute -bottom-3 -right-2 z-10 w-[5.3rem] rotate-[5deg] sm:-bottom-4 sm:-right-4 sm:w-[7rem] overflow-hidden rounded-md bg-white shadow-[0_10px_16px_-6px_rgba(0,0,0,0.6)] ring-1 ring-black/25">
-      <div className="bg-[#e5372f] px-2 pb-1 pt-1.5 text-center text-white">
-        <p className="pixel text-[0.7rem] leading-none tracking-wider sm:text-[0.95rem]">HELLO</p>
-        <p className="text-[0.4rem] font-semibold uppercase tracking-[0.16em] sm:text-[0.5rem]">my name is</p>
+    <div className="absolute -bottom-2 -right-1.5 z-10 w-[3.7rem] rotate-[5deg] sm:-bottom-4 sm:-right-4 sm:w-[7rem] overflow-hidden rounded-md bg-white shadow-[0_10px_16px_-6px_rgba(0,0,0,0.6)] ring-1 ring-black/25">
+      <div className="bg-[#e5372f] px-1 pb-0.5 pt-1 text-center text-white sm:px-2 sm:pb-1 sm:pt-1.5">
+        <p className="pixel text-[0.5rem] leading-none tracking-wider sm:text-[0.95rem]">HELLO</p>
+        <p className="text-[0.28rem] font-semibold uppercase tracking-[0.14em] sm:text-[0.5rem]">my name is</p>
       </div>
-      <p className="hand px-0.5 py-0.5 text-center text-[1.1rem] leading-none text-[#1b2a8a] sm:px-1 sm:py-1 sm:text-[1.5rem]">{first}</p>
+      <p className="hand px-0.5 py-0.5 text-center text-[0.85rem] leading-none text-[#1b2a8a] sm:px-1 sm:py-1 sm:text-[1.5rem]">{first}</p>
     </div>
   );
 }
@@ -153,11 +153,11 @@ export function Team() {
 
               {/* extras to fill the wall */}
               <Pin r={-2} delay={0.1} className="relative" z={3} hint="drag me">
-                <div className="paper relative px-5 pb-6 pt-8 text-center">
+                <div className="paper relative px-3 pb-5 pt-7 text-center [container-type:inline-size] sm:px-5 sm:pb-6 sm:pt-8">
                   <Tape tone="signal" className="-top-3 left-1/2 -translate-x-1/2" rotate={-2} />
-                  <p className="pixel text-4xl leading-none tracking-wide">WANTED</p>
-                  <p className="serif mt-2 text-[2.6rem] leading-none text-[var(--signal-deep)]">you.</p>
-                  <p className="code mt-3 text-[0.7rem] leading-snug text-black/65">
+                  <p className="pixel whitespace-nowrap text-[23cqw] leading-none tracking-normal sm:text-4xl sm:tracking-wide">WANTED</p>
+                  <p className="serif mt-2 text-[30cqw] leading-none text-[var(--signal-deep)] sm:text-[2.6rem]">you.</p>
+                  <p className="code mt-3 text-[0.62rem] sm:text-[0.7rem] leading-snug text-black/65">
                     contributors of every kind
                     <br />
                     reward: your name in <span className="font-bold">git blame</span>
@@ -180,14 +180,14 @@ export function Team() {
               </Pin>
 
               <div className="relative flex min-h-[11rem] items-center justify-center md:col-span-3 lg:col-span-3">
-                <Pin r={-8} delay={0.35} className="absolute left-[4%] top-[6%] w-28" hint="drag me">
+                <Pin r={-8} delay={0.35} className="absolute left-[4%] top-[6%] w-14 sm:w-28" hint="drag me">
                   <Sticker src="/collage/wilber.webp" alt="Wilber, the GIMP mascot" className="aspect-square w-full" sizes="120px" />
                 </Pin>
-                <Pin r={9} delay={0.45} className="absolute left-[34%] top-[24%] w-32" hint="drag me">
+                <Pin r={9} delay={0.45} className="absolute left-[44%] top-[30%] w-16 sm:left-[34%] sm:top-[24%] sm:w-32" hint="drag me">
                   <Sticker src="/collage/ferris.webp" alt="Ferris, the Rust crab" className="aspect-[3/2] w-full" sizes="140px" />
                 </Pin>
-                <Pin r={-4} delay={0.5} className="absolute bottom-[4%] left-[62%]" hint="drag me">
-                  <Badge tone="butter" className="!text-sm">now hiring: you</Badge>
+                <Pin r={-4} delay={0.5} className="absolute bottom-[4%] left-[8%] sm:left-[62%]" hint="drag me">
+                  <Badge tone="butter" className="!px-2.5 !py-1 !text-[0.62rem] sm:!px-4 sm:!py-1.5 sm:!text-sm">now hiring: you</Badge>
                 </Pin>
               </div>
             </div>
