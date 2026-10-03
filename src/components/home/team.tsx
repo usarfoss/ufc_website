@@ -28,7 +28,7 @@ function PushPin({ tone }: { tone: string }) {
   );
 }
 
-/** "HELLO my name is" — the conference sticker, hand-lettered. */
+/** "HELLO my name is", the conference sticker, hand-lettered. */
 function NameTag({ first }: { first: string }) {
   return (
     <div className="absolute -bottom-3 -right-2 z-10 w-[5.3rem] rotate-[5deg] sm:-bottom-4 sm:-right-4 sm:w-[7rem] overflow-hidden rounded-md bg-white shadow-[0_10px_16px_-6px_rgba(0,0,0,0.6)] ring-1 ring-black/25">
@@ -105,19 +105,18 @@ export function Team() {
         <div className="mb-14 grid items-end gap-8 lg:mb-20 lg:grid-cols-12">
           <div className="lg:col-span-8">
             <Reveal>
-              <p className="eyebrow mb-8 text-[var(--signal)]">§ 05 — the maintainers</p>
+              <p className="eyebrow mb-8 text-[var(--signal)]">§ 05 — the core leads</p>
             </Reveal>
             <h2 className="text-[clamp(2.6rem,7vw,6.5rem)] font-semibold leading-[0.95] tracking-[-0.055em]">
               <MaskLine inView>The humans behind the</MaskLine>
               <span className="mt-[0.06em] block">
-                <Ransom text="commits." seed={7} delay={0.2} scale={0.88} />
+                <Ransom text="community." seed={7} delay={0.2} scale={0.88} />
               </span>
             </h2>
           </div>
           <Reveal delay={0.15} className="lg:col-span-4">
             <p className="max-w-sm leading-relaxed text-[var(--text-dim)]">
-              The students who keep the lights on, the repo green and the group chat (mostly) on topic. Follow the red string — it
-              all connects.
+              The students who keep this community alive.
             </p>
           </Reveal>
         </div>
@@ -125,7 +124,7 @@ export function Team() {
         {/* The wall */}
         <div className="relative">
           <div className="hand pointer-events-none absolute -top-[4.6rem] left-[calc(50%+6rem)] hidden items-end gap-2 text-2xl text-[var(--butter)] md:flex">
-            <Scribble variant="curl" className="mb-1 h-9 w-11 -scale-x-100 rotate-[200deg]" />
+            <Scribble dir="down-left" flip className="mb-1 h-9 w-12" />
             <span className="max-w-[14rem] -rotate-2 leading-none">yes, the photos are draggable. yes, the string follows.</span>
           </div>
 
@@ -173,7 +172,7 @@ export function Team() {
               <Pin r={-4} delay={0.3} className="relative" z={4} hint="drag me">
                 <PostIt color="lilac" className="min-h-[11rem]">
                   <Tape tone="pink" className="-top-3 left-1/2 -translate-x-1/2" rotate={3} />
-                  psst — we accept pull requests for this wall, too.{" "}
+                  psst, we accept pull requests for this wall, too.{" "}
                   <a href={LINKS.github} target="_blank" rel="noopener noreferrer" className="lnk underline decoration-2 underline-offset-2 hover:no-underline" style={{ ["--hl" as string]: "#fff" }}>
                     github ↗
                   </a>

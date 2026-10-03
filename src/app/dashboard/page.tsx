@@ -1,351 +1,202 @@
 "use client";
 
-import React from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Activity, Calendar, GitCommit, GitPullRequest, Star, Trophy, type LucideIcon } from "lucide-react";
 import { useAuth } from "@/features/auth/auth-provider";
-import { 
-  GitCommit, 
-  GitPullRequest, 
-  Users, 
-  Calendar,
-  Star,
-  Activity,
-  Trophy
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import AdvancedPagination from '@/components/ui/advanced-pagination';
-import GitCommandsLoader from '@/components/ui/git-commands-loader';
-import GitHubHeatmap from '@/components/ui/github-heatmap';
-import LeetCodeHeatmap from '@/components/ui/leetcode-heatmap';
-import { GithubIcon } from '@/components/ui/social-icons';
+import GitHubHeatmap from "@/components/ui/github-heatmap";
+import LeetCodeHeatmap from "@/components/ui/leetcode-heatmap";
+import { GithubIcon } from "@/components/ui/social-icons";
+import { Pin, Tape } from "@/components/home/scrap";
+import { Avatar, Empty, ErrorPanel, InkPanel, Loading, PageHeader, Pager, Panel, TONE_BG, type DashTone } from "@/components/dashboard/ui";
 
-interface DashboardStats {
-  totalCommits: {
-    value: string;
-    change: string;
-    icon: string;
-    color: string;
-  };
-  pullRequests: {
-    value: string;
-    change: string;
-    icon: string;
-    color: string;
-  };
-  leaderboardRank: {
-    value: string;
-    change: string;
-    icon: string;
-    color: string;
-  };
+interface Stat {
+  value: string;
+  change: string;
+  icon: string;
+  color: string;
 }
-
+interface DashboardStats {
+  totalCommits: Stat;
+  pullRequests: Stat;
+  leaderboardRank: Stat;
+}
 interface RecentActivity {
   type: string;
   message: string;
   repo: string;
   time: string;
-  user?: {
-    name: string;
-    githubUsername?: string;
-  };
+  user?: { name: string; githubUsername?: string };
 }
 
-const DashboardPage = React.memo(function DashboardPage() {
+const ICONS: Record<string, LucideIcon> = { GitCommit, GitPullRequest, Trophy, Star };
+const STAT_META: Record<keyof DashboardStats, { label: string; tone: DashTone }> = {
+  totalCommits: { label: "Total commits", tone: "mint" },
+  pullRequests: { label: "Pull requests", tone: "butter" },
+  leaderboardRank: { label: "Leaderboard rank", tone: "pink" },
+};
+
+const ACTIVITY: Record<string, { icon: LucideIcon; tone: DashTone }> = {
+  commit: { icon: GitCommit, tone: "mint" },
+  pull_request: { icon: GitPullRequest, tone: "butter" },
+  event_join: { icon: Calendar, tone: "lilac" },
+  issue: { icon: Activity, tone: "pink" },
+};
+
+const LeetCodeMark = () => (
+  <svg className="size-6 text-[#ffa116]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z" />
+  </svg>
+);
+
+export default function DashboardPage() {
   const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
+  const [recent, setRecent] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [activitiesLoading, setActivitiesLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalActivities, setTotalActivities] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-  const ITEMS_PER_PAGE = 10;
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const PER_PAGE = 10;
+  const pages = Math.ceil(total / PER_PAGE);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  useEffect(() => {
-    fetchActivities();
-  }, [currentPage]);
-
-  const fetchDashboardData = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-
-      const statsResponse = await fetch('/api/dashboard/stats');
-
-      if (!statsResponse.ok) {
-        throw new Error('Failed to fetch dashboard data');
-      }
-
-      const statsData = await statsResponse.json();
-      
-      setStats(statsData.stats);
+      const res = await fetch("/api/dashboard/stats");
+      if (!res.ok) throw new Error("Failed to fetch dashboard data");
+      setStats((await res.json()).stats);
     } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-      setError('Failed to load dashboard data');
+      console.error("Error fetching dashboard data:", err);
+      setError("We couldn't load your dashboard just now.");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchActivities = async () => {
+  const fetchActivities = useCallback(async () => {
     try {
       setActivitiesLoading(true);
-      const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-      const activitiesResponse = await fetch(`/api/dashboard/activities?limit=${ITEMS_PER_PAGE}&offset=${offset}`);
-
-      if (!activitiesResponse.ok) {
-        throw new Error('Failed to fetch activities');
-      }
-
-      const activitiesData = await activitiesResponse.json();
-      setRecentActivity(activitiesData.activities || []);
-      setTotalActivities(activitiesData.total || 0);
-      setTotalPages(Math.ceil((activitiesData.total || 0) / ITEMS_PER_PAGE));
+      const res = await fetch(`/api/dashboard/activities?limit=${PER_PAGE}&offset=${(page - 1) * PER_PAGE}`);
+      if (!res.ok) throw new Error("Failed to fetch activities");
+      const data = await res.json();
+      setRecent(data.activities || []);
+      setTotal(data.total || 0);
     } catch (err) {
-      console.error('Error fetching activities:', err);
+      console.error("Error fetching activities:", err);
     } finally {
       setActivitiesLoading(false);
     }
-  };
+  }, [page]);
 
+  useEffect(() => void fetchStats(), [fetchStats]);
+  useEffect(() => void fetchActivities(), [fetchActivities]);
 
-  const getIconComponent = (iconName: string) => {
-    switch (iconName) {
-      case 'GitCommit': return GitCommit;
-      case 'GitPullRequest': return GitPullRequest;
-      case 'Trophy': return Trophy;
-      case 'Star': return Star;
-      default: return Activity;
-    }
-  };
+  const first = user?.name?.split(" ")[0] || "friend";
+  const avatar = user?.image || (user?.githubUsername ? `https://github.com/${user.githubUsername}.png` : null);
 
+  if (loading) return <Loading />;
+  if (error) return <ErrorPanel title="Something went sideways" message={error} onRetry={fetchStats} />;
 
-  if (loading) {
-    return <GitCommandsLoader />;
-  }
-
-  if (error) {
-    return (
-      <div className="space-y-6">
-        <div className="bg-red-900/20 backdrop-blur-sm border border-red-500/30 rounded-lg p-6">
-          <h2 className="text-xl font-bold text-red-400 mb-2">Error Loading Dashboard</h2>
-          <p className="text-gray-400">{error}</p>
-          <button 
-            onClick={fetchDashboardData}
-            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!stats) {
-    return (
-      <div className="space-y-6">
-        <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
-          <h1 className="text-3xl font-bold text-[#0B874F] mb-2">
-            Welcome back, {user?.name?.split(' ')[0] || 'Developer'}!
-          </h1>
-          <p className="text-gray-400">
-            No data available. Please check back later.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const statsArray = [
-    stats.totalCommits,
-    stats.pullRequests,
-    stats.leaderboardRank
-  ];
+  const statKeys = stats ? (Object.keys(STAT_META) as (keyof DashboardStats)[]).filter((k) => stats[k]) : [];
 
   return (
-    <div className="space-y-8">
-      {/* Welcome Header */}
-      <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6 text-center">
-        <div className="w-24 h-24 mx-auto mb-4 bg-[#0B874F]/20 rounded-full flex items-center justify-center overflow-hidden">
-          {user?.image ? (
-            <img src={user.image} alt={user.name || 'User'} className="w-full h-full object-cover" />
+    <div className="space-y-12">
+      <PageHeader eyebrow="§ overview · your dashboard" title="Welcome back," accent={`${first}.`} tone="butter" art="fork" sub="Here's what's been happening with your contributions.">
+        {user?.githubUsername && (
+          <a href={`https://github.com/${user.githubUsername}`} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-ink">
+            <GithubIcon className="size-4" />@{user.githubUsername}
+          </a>
+        )}
+      </PageHeader>
+
+      {/* identity + stats */}
+      <div className="grid items-start gap-8 lg:grid-cols-12">
+        <Pin r={-2.5} drag={false} className="lg:col-span-3">
+          <figure className="polaroid relative mx-auto max-w-[15rem]">
+            <Tape tone="pink" className="-top-3 left-1/2 -translate-x-1/2" rotate={-3} />
+            <Avatar src={avatar} name={user?.name} size={216} className="!size-auto aspect-square w-full !rounded-none !border-0" />
+            <figcaption className="hand px-1 pb-2 pt-2 text-[1.5rem] leading-none">{user?.name ?? "you"}</figcaption>
+          </figure>
+        </Pin>
+
+        <div className="grid gap-6 sm:grid-cols-3 lg:col-span-9">
+          {stats ? (
+            statKeys.map((k, i) => {
+              const s = stats[k];
+              const Icon = ICONS[s.icon] ?? Activity;
+              const meta = STAT_META[k];
+              return (
+                <Pin key={k} r={[-1.6, 1.4, -1][i % 3]} drag={false} delay={i * 0.08}>
+                  <div className="paper relative px-6 pb-6 pt-9">
+                    <Tape tone={(["signal", "butter", "pink"] as const)[i % 3]} className="-top-3 left-1/2 -translate-x-1/2" rotate={-2} />
+                    <span className="absolute -right-3 -top-5 grid size-12 rotate-6 place-items-center rounded-2xl border-2 border-[var(--ink)] shadow-[3px_3px_0_var(--ink)]" style={{ background: TONE_BG[meta.tone] }}>
+                      <Icon size={22} strokeWidth={2.4} />
+                    </span>
+                    <p className="serif text-[clamp(3.4rem,5.4vw,5rem)] leading-[0.9]">{s.value}</p>
+                    <p className="code mt-3 text-[0.72rem] font-bold uppercase tracking-widest text-[var(--ink)]/60">{meta.label}</p>
+                  </div>
+                </Pin>
+              );
+            })
           ) : (
-            <span className="text-[#0B874F] text-3xl font-bold">
-              {user?.name?.charAt(0) || user?.email?.charAt(0) || 'D'}
-            </span>
+            <Panel className="sm:col-span-3">
+              <p className="text-[1.05rem]">No numbers yet. Your GitHub data syncs in the background after you sign in, so check back in a little while.</p>
+            </Panel>
           )}
         </div>
-        <h1 className="text-4xl font-bold text-white mb-2">
-          Welcome back, <span className="text-[#0B874F]">{user?.name?.split(' ')[0] || 'Developer'}</span>! 👋
-        </h1>
-        <p className="text-gray-300 text-lg mb-2">
-          Here's what's happening with your contributions.
-        </p>
-        {user?.githubUsername && (
-          <p className="text-gray-400">@{user.githubUsername}</p>
-        )}
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {statsArray.map((stat, index) => {
-          const Icon = getIconComponent(stat.icon);
-          return (
-            <div
-              key={index}
-              className="group bg-gradient-to-br from-black/60 to-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-xl p-6 hover:border-[#0B874F]/60 hover:shadow-lg hover:shadow-[#0B874F]/20 transition-all duration-300 hover:scale-105"
-            >
-              <div className="flex items-center mb-4">
-                <div
-                  className="p-3 rounded-xl group-hover:scale-110 transition-transform duration-300"
-                  style={{ backgroundColor: `${stat.color}20` }}
-                >
-                  <Icon className="w-6 h-6" style={{ color: stat.color }} />
-                </div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-white mb-1 group-hover:text-[#0B874F] transition-colors duration-300">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
-                  {Object.keys(stats)[index].replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {/* heatmaps */}
+      {user?.githubUsername && <GitHubHeatmap username={user.githubUsername} />}
+      {user?.leetcodeUsername && (
+        <InkPanel title="LeetCode submissions" icon={<LeetCodeMark />}>
+          <LeetCodeHeatmap username={user.leetcodeUsername} />
+        </InkPanel>
+      )}
 
-      {/* Heatmaps Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* GitHub Heatmap */}
-        {user?.githubUsername && (
-          <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-white mb-4 flex items-center">
-              <GithubIcon className="w-5 h-5 mr-2 text-[#0B874F]" />
-              GitHub Contributions
-            </h2>
-            <GitHubHeatmap username={user.githubUsername} />
-          </div>
-        )}
-
-        {/* LeetCode Heatmap */}
-        {user?.leetcodeUsername && (
-          <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-white mb-4 flex items-center">
-              <svg className="w-5 h-5 mr-2 text-[#ffa116]" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/>
-              </svg>
-              LeetCode Submissions
-            </h2>
-            <LeetCodeHeatmap username={user.leetcodeUsername} />
-          </div>
-        )}
-      </div>
-
-      {/* Recent Activity */}
-      <div className="bg-black/40 backdrop-blur-sm border border-[#0B874F]/30 rounded-lg p-6">
-          <div className="flex items-center mb-6">
-            <h2 className="text-xl font-bold text-white flex items-center">
-              <Activity className="w-5 h-5 mr-2 text-[#0B874F]" />
-              Recent Activity
-            </h2>
-          </div>
-          
-          {activitiesLoading ? (
-            <div className="py-12">
-              <GitCommandsLoader />
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {recentActivity.length > 0 ? (
-              recentActivity.map((activity, index) => (
-                <div
-                  key={index}
-                  className="flex items-start space-x-4 p-4 bg-black/30 rounded-lg border border-[#0B874F]/20"
-                >
-                  <div className="flex-shrink-0">
-                    {activity.type === "commit" && (
-                      <div className="w-8 h-8 bg-[#0B874F]/20 rounded-full flex items-center justify-center">
-                        <GitCommit className="w-4 h-4 text-[#0B874F]" />
-                      </div>
-                    )}
-                    {activity.type === "pull_request" && (
-                      <div className="w-8 h-8 bg-[#F5A623]/20 rounded-full flex items-center justify-center">
-                        <GitPullRequest className="w-4 h-4 text-[#F5A623]" />
-                      </div>
-                    )}
-                    {activity.type === "event_join" && (
-                      <div className="w-8 h-8 bg-[#9B59B6]/20 rounded-full flex items-center justify-center">
-                        <Calendar className="w-4 h-4 text-[#9B59B6]" />
-                      </div>
-                    )}
-                    {activity.type === "issue" && (
-                      <div className="w-8 h-8 bg-[#E74C3C]/20 rounded-full flex items-center justify-center">
-                        <Activity className="w-4 h-4 text-[#E74C3C]" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-white text-sm">
-                      {activity.user && (
-                        <span className="font-semibold text-[#0B874F]">
-                          {activity.user.name}
-                          {activity.user.githubUsername && (
-                            <span className="text-gray-400 font-normal"> (@{activity.user.githubUsername})</span>
-                          )}
-                          {' '}
+      {/* recent activity */}
+      <section>
+        <h2 className="mb-6 text-[clamp(1.9rem,3.4vw,2.8rem)] leading-none">
+          Recent <span className="serif text-[var(--signal-deep)]">activity.</span>
+        </h2>
+        {activitiesLoading ? (
+          <Loading label="loading activity" />
+        ) : recent.length ? (
+          <ul className="space-y-4">
+            {recent.map((a, i) => {
+              const meta = ACTIVITY[a.type] ?? { icon: Activity, tone: "sky" as DashTone };
+              const Icon = meta.icon;
+              return (
+                <li key={i} className="flex items-start gap-4 rounded-2xl border-[2.5px] border-[var(--ink)] bg-[var(--cream)] p-4 shadow-[4px_4px_0_var(--ink)] sm:p-5">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-[var(--ink)]" style={{ background: TONE_BG[meta.tone] }}>
+                    <Icon size={19} strokeWidth={2.4} />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="leading-snug">
+                      {a.user && (
+                        <span className="font-extrabold">
+                          {a.user.name}
+                          {a.user.githubUsername && <span className="font-medium text-[var(--ink)]/55"> @{a.user.githubUsername}</span>}{" "}
                         </span>
                       )}
-                      {activity.message}
+                      {a.message}
                     </p>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <span className="text-[#0B874F] text-xs">{activity.repo}</span>
-                      <span className="text-gray-400 text-xs">•</span>
-                      <span className="text-gray-400 text-xs">{activity.time}</span>
-                    </div>
+                    <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.85rem]">
+                      {a.repo && <span className="code rounded-md border-2 border-[var(--ink)] px-1.5 text-[0.72rem] font-bold" style={{ background: TONE_BG[meta.tone] }}>{a.repo}</span>}
+                      <span className="text-[var(--ink)]/55">{a.time}</span>
+                    </p>
                   </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-gray-400">
-                <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No recent activity</p>
-                <p className="text-sm">Start contributing to see your activity here!</p>
-            </div>
-          )}
-            </div>
-          )}
-
-        {/* Pagination */}
-        {!activitiesLoading && totalPages > 1 && (
-          <div className="mt-6">
-            <AdvancedPagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-              showQuickJump={true}
-              maxVisiblePages={5}
-            />
-          </div>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <Empty art="rocket" title="Nothing here yet" body="Start contributing and your activity will show up here." />
         )}
-
-        {/* Pagination Info */}
-        {!activitiesLoading && totalActivities > 0 && (
-          <div className="text-center mt-4 text-gray-400 text-sm">
-            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, totalActivities)} of {totalActivities} activities
-          </div>
-        )}
-      </div>
+        <Pager page={page} pages={pages} onChange={setPage} label={total ? `${(page - 1) * PER_PAGE + 1} to ${Math.min(page * PER_PAGE, total)} of ${total} activities` : undefined} />
+      </section>
     </div>
   );
-});
-
-export default DashboardPage;
+}

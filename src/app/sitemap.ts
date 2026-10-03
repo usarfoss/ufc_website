@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next'
+import { EVENTS } from '@/data/events'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://ufc-ipu.tech'
@@ -17,6 +18,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${baseUrl}/achievements`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
       url: `${baseUrl}/events`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
@@ -29,17 +36,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.5,
     },
     // Individual event pages
-    {
-      url: `${baseUrl}/events/1`,
+    ...EVENTS.map((e) => ({
+      url: `${baseUrl}/events/${e.slug}`,
       lastModified: new Date(),
-      changeFrequency: 'weekly',
+      changeFrequency: 'monthly' as const,
       priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/events/2`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
+    })),
   ]
 }

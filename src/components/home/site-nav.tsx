@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring } from "framer-motion";
 import { ArrowUpRight, Menu, X } from "lucide-react";
@@ -8,8 +9,19 @@ import { LINKS, NAV_LINKS, SECTIONS } from "./data";
 import { Logo } from "./logo";
 import { Badge, Tape } from "./scrap";
 import { StickerArt } from "./sticker-art";
+import { useAuth } from "@/features/auth/auth-provider";
+import { Avatar } from "@/components/dashboard/ui";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
+
+/** The links in the middle of the bar. Dashboard lives in the account chip on the right, so it isn't repeated here. */
+const CENTER_LINKS = [
+  { label: "Home", href: "/", hint: "back to the start" },
+  { label: "About", href: "/about", hint: "how we started" },
+  { label: "Events", href: "/events", hint: "what we've run" },
+  { label: "Achievements", href: "/achievements", hint: "where we've landed", wide: true },
+  { label: "Team", href: "/#team", hint: "the humans", chapter: "team" },
+] as const;
 
 const scrollToId = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
@@ -20,11 +32,18 @@ const SOCIALS = [
   { label: "GitHub", href: LINKS.github, cls: "btn-paper" },
 ];
 
-function MenuOverlay({ origin, onClose }: { origin: { x: number; y: number }; onClose: () => void }) {
+/** Jump to a chapter of the landing page, from wherever we are. */
+function goToChapter(id: string, onHome: boolean, push: (href: string) => void) {
+  if (onHome) scrollToId(id);
+  else push(`/#${id}`);
+}
+
+function MenuOverlay({ origin, onClose, onHome }: { origin: { x: number; y: number }; onClose: () => void; onHome: boolean }) {
+  const router = useRouter();
   const reach = Math.hypot(Math.max(origin.x, innerWidth - origin.x), Math.max(origin.y, innerHeight - origin.y)) + 40;
   const jump = (id: string) => {
     onClose();
-    window.setTimeout(() => scrollToId(id), 380);
+    window.setTimeout(() => goToChapter(id, onHome, router.push), 380);
   };
 
   return (
@@ -40,7 +59,7 @@ function MenuOverlay({ origin, onClose }: { origin: { x: number; y: number }; on
       aria-label="Site menu"
     >
       <div className="mx-auto grid min-h-full max-w-7xl gap-10 px-5 pb-12 pt-28 sm:px-8 sm:pt-32 lg:grid-cols-12 lg:items-center">
-        <ul className="lg:col-span-7">
+        <ul className="min-w-0 lg:col-span-7">
           {[{ label: "Home", href: "/" }, ...NAV_LINKS].map((l, i) => (
             <motion.li
               key={l.href}
@@ -51,9 +70,9 @@ function MenuOverlay({ origin, onClose }: { origin: { x: number; y: number }; on
               <Link
                 href={l.href}
                 onClick={onClose}
-                className="group relative flex items-baseline gap-4 py-1 text-[clamp(3rem,10vw,8rem)] font-extrabold leading-[0.95] tracking-[-0.045em] transition-transform duration-300 hover:translate-x-3"
+                className="group relative flex items-baseline gap-4 py-1 text-[clamp(2.6rem,6.4vw,5.6rem)] font-extrabold leading-[1] tracking-[-0.04em] transition-transform duration-300 hover:translate-x-3"
               >
-                <span className="code w-8 -translate-y-[0.4em] text-sm font-bold tracking-widest opacity-50 sm:w-12 sm:text-base">0{i}</span>
+                <span className="code w-8 -translate-y-[0.4em] text-sm font-bold tracking-widest opacity-50 sm:w-12 sm:text-base">0{i + 1}</span>
                 <span className="relative">
                   <span className="relative z-10">{l.label}</span>
                   <span className="absolute inset-x-[-0.1em] bottom-[0.08em] z-0 h-[0.34em] origin-left scale-x-0 rounded-sm bg-[var(--pink)] transition-transform duration-300 group-hover:scale-x-100" />
@@ -106,6 +125,11 @@ function MenuOverlay({ origin, onClose }: { origin: { x: number; y: number }; on
 }
 
 export function SiteNav() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const onHome = pathname === "/";
+  const { user } = useAuth();
+  const inDashboard = pathname?.startsWith("/dashboard");
   const { scrollY, scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 24, mass: 0.3 });
   const [hidden, setHidden] = useState(false);
@@ -151,13 +175,13 @@ export function SiteNav() {
       >
         <nav
           aria-label="Primary"
-          className="relative mx-auto flex max-w-7xl items-center justify-between gap-3 rounded-2xl border-[2.5px] border-[var(--ink)] bg-[var(--cream)] px-3 py-2 text-[var(--ink)] shadow-[5px_5px_0_var(--signal)] sm:px-4"
+          className="relative mx-auto flex max-w-7xl items-center justify-between gap-3 rounded-2xl md:grid md:grid-cols-[1fr_auto_1fr] border-[2.5px] border-[var(--ink)] bg-[var(--cream)] px-3 py-2 text-[var(--ink)] shadow-[5px_5px_0_var(--signal)] sm:px-4"
           style={{ rotate: "-0.25deg" }}
         >
           <Tape tone="butter" className="-top-3.5 left-[16%] !w-16" rotate={-6} />
           <Tape tone="pink" className="-top-3.5 right-[22%] !w-16" rotate={5} />
 
-          <Link href="/" className="group flex items-center gap-2.5" aria-label="UFC — home">
+          <Link href="/" className="group flex items-center gap-2.5 justify-self-start" aria-label="UFC — home">
             <span className="block size-11 overflow-hidden rounded-xl border-2 border-[var(--ink)] shadow-[2px_2px_0_var(--signal)] transition-transform duration-500 [transition-timing-function:cubic-bezier(0.3,1.7,0.5,1)] group-hover:rotate-[10deg] group-hover:scale-110">
               <Logo size={44} className="size-full" />
             </span>
@@ -167,30 +191,80 @@ export function SiteNav() {
             </span>
           </Link>
 
-          <ul className="hidden items-center gap-1 md:flex" onMouseLeave={() => setHovered(null)}>
-            {NAV_LINKS.map((l) => (
-              <li key={l.href} className="relative">
-                <Link
-                  href={l.href}
-                  onMouseEnter={() => setHovered(l.href)}
-                  onFocus={() => setHovered(l.href)}
-                  className="relative z-10 block rounded-xl px-4 py-2 text-[0.98rem] font-bold tracking-tight"
-                >
+          <ul className="hidden items-center gap-1.5 md:flex" onMouseLeave={() => setHovered(null)}>
+            {CENTER_LINKS.map((l, i) => {
+              const active = !("chapter" in l) && (l.href === "/" ? pathname === "/" : pathname === l.href || pathname?.startsWith(`${l.href}/`));
+              const common = {
+                onMouseEnter: () => setHovered(l.href),
+                onFocus: () => setHovered(l.href),
+                onBlur: () => setHovered(null),
+                "aria-current": active ? ("page" as const) : undefined,
+                className: `relative z-10 flex items-center gap-2 whitespace-nowrap rounded-xl px-3.5 py-2 text-[0.98rem] font-bold tracking-tight transition-colors duration-200 ${active ? "text-[var(--cream)]" : ""}`,
+              };
+              const inner = (
+                <>
+                  <span className="pixel hidden text-[0.62rem] leading-none opacity-45 lg:inline">0{i + 1}</span>
                   {l.label}
-                </Link>
-                {hovered === l.href && (
-                  <motion.span
-                    layoutId="nav-blob"
-                    className="absolute inset-0 rounded-xl border-2 border-[var(--ink)] bg-[var(--butter)] shadow-[2px_2px_0_var(--ink)]"
-                    style={{ rotate: "-2deg" }}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                )}
-              </li>
-            ))}
+                </>
+              );
+              return (
+                <li key={l.href} className={`relative ${"wide" in l ? "hidden lg:block" : ""}`}>
+                  {active && (
+                    <motion.span
+                      layoutId="nav-active"
+                      className="absolute inset-0 rounded-xl border-2 border-[var(--ink)] bg-[var(--ink)] shadow-[3px_3px_0_var(--signal)]"
+                      style={{ rotate: "-2deg" }}
+                      transition={{ type: "spring", stiffness: 420, damping: 30 }}
+                    />
+                  )}
+                  {"chapter" in l ? (
+                    <a
+                      {...common}
+                      href={l.href}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        goToChapter(l.chapter, onHome, router.push);
+                      }}
+                    >
+                      {inner}
+                    </a>
+                  ) : (
+                    <Link {...common} href={l.href}>
+                      {inner}
+                    </Link>
+                  )}
+                  {hovered === l.href && !active && (
+                    <motion.span
+                      layoutId="nav-blob"
+                      className="absolute inset-0 rounded-xl border-2 border-[var(--ink)] bg-[var(--butter)] shadow-[2px_2px_0_var(--ink)]"
+                      style={{ rotate: "-2deg" }}
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    />
+                  )}
+                  {/* a hand-written caption hangs under the link on hover */}
+                  <AnimatePresence>
+                    {hovered === l.href && (
+                      <motion.span
+                        initial={{ opacity: 0, y: -6, rotate: -4 }}
+                        animate={{ opacity: 1, y: 0, rotate: i % 2 ? 2 : -3 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.2, ease: EASE }}
+                        className="pointer-events-none absolute left-1/2 top-full z-20 mt-3 -translate-x-1/2 whitespace-nowrap"
+                        aria-hidden="true"
+                      >
+                        <span className="paper relative block px-3 py-1 text-[1.25rem] leading-none">
+                          <Tape tone={(["butter", "pink", "sky", "lilac"] as const)[i % 4]} className="-top-2.5 left-1/2 -translate-x-1/2 !h-4 !w-9" rotate={-4} />
+                          <span className="hand">{l.hint}</span>
+                        </span>
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </li>
+              );
+            })}
           </ul>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 justify-self-end sm:gap-3">
             <AnimatePresence mode="wait">
               {section && (
                 <motion.button
@@ -208,17 +282,25 @@ export function SiteNav() {
               )}
             </AnimatePresence>
 
-            <a
-              href="#join"
-              onClick={(e) => {
-                e.preventDefault();
-                scrollToId("join");
-              }}
-              className="btn btn-signal btn-sm"
-            >
-              Join
-              <span className="disc"><ArrowUpRight size={13} /></span>
-            </a>
+            {user ? (
+              <Link
+                href="/dashboard"
+                aria-label="Open your dashboard"
+                aria-current={inDashboard ? "page" : undefined}
+                className={`group flex items-center gap-2.5 rounded-full border-[2.5px] border-[var(--ink)] py-1 pl-1 pr-4 shadow-[3px_3px_0_var(--ink)] transition-[transform,box-shadow] duration-200 [transition-timing-function:cubic-bezier(0.3,1.7,0.5,1)] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[5px_5px_0_var(--ink)] ${inDashboard ? "bg-[var(--ink)] text-[var(--cream)] !shadow-[3px_3px_0_var(--signal)]" : "bg-[var(--signal)]"}`}
+              >
+                <Avatar src={user.githubUsername ? `https://github.com/${user.githubUsername}.png` : user.image} name={user.name ?? user.githubUsername} size={34} className="transition-transform duration-300 group-hover:rotate-6" />
+                <span className="leading-none">
+                  <span className="block max-w-[7rem] truncate text-[0.9rem] font-extrabold">{(user.name ?? user.githubUsername ?? "You").split(" ")[0]}</span>
+                  <span className="code mt-0.5 block text-[0.55rem] font-bold uppercase tracking-widest opacity-60">{inDashboard ? "you're here" : "dashboard"}</span>
+                </span>
+              </Link>
+            ) : (
+              <Link href="/login" className="btn btn-signal btn-sm">
+                Sign in
+                <span className="disc"><ArrowUpRight size={13} /></span>
+              </Link>
+            )}
             <button
               onClick={(e) => toggleMenu(e.currentTarget)}
               className="btn btn-butter btn-dot btn-xs"
@@ -238,7 +320,7 @@ export function SiteNav() {
         </nav>
       </motion.header>
 
-      <AnimatePresence>{menuOpen && <MenuOverlay origin={origin} onClose={() => setMenuOpen(false)} />}</AnimatePresence>
+      <AnimatePresence>{menuOpen && <MenuOverlay origin={origin} onClose={() => setMenuOpen(false)} onHome={onHome} />}</AnimatePresence>
     </>
   );
 }

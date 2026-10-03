@@ -78,10 +78,10 @@ export function Hero() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 2.6, duration: 1 }}
-        className="hand pointer-events-none absolute right-6 top-[34%] z-[7] hidden items-start gap-2 text-[1.7rem] text-[var(--butter)] lg:flex xl:right-14"
+        className="hand pointer-events-none absolute right-6 top-[34%] z-[7] hidden flex-col items-center text-[1.7rem] text-[var(--butter)] lg:flex xl:right-14"
       >
-        <Scribble variant="curl" className="mt-4 h-12 w-14 -scale-x-100 rotate-[60deg]" />
-        <span className="max-w-[9.5rem] -rotate-3 leading-none">go on — grab a sticker and throw it!</span>
+        <span className="max-w-[10rem] -rotate-3 text-center leading-none">go on, grab a sticker and throw it!</span>
+        <Scribble dir="down" className="mt-1 h-14 w-16" />
       </motion.div>
     </section>
   );

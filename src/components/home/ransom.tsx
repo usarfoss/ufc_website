@@ -77,7 +77,7 @@ export function Ransom({
               ...FACES[t.face],
               background: space ? "transparent" : t.bg,
               clipPath: space ? undefined : CLIPS[t.clip],
-              padding: space ? "0 0.14em" : "0.02em 0.1em 0.06em",
+              padding: space ? "0 0.14em" : /[gjpqy]/.test(ch) ? "0.02em 0.1em 0.24em" : "0.02em 0.1em 0.06em", // descenders need room or the scissors cut them off
               lineHeight: 1,
               translate: `0 ${t.dy}em`,
               filter: space ? undefined : "drop-shadow(0 0.035em 0.03em rgba(0,0,0,.45))",

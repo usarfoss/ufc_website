@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "npx prisma generate && next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "db:seed": "tsx scripts/seed.mts",
+    "db:unseed": "tsx scripts/seed.mts unseed"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.1",

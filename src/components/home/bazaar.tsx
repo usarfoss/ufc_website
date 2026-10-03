@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, Mark, Pin, Polaroid, PostIt, Scribble, Sticker, Tape } from "./scrap";
+import { Badge, Mark, Pin, Polaroid, PostIt, Sticker, Tape } from "./scrap";
 import { MaskLine, Reveal } from "./motion-primitives";
 import { NOTES } from "./data";
 
@@ -140,9 +140,8 @@ export function Bazaar() {
             </Pin>
 
             <Pin r={5} delay={0.5} drag={false} className="hidden lg:absolute lg:left-[57%] lg:top-[90%] lg:block" z={1}>
-              <div className="hand flex items-end gap-1 text-xl text-[var(--butter)]">
+              <div className="hand text-xl text-[var(--butter)]">
                 <span className="max-w-[9rem] leading-none">software was always a team sport</span>
-                <Scribble variant="curl" className="h-10 w-12 -rotate-[20deg]" />
               </div>
             </Pin>
           </div>

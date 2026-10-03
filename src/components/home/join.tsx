@@ -188,7 +188,7 @@ export function Join() {
             <div className="relative mt-5">
               <CopyCommand />
               <div className="hand pointer-events-none absolute -bottom-12 right-2 hidden items-start gap-1 text-xl text-[var(--ink)] sm:flex">
-                <Scribble variant="curl" className="mt-1 h-9 w-11 -rotate-[70deg]" />
+                <Scribble dir="up" className="mt-1 h-9 w-11" />
                 <span className="max-w-[10rem] leading-none">psst: this site is open source too</span>
               </div>
             </div>

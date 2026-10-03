@@ -226,11 +226,31 @@ function DesktopStage() {
     setActive(a);
   });
 
+  // Scroll progress at which each scene is fully revealed and settled (after its wipe finishes, before the next begins).
+  const STOPS = [0.05, 0.35, 0.6, 0.92];
+  const tween = useRef(0);
+
   const jump = (i: number) => {
     const el = ref.current;
     if (!el) return;
-    const total = el.offsetHeight - window.innerHeight;
-    window.scrollTo({ top: el.offsetTop + (total * (i + 0.55)) / FREEDOMS.length, behavior: "smooth" });
+    // offsetTop would be relative to the <section>, not the page, so measure against the document instead.
+    const top = el.getBoundingClientRect().top + window.scrollY;
+    const target = top + (el.offsetHeight - window.innerHeight) * STOPS[i];
+    const from = window.scrollY;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    cancelAnimationFrame(tween.current);
+    if (reduced) return window.scrollTo(0, target);
+    const dur = Math.min(1400, 450 + Math.abs(target - from) * 0.35);
+    const t0 = performance.now();
+    const stop = () => cancelAnimationFrame(tween.current); // the reader grabbed the wheel: let go
+    window.addEventListener("wheel", stop, { once: true, passive: true });
+    window.addEventListener("touchstart", stop, { once: true, passive: true });
+    const step = (now: number) => {
+      const k = Math.min(1, (now - t0) / dur);
+      window.scrollTo(0, from + (target - from) * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) tween.current = requestAnimationFrame(step);
+    };
+    tween.current = requestAnimationFrame(step);
   };
 
   return (

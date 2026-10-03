@@ -118,7 +118,7 @@ export function BigTent() {
           <Reveal delay={0.15}>
             <div className="mt-8 flex items-center gap-2 text-[var(--ink)]/70">
               <p className="hand text-xl">I&apos;m someone who…</p>
-              <Scribble variant="curl" className="h-8 w-10 rotate-[100deg]" />
+              <Scribble dir="down" className="h-9 w-11" />
             </div>
             <ul className="mt-3 flex flex-wrap gap-2.5" role="tablist" aria-label="Pick what describes you">
               {ROLES.map((r) => {

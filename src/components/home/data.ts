@@ -10,6 +10,7 @@ export const LINKS = {
 export const NAV_LINKS = [
   { label: "About", href: "/about" },
   { label: "Events", href: "/events" },
+  { label: "Achievements", href: "/achievements" },
   { label: "Dashboard", href: "/dashboard" },
 ] as const;
 
@@ -19,7 +20,7 @@ export const SECTIONS = [
   { id: "bazaar", n: "02", label: "The bazaar" },
   { id: "big-tent", n: "03", label: "The big tent" },
   { id: "history", n: "04", label: "The log" },
-  { id: "team", n: "05", label: "The maintainers" },
+  { id: "team", n: "05", label: "The core leads" },
   { id: "zoo", n: "06", label: "The zoo" },
   { id: "join", n: "07", label: "The invitation" },
 ] as const;
@@ -88,16 +89,13 @@ export type Commit = {
   imageAlt?: string;
   /** Landscape photos get a wider thumbnail than posters. */
   aspect?: "portrait" | "landscape";
-  /** Use the bundled Git Gud illustration instead of a raster image. */
-  art?: "gitgud";
   href?: string;
   branch: "main" | "talks";
 };
 
 /**
  * The club’s history, newest first, as `git log --graph`.
- * NOTE: Genesis / Git Gud / Trae AI dates are carried over verbatim from app/events/page.tsx.
- * The OCC dates follow the printed posters (April / May 2026) — the events page says 2025.
+ * Dates mirror src/data/events.ts (the source of truth for the events pages).
  */
 export const COMMITS: Commit[] = [
   {
@@ -109,7 +107,7 @@ export const COMMITS: Commit[] = [
     tags: ["GSoC", "careers", "online"],
     image: "/event-images/OCC2.png",
     imageAlt: "Poster for Open Community Chintan #02: All roads lead to open source",
-    href: "/events",
+    href: "/events/chintan-2",
     branch: "talks",
   },
   {
@@ -121,8 +119,21 @@ export const COMMITS: Commit[] = [
     tags: ["security", "Precogly", "online"],
     image: "/event-images/OCC1.png",
     imageAlt: "Poster for Open Community Chintan #01: Open threat models",
-    href: "/events",
+    href: "/events/chintan-1",
     branch: "talks",
+  },
+  {
+    hash: "a1e7a1c",
+    date: "28 Mar 2026",
+    type: "hackathon",
+    title: "Build with TRAE",
+    summary: "TRAE and MiniMax in New Delhi: AI-native coding, then a mini hackathon to try it for real.",
+    tags: ["AI", "TRAE", "hackathon"],
+    image: "/event-images/build-with-trae.webp",
+    imageAlt: "Poster for Build with TRAE at New Delhi with MiniMax, 28th March",
+    aspect: "landscape",
+    href: "/events/build-with-trae",
+    branch: "main",
   },
   {
     hash: "f055f09",
@@ -133,37 +144,25 @@ export const COMMITS: Commit[] = [
     tags: ["competition", "git clash", "repo sprint"],
     image: "/foss-forge-2025.jpg",
     imageAlt: "FOSS Forge 2025 poster",
-    href: "/events",
-    branch: "main",
-  },
-  {
-    hash: "a1e7a1c",
-    date: "Apr 2025",
-    type: "hackathon",
-    title: "Trae AI × MiniMax",
-    summary: "Agentic coding session plus a mini hackathon — AI as an autonomous teammate, not just autocomplete.",
-    tags: ["AI", "agentic", "hackathon"],
-    image: "/about-images/terminal_run.jpg",
-    imageAlt: "A terminal window running on a laptop",
-    aspect: "landscape",
-    href: "/events",
+    href: "/events/foss-forge-2025",
     branch: "main",
   },
   {
     hash: "6179f0d",
-    date: "10 Sept 2024",
+    date: "10 Oct 2025",
     type: "workshop",
     title: "Git Gud",
     summary: "Commits, branches and the first pull request — version control from scratch, hands on.",
     tags: ["git", "github", "first PR"],
-    art: "gitgud",
+    image: "/event-images/git-gud.webp",
+    imageAlt: "Git Gud poster: Git and GitHub intro, October 10. Learn, try, grow.",
     aspect: "landscape",
-    href: "/events",
+    href: "/events/git-gud",
     branch: "main",
   },
   {
     hash: "0000001",
-    date: "9 Aug 2024",
+    date: "9 Aug 2025",
     type: "init",
     title: "Genesis — initial commit",
     summary: "The founding orientation. A room of curious builders and a whiteboard of ideas.",
@@ -171,7 +170,7 @@ export const COMMITS: Commit[] = [
     image: "/about-images/team.jpg",
     imageAlt: "The UFC team introducing themselves on stage at the orientation",
     aspect: "landscape",
-    href: "/events",
+    href: "/events/genesis",
     branch: "main",
   },
 ];
@@ -188,7 +187,7 @@ export type Member = {
 export const TEAM: Member[] = [
   // presidents
   { name: "Siddharth Bansal", role: "President 1.0", img: "/team-images/siddharth.jpg", line: "The One Piece… THE ONE PIECE IS REAL!!", focus: "50% 25%" },
-  { name: "Vikram Aditya Verma", role: "President 2.0", img: "/team-images/vikram.jpg", line: "Mera khel khatam hai.", focus: "50% 30%" },
+  { name: "Vikram Aditya Verma", role: "President 2.0", img: "/team-images/vikram.webp", line: "Mera khel khatam hai.", focus: "50% 30%" },
 
   // current leads
   { name: "Harsh", role: "Tech Lead", img: "/team-images/harsh.jpg", line: "Believes every problem can be solved with one more npm install.", focus: "50% 38%" },
@@ -354,4 +353,12 @@ export const CREDITS: Credit[] = [
   { what: "KiCad logo", who: "KiCad Developers Team", license: "GPLv3", href: "https://commons.wikimedia.org/wiki/File:KiCad_logo_square.svg" },
   { what: "OpenStreetMap logo", who: "OpenStreetMap / TobWen / Gustavf", license: "CC BY-SA 2.0", href: "https://commons.wikimedia.org/wiki/File:OpenStreetMap-Logo-2006.svg" },
   { what: "Raspberry Pi 2", who: "Multicherry", license: "CC BY-SA 4.0", href: "https://commons.wikimedia.org/wiki/File:Raspberry_Pi_2_Model_B_v1.1_top_new_(bg_cut_out).jpg" },
+  { what: "Kiwix logo", who: "The other Kiwix guy", license: "CC BY-SA 4.0", href: "https://commons.wikimedia.org/wiki/File:Kiwix_logo_v3.svg" },
+  { what: "Google Summer of Code logo", who: "Google", license: "Public domain (trademark of Google)", href: "https://commons.wikimedia.org/wiki/File:Google_Summer_of_Code_sun_logo_2022.svg" },
+  { what: "FOSS United logo", who: "Jeswin Jose", license: "Public domain", href: "https://commons.wikimedia.org/wiki/File:FOSS_United_Logo_(Black).svg" },
+  { what: "Zomato logo", who: "Zomato", license: "Public domain (trademark of Zomato)", href: "https://commons.wikimedia.org/wiki/File:Zomato.svg" },
+  { what: "Apple logo", who: "Rob Janoff", license: "Public domain (trademark of Apple)", href: "https://commons.wikimedia.org/wiki/File:Apple_logo_black.svg" },
+  { what: "NSUT logo", who: "Unknown author", license: "Public domain", href: "https://commons.wikimedia.org/wiki/File:NSUT_logo.png" },
+  { what: "OWASP logo", who: "OWASP", license: "CC BY-SA 4.0", href: "https://commons.wikimedia.org/wiki/File:OWASP_black_logo.svg" },
+  { what: "DRDO logo", who: "Defence Research and Development Organisation", license: "Government of India emblem (trademark of DRDO)", href: "https://www.drdo.gov.in" },
 ];

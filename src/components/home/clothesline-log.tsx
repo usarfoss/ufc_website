@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, useScroll, useSpring, useTransform, useVelocity, type MotionValue } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
-import { GitGudSVG } from "@/components/event-svgs/GitGudSVG";
 import { COMMITS, type Commit } from "./data";
 import { StickerArt } from "./sticker-art";
 import { TornEdge } from "./torn-edge";
@@ -34,10 +33,8 @@ function Visual({ c }: { c: Commit }) {
   const portrait = c.aspect !== "landscape";
   return (
     <div className={`relative w-full overflow-hidden bg-[#d9d6cb] ${portrait ? "aspect-[4/5]" : "aspect-[5/4]"}`}>
-      {c.art === "gitgud" ? (
-        <GitGudSVG />
-      ) : (
-        c.image && <Image src={c.image} alt={c.imageAlt ?? c.title} fill sizes="280px" className="object-cover object-top" draggable={false} />
+      {c.image && (
+        <Image src={c.image} alt={c.imageAlt ?? c.title} fill sizes="280px" className={c.aspect === "landscape" ? "object-cover" : "object-cover object-top"} draggable={false} />
       )}
     </div>
   );

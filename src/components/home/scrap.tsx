@@ -166,16 +166,30 @@ export function Badge({
   );
 }
 
-/** Hand-drawn style arrow. `d` variants curve left/right/down. */
-export function Scribble({ className, variant = "curl" }: { className?: string; variant?: "curl" | "loop" | "straight" }) {
-  const paths = {
-    curl: "M4 6 C 40 -2, 70 30, 56 58 C 52 66, 42 62, 48 52 M48 52 L 42 60 M48 52 L 57 58",
-    loop: "M6 8 C 30 -4, 60 14, 40 34 C 28 46, 18 30, 38 26 C 56 22, 70 44, 66 66 M66 66 L 58 58 M66 66 L 72 57",
-    straight: "M4 40 C 30 36, 56 36, 82 30 M82 30 L 72 22 M82 30 L 72 38",
-  } as const;
+const DIRS = { right: 0, "down-right": 45, down: 90, "down-left": 135, left: 180, "up-left": 225, up: 270, "up-right": 315 } as const;
+export type ScribbleDir = keyof typeof DIRS;
+
+/**
+ * A hand-drawn arrow. `dir` is where the arrowhead POINTS ("down" = the tip aims at the bottom of the screen),
+ * so you can say what it's for instead of fiddling with rotations. `flip` mirrors which side the shaft curves from.
+ */
+export function Scribble({ className, dir = "down", flip = false }: { className?: string; dir?: ScribbleDir; flip?: boolean }) {
   return (
-    <svg viewBox="0 0 90 76" className={className} fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d={paths[variant]} />
+    <svg
+      viewBox="0 0 90 76"
+      className={className ?? "h-10 w-12"}
+      style={{ transform: `rotate(${DIRS[dir]}deg) scaleY(${flip ? -1 : 1})` }}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {/* shaft sweeps in from the lower left and ends pointing right; the whole thing is then rotated */}
+      <path d="M8 64 C 9 42, 26 35, 44 33 S 66 31, 82 38" />
+      {/* arrowhead, centred on the shaft's end tangent */}
+      <path d="M82 38 L 68 36 M82 38 L 72 50" />
     </svg>
   );
 }

@@ -72,7 +72,7 @@ export function Zoo() {
       <div className="relative mx-auto mt-6 h-[62vh] min-h-[480px] max-w-[110rem]">
         <div className="hand pointer-events-none absolute right-6 top-6 hidden items-start gap-2 text-2xl text-[var(--ink)]/70 md:flex xl:right-14">
           <span className="max-w-[10rem] -rotate-3 leading-none">grab one. throw it. no rules.</span>
-          <Scribble variant="curl" className="mt-3 h-10 w-12 rotate-[70deg]" />
+          <Scribble dir="down" className="mt-3 h-10 w-12" />
         </div>
         {/* the floor: a dashed cut line, drawn behind the stickers that rest on it */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 border-t-4 border-dashed border-[var(--ink)]/70" aria-hidden="true" />

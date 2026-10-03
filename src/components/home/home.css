@@ -434,3 +434,33 @@ html.lenis, html.lenis body { height: auto; }
 
 /* A sticker with no white border: just a soft lift shadow. */
 .ufc-home .soft-shadow { filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.35)); }
+
+/* Form fields in the sticker style */
+.ufc-home .field {
+  width: 100%;
+  border: 2.5px solid var(--ink);
+  border-radius: 0.9rem;
+  background: #fff;
+  color: var(--ink);
+  padding: 0.7rem 0.95rem;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.ufc-home .field::placeholder { color: rgba(20, 20, 15, 0.4); font-weight: 500; }
+.ufc-home .field:focus { outline: none; transform: translate(-1px, -1px); box-shadow: 5px 5px 0 var(--signal-deep); }
+.ufc-home .btn:disabled { cursor: not-allowed; opacity: 0.55; transform: none; box-shadow: 2px 2px 0 var(--sh); }
+
+/* Contribution calendar: cells pop in one week at a time. */
+@keyframes ufc-pop { from { opacity: 0; transform: scale(0.2); } to { opacity: 1; transform: scale(1); } }
+.ufc-home .cal-cell { transform-box: fill-box; transform-origin: center; animation: ufc-pop 0.45s cubic-bezier(0.3, 1.7, 0.5, 1) backwards; animation-delay: calc(var(--w) * 14ms); }
+.ufc-home .cal-cell:hover { stroke: var(--ink); stroke-width: 2.5px; }
+@media (prefers-reduced-motion: reduce) { .ufc-home .cal-cell { animation: none; } }
+
+/* Leaderboard: bars grow in from the left, and the live dot breathes. */
+@keyframes ufc-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.ufc-home .grow-bar { transform-origin: left center; animation: ufc-grow 1s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; animation-delay: var(--d, 0ms); }
+@keyframes ufc-rise { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.ufc-home .rise-block { transform-origin: bottom center; animation: ufc-rise 0.9s cubic-bezier(0.3, 1.4, 0.5, 1) backwards; animation-delay: var(--d, 0ms); }
+@media (prefers-reduced-motion: reduce) { .ufc-home .grow-bar, .ufc-home .rise-block { animation: none; } }

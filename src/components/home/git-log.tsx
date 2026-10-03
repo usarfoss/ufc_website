@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { GitGudSVG } from "@/components/event-svgs/GitGudSVG";
 import { COMMITS, type Commit } from "./data";
 import { MaskLine, Reveal } from "./motion-primitives";
 import { ClotheslineLog } from "./clothesline-log";
@@ -106,17 +105,13 @@ function CommitRow({ commit, index }: { commit: Commit; index: number }) {
             </ul>
           </div>
 
-          {(commit.image || commit.art) && (
+          {commit.image && (
             <div
               className={`relative shrink-0 overflow-hidden rounded-lg bg-[var(--ink-3)] ring-1 ring-white/10 transition-transform duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.06] ${
                 commit.aspect === "landscape" ? "aspect-[4/3] w-56 lg:w-72" : "aspect-[3/4] w-36 lg:w-52"
               } ${index % 2 ? "sm:rotate-[2.5deg] group-hover:sm:rotate-0" : "sm:-rotate-[2.5deg] group-hover:sm:rotate-0"}`}
             >
-              {commit.art === "gitgud" ? (
-                <GitGudSVG />
-              ) : (
-                <Image src={commit.image!} alt={commit.imageAlt ?? commit.title} fill sizes="300px" className="object-cover" />
-              )}
+              <Image src={commit.image} alt={commit.imageAlt ?? commit.title} fill sizes="300px" className="object-cover" />
             </div>
           )}
         </div>
