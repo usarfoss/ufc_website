@@ -1,18 +1,7 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Caveat, DM_Sans, Fraunces, Geist, Geist_Mono, Orbitron, Pixelify_Sans, Space_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Caveat, DM_Sans, Fraunces, Pixelify_Sans, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/app/providers";
-import { Menu } from "@/components/navigation/menu";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 // Landing-page type system: a chunky grotesque for display, a wonky soft serif for emphasis, a warm sans for reading, a quirky mono for labels.
 const bricolage = Bricolage_Grotesque({
@@ -50,11 +39,6 @@ const pixelify = Pixelify_Sans({
   variable: "--font-pixel",
   subsets: ["latin"],
   weight: ["500", "700"],
-});
-
-const orbitron = Orbitron({
-  variable: "--font-orbitron",
-  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
@@ -202,10 +186,9 @@ export default function RootLayout({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} ${fraunces.variable} ${dmSans.variable} ${spaceMono.variable} ${caveat.variable} ${pixelify.variable} ${orbitron.variable} antialiased`}
+        className={`${bricolage.variable} ${fraunces.variable} ${dmSans.variable} ${spaceMono.variable} ${caveat.variable} ${pixelify.variable} antialiased`}
       >
         <AppProviders>
-          <Menu />
           {children}
         </AppProviders>
       </body>

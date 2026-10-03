@@ -245,21 +245,6 @@
   animation-direction: reverse;
 }
 
-/* Blinking caret */
-@keyframes ufc-caret {
-  50% {
-    opacity: 0;
-  }
-}
-.ufc-home .caret {
-  display: inline-block;
-  width: 0.55em;
-  height: 1.05em;
-  vertical-align: -0.15em;
-  background: var(--signal);
-  animation: ufc-caret 1.05s steps(1) infinite;
-}
-
 /* Soft breathing for the "online" dot */
 @keyframes ufc-ping {
   0% {
@@ -291,7 +276,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ufc-home .marquee-track,
-  .ufc-home .caret,
   .ufc-home .ping::before {
     animation: none;
   }
@@ -430,31 +414,6 @@ html.lenis body {
   margin: 0 -0.04em;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
-}
-
-/* Tilted tape ribbons */
-.ufc-home .ribbon-strip {
-  transform-origin: center;
-}
-
-/* Gentle idle wobble for stickers (set --wob per element) */
-@keyframes ufc-wobble {
-  0%,
-  100% {
-    rotate: calc(var(--r, 0deg) - 1.2deg);
-  }
-  50% {
-    rotate: calc(var(--r, 0deg) + 1.2deg);
-  }
-}
-.ufc-home .wobble {
-  animation: ufc-wobble 5.5s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ufc-home .wobble {
-    animation: none;
-  }
 }
 
 /* Native image drag-and-drop would swallow the pointer events our draggable stickers need. */

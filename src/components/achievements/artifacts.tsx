@@ -20,7 +20,7 @@ function Barcode({ seed = 0, className = "" }: { seed?: number; className?: stri
 }
 
 /** GSoC: an enamel patch with a smiling sun and a ribbon. */
-export function Patch({ headline, org }: Props) {
+function Patch({ headline, org }: Props) {
   const [top, year] = headline.split("’");
   return (
     <div className="relative mx-auto aspect-square w-full max-w-[19rem]">
@@ -63,7 +63,7 @@ function InkStamp({ headline, org, color, className }: { headline: string; org: 
   );
 }
 
-export function Stamp({ headline, org, also }: Props) {
+function Stamp({ headline, org, also }: Props) {
   const second = also?.[0];
   return (
     <div className={`paper relative mx-auto w-full max-w-[22rem] overflow-hidden p-5 ${second ? "aspect-[1/1]" : "aspect-[5/4]"}`}>
@@ -97,7 +97,7 @@ function Bar({ w }: { w: string }) {
   return <span className="inline-block h-[0.95em] rounded-[2px] bg-[var(--ink)] align-middle" style={{ width: w }} />;
 }
 
-export function Classified({ name, headline, org }: Props) {
+function Classified({ name, headline, org }: Props) {
   return (
     <div className="relative mx-auto w-full max-w-[22rem]">
       <div className="absolute -top-3 left-0 h-6 w-28 rounded-t-xl border-[2.5px] border-b-0 border-[var(--ink)] bg-[#e9d3a0]" />
@@ -157,7 +157,7 @@ const ZIG = (() => {
 })();
 
 /** Zomato: an order receipt, because of course it is. */
-export function Receipt({ name, headline, org }: Props) {
+function Receipt({ name, headline, org }: Props) {
   return (
     <div className="mx-auto w-full max-w-[18rem] drop-shadow-[6px_8px_0_rgba(20,20,15,0.9)]">
       <div className="bg-white px-5 pb-8 pt-6 text-[var(--ink)]" style={{ clipPath: ZIG }}>
@@ -194,7 +194,7 @@ export function Receipt({ name, headline, org }: Props) {
 }
 
 /** Intern: the conference name tag. */
-export function NameTag({ name, headline, org }: Props) {
+function NameTag({ name, headline, org }: Props) {
   return (
     <div className="mx-auto w-full max-w-[19rem] overflow-hidden rounded-2xl border-[2.5px] border-[var(--ink)] bg-white shadow-[6px_6px_0_var(--ink)]">
       <div className="bg-[#e5372f] py-3 text-center text-white">
@@ -212,7 +212,7 @@ export function NameTag({ name, headline, org }: Props) {
 }
 
 /** WWDC: a conference ticket with a tear-off stub. */
-export function Ticket({ headline, org, bg }: Props) {
+function Ticket({ headline, org, bg }: Props) {
   const [what, who] = headline
     .split(" ")
     .reduce<[string, string]>((acc, w, i, a) => (i < a.length - 1 ? [acc[0] + (acc[0] ? " " : "") + w, acc[1]] : [acc[0], w]), ["", ""]);
@@ -246,7 +246,7 @@ export function Ticket({ headline, org, bg }: Props) {
 }
 
 /** NSUT: a page from a research notebook. */
-export function Notebook({ headline, org }: Props) {
+function Notebook({ headline, org }: Props) {
   return (
     <div
       className="relative mx-auto w-full max-w-[22rem] rounded-r-xl border-[2.5px] border-[var(--ink)] py-6 pl-14 pr-5 shadow-[6px_6px_0_var(--ink)]"
