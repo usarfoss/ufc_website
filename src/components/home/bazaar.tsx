@@ -166,9 +166,6 @@ export function Bazaar() {
             </Pin>
           ))}
         </div>
-        <p className="code mt-10 text-[0.7rem] text-[var(--text-dim)]/70">
-          Photos and logos are openly licensed (mostly via Wikimedia Commons) — credits at the bottom of the page.
-        </p>
       </div>
     </section>
   );

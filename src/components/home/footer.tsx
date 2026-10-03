@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CREDITS, LINKS, NAV_LINKS } from "./data";
+import { LINKS, NAV_LINKS } from "./data";
 import { Logo } from "./logo";
 import { FooterArt } from "./footer-art";
 
@@ -53,23 +53,15 @@ export function Footer() {
       <FooterArt />
 
       <div className="relative border-t border-[var(--line)] bg-[var(--ink)]">
-        <div className="mx-auto max-w-7xl px-5 pt-6 sm:px-8">
-          <p className="code text-[0.66rem] leading-relaxed text-[var(--text-dim)]/80">
-            <span className="uppercase tracking-widest text-[var(--text-dim)]">image credits (all via Wikimedia Commons) — </span>
-            {CREDITS.map((c, i) => (
-              <span key={c.what}>
-                <a href={c.href} target="_blank" rel="noopener noreferrer" className="underline decoration-[var(--line)] underline-offset-2 transition-colors hover:text-[var(--signal)]">
-                  {c.what}
-                </a>{" "}
-                · {c.who} · {c.license}
-                {i < CREDITS.length - 1 ? "  /  " : ""}
-              </span>
-            ))}
-          </p>
-        </div>
         <div className="code mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-5 text-[0.7rem] text-[var(--text-dim)] sm:px-8">
           <span>© {year} UFC · University School of Automation &amp; Robotics, GGSIPU</span>
-          <span>built in the open, by students ♥</span>
+          <span>
+            built by{" "}
+            <a href="https://x.com/ViXkrm" target="_blank" rel="noopener noreferrer" className="lnk font-bold text-[var(--text)]">
+              Vikram
+            </a>{" "}
+            ♥
+          </span>
         </div>
       </div>
     </footer>
