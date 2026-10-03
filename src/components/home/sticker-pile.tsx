@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import Image from "next/image";
 import Matter from "matter-js";
+import { StickerArt, ART_SIZE, type ArtId } from "./sticker-art";
 
 export type PileItem = {
   id: string;
@@ -11,6 +13,27 @@ export type PileItem = {
   round?: boolean;
   node: ReactNode;
 };
+
+/** A pile item from one of our SVG doodles. */
+export const artItem = (id: ArtId, round = false): PileItem => ({
+  id,
+  w: ART_SIZE[id][0],
+  h: ART_SIZE[id][1],
+  round,
+  node: <StickerArt id={id} className="die-cut size-full" />,
+});
+
+/** A pile item from a picture in /public. `outline: false` swaps the white die-cut border for a soft shadow. */
+export const imgItem = (id: string, src: string, alt: string, w: number, h: number, outline = true): PileItem => ({
+  id,
+  w,
+  h,
+  node: (
+    <div className={`${outline ? "die-cut" : "soft-shadow"} relative size-full`}>
+      <Image src={src} alt={alt} fill sizes={`${w}px`} className="object-contain" draggable={false} />
+    </div>
+  ),
+});
 
 const { Engine, World, Bodies, Body, Constraint, Sleeping } = Matter;
 

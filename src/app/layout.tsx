@@ -188,9 +188,7 @@ export default function RootLayout({
       <body
         className={`${bricolage.variable} ${fraunces.variable} ${dmSans.variable} ${spaceMono.variable} ${caveat.variable} ${pixelify.variable} antialiased`}
       >
-        <AppProviders>
-          {children}
-        </AppProviders>
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );

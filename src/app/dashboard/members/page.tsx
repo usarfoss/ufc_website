@@ -5,7 +5,8 @@ import { Calendar, MapPin, Search } from "lucide-react";
 import { GithubIcon } from "@/components/ui/social-icons";
 import { Pin, Tape } from "@/components/home/scrap";
 import { useApi } from "@/components/dashboard/use-api";
-import { Avatar, Empty, ErrorPanel, Loading, PageHeader, Pager } from "@/components/dashboard/ui";
+import { Avatar, Empty, ErrorPanel, Loading, PageHeader, Pager, pageRange } from "@/components/dashboard/ui";
+import { TAPE_CYCLE } from "@/data/tones";
 
 interface Member {
   id: string;
@@ -22,7 +23,6 @@ interface Member {
 }
 
 const PER_PAGE = 20;
-const TAPES = ["butter", "pink", "sky", "lilac", "signal"] as const;
 const TILT = [-1.4, 1, -0.8, 1.5, -1.1, 0.8];
 
 type MembersResponse = { members?: Member[]; total?: number; totalPages?: number };
@@ -87,7 +87,7 @@ export default function MembersPage() {
             <li key={m.id}>
               <Pin r={TILT[i % TILT.length]} drag={false} delay={(i % 3) * 0.06} className="h-full">
                 <article className="paper relative flex h-full flex-col px-6 pb-6 pt-9">
-                  <Tape tone={TAPES[i % TAPES.length]} className="-top-3 left-1/2 -translate-x-1/2" rotate={-3} />
+                  <Tape tone={TAPE_CYCLE[i % TAPE_CYCLE.length]} className="-top-3 left-1/2 -translate-x-1/2" rotate={-3} />
                   <div className="flex items-center gap-4">
                     <Avatar src={m.avatar} name={m.name || m.email} size={64} />
                     <div className="min-w-0">
@@ -154,11 +154,7 @@ export default function MembersPage() {
         page={page}
         pages={pages}
         onChange={setPage}
-        label={
-          total
-            ? `${(page - 1) * PER_PAGE + 1} to ${Math.min(page * PER_PAGE, total)} of ${total} members${search ? ` matching "${search}"` : ""}`
-            : undefined
-        }
+        label={pageRange(page, PER_PAGE, total, "members", search ? ` matching "${search}"` : "")}
       />
     </div>
   );

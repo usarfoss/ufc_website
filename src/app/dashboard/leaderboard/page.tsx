@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Crown, Search, TrendingUp, Users } from "lucide-react";
 import { useAuth } from "@/features/auth/auth-provider";
 import { GithubIcon } from "@/components/ui/social-icons";
 import { Badge, Tape } from "@/components/home/scrap";
-import { useApi } from "@/components/dashboard/use-api";
+import { useApi, useVersionStream } from "@/components/dashboard/use-api";
 import { Avatar, Empty, ErrorPanel, Loading, PageHeader, Panel } from "@/components/dashboard/ui";
 
 interface LeaderboardUser {
@@ -116,16 +116,8 @@ export default function LeaderboardPage() {
   });
   const all = useMemo(() => data?.users ?? [], [data]);
 
-  // The server tells us when the board changes; refresh quietly, without a loading flash.
-  useEffect(() => {
-    const stream = new EventSource("/api/stream/dashboard");
-    const onVersions = (event: MessageEvent<string>) => {
-      const payload = JSON.parse(event.data) as { versions?: { leaderboard?: number } };
-      if (payload.versions?.leaderboard !== undefined) refresh();
-    };
-    stream.addEventListener("versions", onVersions);
-    return () => stream.close();
-  }, [refresh]);
+  // The server tells us when this changes; refresh quietly, without a loading flash.
+  useVersionStream("leaderboard", refresh);
 
   // Ranked by the current sort. Ties share a place (1, 2, 2, 4), like a real scoreboard.
   const rows: Row[] = useMemo(() => {

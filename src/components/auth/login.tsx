@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { ArrowUpRight, Check } from "lucide-react";
 import { MaskLine, Reveal } from "@/components/home/motion-primitives";
-import { Badge, Mark, Pin, Sticker, Tape } from "@/components/home/scrap";
+import { Badge, Barcode, Mark, Pin, Sticker, Tape } from "@/components/home/scrap";
 import { Logo } from "@/components/home/logo";
 import { StickerArt } from "@/components/home/sticker-art";
 import { GithubIcon } from "@/components/ui/social-icons";
 import { useAuth } from "@/features/auth/auth-provider";
+import { ArrowLink } from "@/components/home/arrow-link";
 
 const PERKS = [
   { t: "Your dashboard", b: "Your GitHub activity, contributions and streaks, all in one place." },
@@ -16,18 +16,6 @@ const PERKS = [
   { t: "Events", b: "Browse upcoming events and register for them." },
   { t: "The member list", b: "Find the rest of the club and see what they're building." },
 ];
-
-/** A tiny, fake barcode, because a membership pass needs one. Deterministic so server and client agree. */
-function Barcode() {
-  const bars = Array.from({ length: 38 }, (_, i) => 1 + ((i * 7 + (i % 3) * 5) % 4));
-  return (
-    <div className="flex h-9 items-stretch gap-[2px]" aria-hidden="true">
-      {bars.map((w, i) => (
-        <span key={i} className="bg-[var(--ink)]" style={{ width: w * 1.4 }} />
-      ))}
-    </div>
-  );
-}
 
 function Pass() {
   const { loginWithGitHub } = useAuth();
@@ -117,7 +105,7 @@ function Pass() {
           </p>
 
           <div className="mt-5 flex items-end justify-between gap-4">
-            <Barcode />
+            <Barcode bars={38} />
             <span className="code text-[0.62rem] font-bold uppercase tracking-widest text-[var(--ink)]/50">no. open</span>
           </div>
         </article>
@@ -171,12 +159,9 @@ export function Login() {
           </ul>
 
           <div className="mt-10 flex flex-wrap items-center gap-x-5 gap-y-4">
-            <Link href="/" className="btn btn-sm btn-paper">
+            <ArrowLink href="/" className="btn btn-sm btn-paper" size={13}>
               Back to the site
-              <span className="disc">
-                <ArrowUpRight size={13} strokeWidth={2.6} />
-              </span>
-            </Link>
+            </ArrowLink>
           </div>
         </div>
 

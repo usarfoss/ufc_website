@@ -5,17 +5,16 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Badge, Tape } from "@/components/home/scrap";
 import { StickerArt, type ArtId } from "@/components/home/sticker-art";
+import { TONE_BG, type Tone } from "@/data/tones";
+import { EASE } from "@/components/home/motion-primitives";
 
-export type DashTone = "butter" | "mint" | "pink" | "lilac" | "sky";
-export const TONE_BG: Record<DashTone, string> = { butter: "#ffe36e", mint: "#9af2c6", pink: "#ffb3cf", lilac: "#c7b3ff", sky: "#9bd7ff" };
-const PAT: Record<DashTone, string> = {
+const PAT: Record<Tone, string> = {
   butter: "pat-dots",
   mint: "pat-grid",
   pink: "pat-gingham-pink",
   lilac: "pat-dots",
   sky: "pat-clouds",
 };
-const EASE = [0.16, 1, 0.3, 1] as const;
 
 /** The big coloured card at the top of every dashboard page. */
 export function PageHeader({
@@ -32,7 +31,7 @@ export function PageHeader({
   /** The word set in the serif italic. */
   accent: string;
   sub?: ReactNode;
-  tone?: DashTone;
+  tone?: Tone;
   art?: ArtId;
   /** Controls (tabs, buttons) shown under the sub text. */
   children?: ReactNode;
@@ -184,6 +183,12 @@ export function Empty({ art = "heart", title, body, children }: { art?: ArtId; t
 }
 
 /** Chunky previous / next with numbered pages in a sliding window. */
+/** "1 to 20 of 53 members", for the line under a pager. Empty when there is nothing to count. */
+export function pageRange(page: number, perPage: number, total: number, noun: string, suffix = "") {
+  if (!total) return undefined;
+  return `${(page - 1) * perPage + 1} to ${Math.min(page * perPage, total)} of ${total} ${noun}${suffix}`;
+}
+
 export function Pager({ page, pages, onChange, label }: { page: number; pages: number; onChange: (p: number) => void; label?: string }) {
   if (pages <= 1) return null;
   const windowSize = 5;
@@ -243,7 +248,7 @@ export function Modal({
   onClose: () => void;
   title: string;
   children: ReactNode;
-  tone?: DashTone;
+  tone?: Tone;
 }) {
   useEffect(() => {
     if (!open) return;

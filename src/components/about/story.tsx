@@ -1,19 +1,18 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import { MaskLine, Reveal } from "@/components/home/motion-primitives";
-import { Badge, Pin, Scribble, Tape } from "@/components/home/scrap";
+import { Badge, Scribble, Tape } from "@/components/home/scrap";
 import { StickerArt, type ArtId } from "@/components/home/sticker-art";
-import { Thread } from "@/components/home/thread";
+import { Thread, ThreadTail } from "@/components/home/thread";
 import { CHAPTERS, type Chapter } from "./story-data";
+import { TONE_BG } from "@/data/tones";
+import { ArrowLink } from "@/components/home/arrow-link";
 
-const TONES = { butter: "#ffe36e", mint: "#9af2c6", pink: "#ffb3cf", lilac: "#c7b3ff", sky: "#9bd7ff" } as const;
 const ART: ArtId[] = ["sparkle", "fork", "heart", "rocket", "play", "burst"];
 
 function ChapterCard({ c, i }: { c: Chapter; i: number }) {
   const right = i % 2 === 1;
-  const tone = TONES[c.tone];
+  const tone = TONE_BG[c.tone];
   return (
     <li className="grid grid-cols-[2.75rem_1fr] items-start lg:grid-cols-[1fr_8rem_1fr]">
       {/* knot: the thread passes through this */}
@@ -57,19 +56,13 @@ function ChapterCard({ c, i }: { c: Chapter; i: number }) {
 
           {c.link &&
             (c.link.external ? (
-              <a href={c.link.href} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-paper mt-6">
+              <ArrowLink href={c.link.href} className="btn btn-sm btn-paper mt-6" size={13}>
                 {c.link.label}
-                <span className="disc">
-                  <ArrowUpRight size={13} strokeWidth={2.6} />
-                </span>
-              </a>
+              </ArrowLink>
             ) : (
-              <Link href={c.link.href} className="btn btn-sm btn-paper mt-6">
+              <ArrowLink href={c.link.href} className="btn btn-sm btn-paper mt-6" size={13}>
                 {c.link.label}
-                <span className="disc">
-                  <ArrowUpRight size={13} strokeWidth={2.6} />
-                </span>
-              </Link>
+              </ArrowLink>
             ))}
 
           {/* a little sticker clinging to the corner */}
@@ -122,20 +115,7 @@ export function Story() {
             ))}
           </ol>
 
-          {/* the tail: a tag hanging off the end of the thread, pointing at year one */}
-          <div className="grid grid-cols-[2.75rem_1fr] lg:grid-cols-[1fr_8rem_1fr]">
-            <span className="col-start-1 grid place-items-center lg:col-start-2">
-              <span data-knot className="block size-6" />
-            </span>
-            <div className="col-start-2 pb-24 pt-4 lg:col-start-3">
-              <Pin r={-3} drag={false}>
-                <div className="paper relative inline-block px-7 py-5">
-                  <Tape tone="pink" className="-top-3 left-1/2 -translate-x-1/2" rotate={-3} />
-                  <p className="hand text-[2rem] leading-none">and then came year one.</p>
-                </div>
-              </Pin>
-            </div>
-          </div>
+          <ThreadTail>and then came year one.</ThreadTail>
         </Thread>
       </div>
     </section>

@@ -8,7 +8,8 @@ import GitHubHeatmap from "@/components/ui/github-heatmap";
 import LeetCodeHeatmap from "@/components/ui/leetcode-heatmap";
 import { GithubIcon } from "@/components/ui/social-icons";
 import { Pin, Tape } from "@/components/home/scrap";
-import { Avatar, Empty, ErrorPanel, InkPanel, Loading, PageHeader, Pager, Panel, TONE_BG, type DashTone } from "@/components/dashboard/ui";
+import { Avatar, Empty, ErrorPanel, InkPanel, Loading, PageHeader, Pager, Panel, pageRange } from "@/components/dashboard/ui";
+import { TONE_BG, type Tone } from "@/data/tones";
 
 interface Stat {
   value: string;
@@ -30,13 +31,13 @@ interface RecentActivity {
 }
 
 const ICONS: Record<string, LucideIcon> = { GitCommit, GitPullRequest, Trophy, Star };
-const STAT_META: Record<keyof DashboardStats, { label: string; tone: DashTone }> = {
+const STAT_META: Record<keyof DashboardStats, { label: string; tone: Tone }> = {
   totalCommits: { label: "Total commits", tone: "mint" },
   pullRequests: { label: "Pull requests", tone: "butter" },
   leaderboardRank: { label: "Leaderboard rank", tone: "pink" },
 };
 
-const ACTIVITY: Record<string, { icon: LucideIcon; tone: DashTone }> = {
+const ACTIVITY: Record<string, { icon: LucideIcon; tone: Tone }> = {
   commit: { icon: GitCommit, tone: "mint" },
   pull_request: { icon: GitPullRequest, tone: "butter" },
   event_join: { icon: Calendar, tone: "lilac" },
@@ -152,7 +153,7 @@ export default function DashboardPage() {
         ) : recent.length ? (
           <ul className="space-y-4">
             {recent.map((a, i) => {
-              const meta = ACTIVITY[a.type] ?? { icon: Activity, tone: "sky" as DashTone };
+              const meta = ACTIVITY[a.type] ?? { icon: Activity, tone: "sky" as Tone };
               const Icon = meta.icon;
               return (
                 <li
@@ -196,12 +197,7 @@ export default function DashboardPage() {
         ) : (
           <Empty art="rocket" title="Nothing here yet" body="Start contributing and your activity will show up here." />
         )}
-        <Pager
-          page={page}
-          pages={pages}
-          onChange={setPage}
-          label={total ? `${(page - 1) * PER_PAGE + 1} to ${Math.min(page * PER_PAGE, total)} of ${total} activities` : undefined}
-        />
+        <Pager page={page} pages={pages} onChange={setPage} label={pageRange(page, PER_PAGE, total, "activities")} />
       </section>
     </div>
   );

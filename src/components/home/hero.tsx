@@ -3,13 +3,11 @@
 import { motion } from "framer-motion";
 import { ArrowDown, ArrowRight } from "lucide-react";
 import { HeroBackdrop } from "./hero-backdrop";
-import { MaskLine } from "./motion-primitives";
+import { EASE, MaskLine } from "./motion-primitives";
 import { HeroPile } from "./hero-pile";
 import { Ransom } from "./ransom";
 import { Badge, Mark, Scribble } from "./scrap";
 import { StickerArt } from "./sticker-art";
-
-const EASE = [0.16, 1, 0.3, 1] as const;
 
 const go = (id: string) => (e: React.MouseEvent) => {
   e.preventDefault();

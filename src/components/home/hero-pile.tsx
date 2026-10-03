@@ -1,33 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import { Badge } from "./scrap";
-import { StickerArt, ART_SIZE, type ArtId } from "./sticker-art";
-import { StickerPile, type PileItem } from "./sticker-pile";
-
-const art = (id: ArtId, round = false): PileItem => ({
-  id,
-  w: ART_SIZE[id][0],
-  h: ART_SIZE[id][1],
-  round,
-  node: <StickerArt id={id} className="die-cut size-full" />,
-});
-
-const img = (id: string, src: string, alt: string, w: number, h: number): PileItem => ({
-  id,
-  w,
-  h,
-  node: (
-    <div className="die-cut relative size-full">
-      <Image src={src} alt={alt} fill sizes={`${w}px`} className="object-contain" draggable={false} />
-    </div>
-  ),
-});
+import { artItem, imgItem, StickerPile, type PileItem } from "./sticker-pile";
 
 /** Order matters: phones keep only the first seven. Defined at module scope so the physics world isn't rebuilt on re-render. */
 const ITEMS: PileItem[] = [
-  img("oggy", "/collage/oggy.webp", "Oggy and the Cockroaches meme sticker", 140, 141),
-  img("tux", "/collage/tux.webp", "Tux, the Linux penguin", 118, 140),
+  imgItem("oggy", "/collage/oggy.webp", "Oggy and the Cockroaches meme sticker", 140, 141),
+  imgItem("tux", "/collage/tux.webp", "Tux, the Linux penguin", 118, 140),
   {
     id: "welcome",
     w: 260,
@@ -40,15 +19,15 @@ const ITEMS: PileItem[] = [
       </div>
     ),
   },
-  art("heart"),
-  img("sidd", "/collage/sidd.webp", "Sidd, a UFC member, sitting on steps", 128, 128),
-  img("gnu", "/collage/gnu.webp", "The GNU head", 108, 106),
-  art("lgtm"),
-  art("floppy"),
-  img("messi-dog", "/collage/messi-dog.webp", "A dog receiving a kiss on the head", 128, 127),
-  art("bubble"),
-  img("oshw", "/collage/oshw.webp", "The open-source-hardware gear", 100, 105),
-  art("burst"),
+  artItem("heart"),
+  imgItem("sidd", "/collage/sidd.webp", "Sidd, a UFC member, sitting on steps", 128, 128),
+  imgItem("gnu", "/collage/gnu.webp", "The GNU head", 108, 106),
+  artItem("lgtm"),
+  artItem("floppy"),
+  imgItem("messi-dog", "/collage/messi-dog.webp", "A dog receiving a kiss on the head", 128, 127),
+  artItem("bubble"),
+  imgItem("oshw", "/collage/oshw.webp", "The open-source-hardware gear", 100, 105),
+  artItem("burst"),
 ];
 
 export function HeroPile() {

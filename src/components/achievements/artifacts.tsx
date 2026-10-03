@@ -1,23 +1,11 @@
 "use client";
 
 import { useId } from "react";
-import { Tape } from "@/components/home/scrap";
+import { Barcode, Tape } from "@/components/home/scrap";
 import { StickerArt } from "@/components/home/sticker-art";
 import type { Achievement } from "@/data/achievements";
 
 type Props = Pick<Achievement, "name" | "headline" | "org" | "detail" | "also"> & { bg: string };
-
-/** Deterministic bars, so server and client render the same barcode. */
-function Barcode({ seed = 0, className = "" }: { seed?: number; className?: string }) {
-  const bars = Array.from({ length: 34 }, (_, i) => 1 + ((i * 7 + seed * 3 + (i % 3) * 5) % 4));
-  return (
-    <div className={`flex h-9 items-stretch gap-[2px] ${className}`} aria-hidden="true">
-      {bars.map((w, i) => (
-        <span key={i} className="bg-[var(--ink)]" style={{ width: w * 1.4 }} />
-      ))}
-    </div>
-  );
-}
 
 /** GSoC: an enamel patch with a smiling sun and a ribbon. */
 function Patch({ headline, org }: Props) {

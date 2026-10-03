@@ -1,13 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import { MaskLine, Reveal } from "@/components/home/motion-primitives";
 import { Badge, Mark, Pin, PostIt, Scribble, Sticker, Tape } from "@/components/home/scrap";
 import { Ransom } from "@/components/home/ransom";
 import { TornEdge } from "@/components/home/torn-edge";
 import { YEAR_ONE_NOTES } from "./story-data";
+import { ArrowLink } from "@/components/home/arrow-link";
 
 type Tone = "butter" | "pink" | "sky" | "lilac" | "signal";
 
@@ -205,12 +204,9 @@ export function YearOne() {
         </div>
 
         <div className="relative mt-20 flex flex-wrap items-center gap-6">
-          <Link href="/events" className="btn btn-signal lit">
+          <ArrowLink href="/events" className="btn btn-signal lit">
             See all our events
-            <span className="disc">
-              <ArrowUpRight size={15} strokeWidth={2.6} />
-            </span>
-          </Link>
+          </ArrowLink>
           <div className="hand flex items-center gap-2 text-2xl text-[var(--butter)]">
             <Scribble dir="left" flip className="h-9 w-12" />
             the full timeline lives there

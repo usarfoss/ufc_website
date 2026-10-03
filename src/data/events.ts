@@ -6,7 +6,7 @@
  * These are the best reading of it. Fix them here and every page follows.
  */
 
-export type Tone = "butter" | "mint" | "pink" | "lilac" | "sky";
+import type { Tone } from "./tones";
 
 export type ScheduleDay = { day?: string; items: { time: string; activity: string }[] };
 

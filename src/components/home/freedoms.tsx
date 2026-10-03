@@ -3,13 +3,11 @@
 import { useRef, useState } from "react";
 import { motion, useMotionTemplate, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
 import { FREEDOMS, type Freedom } from "./data";
-import { MaskLine, Reveal } from "./motion-primitives";
+import { EASE, MaskLine, Reveal } from "./motion-primitives";
 import { Badge, PostIt, Polaroid, Tape, useFinePointer } from "./scrap";
 import { Ransom } from "./ransom";
 import { StickerArt } from "./sticker-art";
 import { TornEdge } from "./torn-edge";
-
-const EASE = [0.16, 1, 0.3, 1] as const;
 
 const SCENES = [
   { bg: "#ffe36e", pat: "pat-dots" },

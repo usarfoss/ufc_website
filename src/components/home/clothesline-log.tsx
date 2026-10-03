@@ -8,6 +8,7 @@ import { ArrowUpRight } from "lucide-react";
 import { COMMITS, type Commit } from "./data";
 import { StickerArt } from "./sticker-art";
 import { TornEdge } from "./torn-edge";
+import { ArrowLink } from "./arrow-link";
 
 /** Card geometry. Phones get narrower, squarer cards so one fits on screen with the next peeking in. */
 const dimsFor = (w: number) =>
@@ -234,12 +235,9 @@ export function ClotheslineLog() {
                   <div className="paper w-64 rotate-2 px-6 pb-6 pt-7 text-center">
                     <p className="hand text-3xl leading-none">to be continued…</p>
                     <p className="mt-2 text-sm text-black/60">The next commit is yours.</p>
-                    <Link href="/events" className="btn btn-signal btn-sm mt-4">
+                    <ArrowLink href="/events" className="btn btn-signal btn-sm mt-4" size={13}>
                       Browse every event
-                      <span className="disc">
-                        <ArrowUpRight size={13} strokeWidth={2.6} />
-                      </span>
-                    </Link>
+                    </ArrowLink>
                   </div>
                 </div>
               </div>

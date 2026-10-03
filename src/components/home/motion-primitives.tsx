@@ -3,7 +3,7 @@
 import { useRef, type ElementType, type ReactNode } from "react";
 import { motion, useInView } from "framer-motion";
 
-const EASE = [0.16, 1, 0.3, 1] as const;
+export const EASE = [0.16, 1, 0.3, 1] as const;
 
 /** Fades and lifts its children in once, when they scroll into view. */
 export function Reveal({

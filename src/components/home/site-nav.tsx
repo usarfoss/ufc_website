@@ -11,8 +11,7 @@ import { Badge, Tape } from "./scrap";
 import { StickerArt } from "./sticker-art";
 import { useAuth } from "@/features/auth/auth-provider";
 import { Avatar } from "@/components/dashboard/ui";
-
-const EASE = [0.16, 1, 0.3, 1] as const;
+import { EASE } from "./motion-primitives";
 
 /** The links in the middle of the bar. Dashboard lives in the account chip on the right, so it isn't repeated here. */
 const CENTER_LINKS = [

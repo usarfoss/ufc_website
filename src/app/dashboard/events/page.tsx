@@ -5,19 +5,8 @@ import { Calendar, CheckCircle, Clock, MapPin, Plus, Users, X } from "lucide-rea
 import { useAuth } from "@/features/auth/auth-provider";
 import { Pin, Tape } from "@/components/home/scrap";
 import { useApi } from "@/components/dashboard/use-api";
-import {
-  Avatar,
-  Empty,
-  ErrorPanel,
-  Field,
-  isStaff,
-  Loading,
-  Modal,
-  PageHeader,
-  TONE_BG,
-  useToast,
-  type DashTone,
-} from "@/components/dashboard/ui";
+import { Avatar, Empty, ErrorPanel, Field, isStaff, Loading, Modal, PageHeader, useToast } from "@/components/dashboard/ui";
+import { TONE_BG, type Tone } from "@/data/tones";
 
 interface DashEvent {
   id: string;
@@ -46,7 +35,7 @@ const VIEWS: { key: View; label: string; icon: typeof Calendar }[] = [
   { key: "all", label: "All", icon: Calendar },
 ];
 
-const TYPE_TONE: Record<string, DashTone> = { workshop: "mint", hackathon: "pink", meetup: "butter", conference: "lilac" };
+const TYPE_TONE: Record<string, Tone> = { workshop: "mint", hackathon: "pink", meetup: "butter", conference: "lilac" };
 const APPROVAL_TONE: Record<string, string> = { approved: "#9af2c6", pending: "#ffe36e", rejected: "#ffb3cf" };
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 

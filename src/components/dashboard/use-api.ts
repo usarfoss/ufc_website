@@ -61,3 +61,19 @@ export function useApi<T>(url: string | null, { timeoutMs = 20_000, errorMessage
     refresh,
   };
 }
+
+/**
+ * Calls `onChange` whenever the server says the data behind `key` has changed (a live update over server-sent events).
+ * Pass a stable callback, such as the `refresh` from `useApi`.
+ */
+export function useVersionStream(key: string, onChange: () => void) {
+  useEffect(() => {
+    const stream = new EventSource("/api/stream/dashboard");
+    const onVersions = (event: MessageEvent<string>) => {
+      const payload = JSON.parse(event.data) as { versions?: Record<string, number | undefined> };
+      if (payload.versions?.[key] !== undefined) onChange();
+    };
+    stream.addEventListener("versions", onVersions);
+    return () => stream.close();
+  }, [key, onChange]);
+}

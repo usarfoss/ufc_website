@@ -1,46 +1,26 @@
 "use client";
 
-import Image from "next/image";
-import { StickerPile, type PileItem } from "./sticker-pile";
-import { StickerArt, ART_SIZE, type ArtId } from "./sticker-art";
+import { artItem, imgItem, StickerPile, type PileItem } from "./sticker-pile";
 import { Polaroid, Scribble } from "./scrap";
 import { MaskLine, Reveal } from "./motion-primitives";
 import { Ransom } from "./ransom";
 
-const img = (id: string, src: string, alt: string, w: number, h: number, outline = true): PileItem => ({
-  id,
-  w,
-  h,
-  node: (
-    <div className={`${outline ? "die-cut" : "soft-shadow"} relative size-full`}>
-      <Image src={src} alt={alt} fill sizes={`${w}px`} className="object-contain" draggable={false} />
-    </div>
-  ),
-});
-const art = (id: ArtId, round = false): PileItem => ({
-  id,
-  w: ART_SIZE[id][0],
-  h: ART_SIZE[id][1],
-  round,
-  node: <StickerArt id={id} className="die-cut size-full" />,
-});
-
 /** Phones keep the first seven, so the best-known mascots (and the club's own in-jokes) come first. */
 const ITEMS: PileItem[] = [
-  img("tux", "/collage/tux.webp", "Tux, the Linux penguin", 112, 133),
-  img("wilber", "/collage/wilber.webp", "Wilber, the GIMP mascot", 132, 132),
-  img("oggy", "/collage/oggy.webp", "Oggy and the Cockroaches meme sticker", 150, 152, false),
-  img("ferris", "/collage/ferris.webp", "Ferris, the Rust crab", 150, 100),
-  img("sidd", "/collage/sidd.webp", "Sidd, a UFC member, sitting on steps", 140, 140),
-  img("gopher", "/collage/gopher.webp", "The Go gopher", 88, 120),
-  img("pandu", "/collage/pandu.webp", "Pandu Ranga, a chihuahua in a hoodie", 104, 148),
-  img("git", "/collage/git.webp", "The Git logo", 168, 70),
-  img("ayush", "/collage/ayush.webp", "Ayush Katoch, spotted travelling through dimensions", 150, 150),
-  img("gnu", "/collage/gnu.webp", "The GNU head", 106, 104),
-  img("messi-dog", "/collage/messi-dog.webp", "A dog receiving a kiss on the head", 140, 139),
-  img("inkscape", "/collage/inkscape.webp", "The Inkscape logo", 104, 104),
-  img("kicad", "/collage/kicad.webp", "The KiCad logo", 96, 96),
-  img("osm", "/collage/osm.webp", "The OpenStreetMap logo", 108, 108),
+  imgItem("tux", "/collage/tux.webp", "Tux, the Linux penguin", 112, 133),
+  imgItem("wilber", "/collage/wilber.webp", "Wilber, the GIMP mascot", 132, 132),
+  imgItem("oggy", "/collage/oggy.webp", "Oggy and the Cockroaches meme sticker", 150, 152, false),
+  imgItem("ferris", "/collage/ferris.webp", "Ferris, the Rust crab", 150, 100),
+  imgItem("sidd", "/collage/sidd.webp", "Sidd, a UFC member, sitting on steps", 140, 140),
+  imgItem("gopher", "/collage/gopher.webp", "The Go gopher", 88, 120),
+  imgItem("pandu", "/collage/pandu.webp", "Pandu Ranga, a chihuahua in a hoodie", 104, 148),
+  imgItem("git", "/collage/git.webp", "The Git logo", 168, 70),
+  imgItem("ayush", "/collage/ayush.webp", "Ayush Katoch, spotted travelling through dimensions", 150, 150),
+  imgItem("gnu", "/collage/gnu.webp", "The GNU head", 106, 104),
+  imgItem("messi-dog", "/collage/messi-dog.webp", "A dog receiving a kiss on the head", 140, 139),
+  imgItem("inkscape", "/collage/inkscape.webp", "The Inkscape logo", 104, 104),
+  imgItem("kicad", "/collage/kicad.webp", "The KiCad logo", 96, 96),
+  imgItem("osm", "/collage/osm.webp", "The OpenStreetMap logo", 108, 108),
   {
     id: "kiki",
     w: 150,
@@ -56,8 +36,8 @@ const ITEMS: PileItem[] = [
       />
     ),
   },
-  art("heart"),
-  art("burst"),
+  artItem("heart"),
+  artItem("burst"),
 ];
 
 export function Zoo() {

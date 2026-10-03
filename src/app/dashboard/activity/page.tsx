@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Activity, Calendar, GitCommit, GitPullRequest, type LucideIcon } from "lucide-react";
-import { useApi } from "@/components/dashboard/use-api";
-import { Avatar, Empty, ErrorPanel, Loading, PageHeader, Pager, TONE_BG, type DashTone } from "@/components/dashboard/ui";
+import { useApi, useVersionStream } from "@/components/dashboard/use-api";
+import { Avatar, Empty, ErrorPanel, Loading, PageHeader, Pager, pageRange } from "@/components/dashboard/ui";
+import { TONE_BG, type Tone } from "@/data/tones";
 
 interface ActivityItem {
   id: string;
@@ -16,7 +17,7 @@ interface ActivityItem {
   user?: { name: string; githubUsername?: string; avatar?: string };
 }
 
-const KINDS: Record<string, { icon: LucideIcon; tone: DashTone }> = {
+const KINDS: Record<string, { icon: LucideIcon; tone: Tone }> = {
   commit: { icon: GitCommit, tone: "mint" },
   pull_request: { icon: GitPullRequest, tone: "butter" },
   issue: { icon: Activity, tone: "pink" },
@@ -37,16 +38,8 @@ export default function ActivityPage() {
   const total = data?.total ?? 0;
   const pages = Math.ceil(total / PER_PAGE);
 
-  // Re-fetch (quietly) when the server says the feed changed.
-  useEffect(() => {
-    const stream = new EventSource("/api/stream/dashboard");
-    const onVersions = (event: MessageEvent<string>) => {
-      const payload = JSON.parse(event.data) as { versions?: { "activity-feed"?: number } };
-      if (payload.versions?.["activity-feed"] !== undefined) refresh();
-    };
-    stream.addEventListener("versions", onVersions);
-    return () => stream.close();
-  }, [refresh]);
+  // The server tells us when this changes; refresh quietly, without a loading flash.
+  useVersionStream("activity-feed", refresh);
 
   return (
     <div className="space-y-10">
@@ -68,7 +61,7 @@ export default function ActivityPage() {
       ) : (
         <ul className="space-y-4">
           {items.map((a, i) => {
-            const kind = KINDS[a.type.toLowerCase()] ?? { icon: Activity, tone: "sky" as DashTone };
+            const kind = KINDS[a.type.toLowerCase()] ?? { icon: Activity, tone: "sky" as Tone };
             const Icon = kind.icon;
             const avatar = a.user?.avatar || (a.user?.githubUsername ? `https://github.com/${a.user.githubUsername}.png` : null);
             return (
@@ -135,12 +128,7 @@ export default function ActivityPage() {
         </ul>
       )}
 
-      <Pager
-        page={page}
-        pages={pages}
-        onChange={setPage}
-        label={total ? `${(page - 1) * PER_PAGE + 1} to ${Math.min(page * PER_PAGE, total)} of ${total} activities` : undefined}
-      />
+      <Pager page={page} pages={pages} onChange={setPage} label={pageRange(page, PER_PAGE, total, "activities")} />
     </div>
   );
 }

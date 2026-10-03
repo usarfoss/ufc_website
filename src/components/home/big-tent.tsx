@@ -3,12 +3,10 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ROLES, type Role } from "./data";
-import { MaskLine, Reveal } from "./motion-primitives";
+import { EASE, MaskLine, Reveal } from "./motion-primitives";
 import { RoleArt } from "./role-art";
 import Image from "next/image";
 import { Pin, Scribble, Tape } from "./scrap";
-
-const EASE = [0.16, 1, 0.3, 1] as const;
 
 const MARK = { mint: "#9af2c6", pink: "var(--pink)", lilac: "var(--lilac)", butter: "var(--butter)", sky: "var(--sky)" } as const;
 

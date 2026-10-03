@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight, MapPin, Clock, CalendarDays, Backpack, Users } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, CalendarDays, Backpack, Users } from "lucide-react";
 import { MaskLine, Reveal } from "@/components/home/motion-primitives";
 import { Badge, Mark, Pin, Scribble, Tape } from "@/components/home/scrap";
 import { StickerArt, type ArtId } from "@/components/home/sticker-art";
@@ -9,8 +9,9 @@ import { Thread } from "@/components/home/thread";
 import { TornEdge } from "@/components/home/torn-edge";
 import { EVENTS, type EventItem, type Round } from "@/data/events";
 import { EventVisual } from "./event-visual";
+import { TONE_BG } from "@/data/tones";
+import { ArrowLink } from "@/components/home/arrow-link";
 
-const TONE_BG = { butter: "#ffe36e", mint: "#9af2c6", pink: "#ffb3cf", lilac: "#c7b3ff", sky: "#9bd7ff" } as const;
 const ART: Record<EventItem["type"], ArtId> = {
   Orientation: "heart",
   Workshop: "fork",
@@ -311,12 +312,9 @@ function SpeakerCard({ e }: { e: EventItem }) {
             <ul className="mt-8 flex flex-wrap gap-3">
               {s.links.map((l) => (
                 <li key={l.href}>
-                  <a href={l.href} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-paper">
+                  <ArrowLink href={l.href} className="btn btn-sm btn-paper" size={13}>
                     {l.label}
-                    <span className="disc">
-                      <ArrowUpRight size={13} strokeWidth={2.6} />
-                    </span>
-                  </a>
+                  </ArrowLink>
                 </li>
               ))}
             </ul>
@@ -366,12 +364,9 @@ function Neighbours({ e }: { e: EventItem }) {
           {next ? card(next, "later") : <span />}
         </div>
         <div className="mt-12 flex flex-wrap items-center gap-6">
-          <Link href="/events" className="btn btn-signal lit">
+          <ArrowLink href="/events" className="btn btn-signal lit">
             Back to all events
-            <span className="disc">
-              <ArrowUpRight size={15} strokeWidth={2.6} />
-            </span>
-          </Link>
+          </ArrowLink>
           <div className="hand flex items-center gap-2 text-2xl text-[var(--butter)]">
             <Scribble dir="up" className="h-10 w-12" />
             there&apos;s always a next one
@@ -393,12 +388,9 @@ export function EventDetail({ event: e }: { event: EventItem }) {
       {e.schedule && <Schedule e={e} n={hasRounds ? "03" : "02"} />}
       {e.registration && (
         <div className="bg-[var(--paper)] pb-20 text-center">
-          <a href={e.registration.href} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-paper">
+          <ArrowLink href={e.registration.href} className="btn btn-sm btn-paper" size={13}>
             {e.registration.label}
-            <span className="disc">
-              <ArrowUpRight size={13} strokeWidth={2.6} />
-            </span>
-          </a>
+          </ArrowLink>
         </div>
       )}
       <Neighbours e={e} />

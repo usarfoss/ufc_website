@@ -5,13 +5,12 @@ import { ArrowUpRight } from "lucide-react";
 import { MaskLine, Reveal } from "@/components/home/motion-primitives";
 import { Badge, Pin, Scribble, Sticker, Tape } from "@/components/home/scrap";
 import { StickerArt } from "@/components/home/sticker-art";
-import { Thread } from "@/components/home/thread";
+import { Thread, ThreadTail } from "@/components/home/thread";
 import { LINKS } from "@/components/home/data";
 import { EVENTS_NEWEST_FIRST, type EventItem } from "@/data/events";
 import { EventVisual } from "./event-visual";
-
-const TONE_BG = { butter: "#ffe36e", mint: "#9af2c6", pink: "#ffb3cf", lilac: "#c7b3ff", sky: "#9bd7ff" } as const;
-const TAPES = ["butter", "pink", "sky", "lilac", "signal"] as const;
+import { TAPE_CYCLE, TONE_BG } from "@/data/tones";
+import { ArrowLink } from "@/components/home/arrow-link";
 
 /** Tall posters get cropped in the list so a card never turns into a skyscraper. */
 const isPoster = (e: EventItem) => !!e.image && /1587|2942/.test(e.image.aspect);
@@ -29,7 +28,7 @@ function EventCard({ e, i, latest }: { e: EventItem; i: number; latest: boolean 
           className={`group relative border-[2.5px] border-[var(--ink)] bg-[var(--cream)] shadow-[7px_7px_0_var(--ink)] transition-[transform,box-shadow] duration-300 [transition-timing-function:cubic-bezier(0.3,1.7,0.5,1)] hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[11px_11px_0_var(--ink)] ${right ? "lg:-rotate-[0.6deg]" : "lg:rotate-[0.6deg]"}`}
           style={{ borderRadius: "1.25rem" }}
         >
-          <Tape tone={TAPES[i % TAPES.length]} className="-top-3 left-8 z-10" rotate={-5} />
+          <Tape tone={TAPE_CYCLE[i % TAPE_CYCLE.length]} className="-top-3 left-8 z-10" rotate={-5} />
 
           {/* poster */}
           <div className="overflow-hidden p-3 pb-0">
@@ -137,19 +136,7 @@ export function EventsList() {
             ))}
           </ol>
 
-          <div className="grid grid-cols-[2.75rem_1fr] lg:grid-cols-[1fr_8rem_1fr]">
-            <span className="col-start-1 grid place-items-center lg:col-start-2">
-              <span data-knot className="block size-6" />
-            </span>
-            <div className="col-start-2 pb-24 pt-4 lg:col-start-3">
-              <Pin r={-3} drag={false}>
-                <div className="paper relative inline-block px-7 py-5">
-                  <Tape tone="pink" className="-top-3 left-1/2 -translate-x-1/2" rotate={-3} />
-                  <p className="hand text-[2rem] leading-none">and it all started here.</p>
-                </div>
-              </Pin>
-            </div>
-          </div>
+          <ThreadTail>and it all started here.</ThreadTail>
         </Thread>
       </div>
     </section>
@@ -176,24 +163,15 @@ export function EventsCta() {
           </p>
         </Reveal>
         <div className="mt-10 flex flex-wrap items-center gap-x-4 gap-y-5">
-          <a href={LINKS.whatsapp} target="_blank" rel="noopener noreferrer" className="btn btn-ink">
+          <ArrowLink href={LINKS.whatsapp} className="btn btn-ink">
             WhatsApp community
-            <span className="disc">
-              <ArrowUpRight size={15} strokeWidth={2.6} />
-            </span>
-          </a>
-          <a href={LINKS.instagram} target="_blank" rel="noopener noreferrer" className="btn btn-pink">
+          </ArrowLink>
+          <ArrowLink href={LINKS.instagram} className="btn btn-pink">
             Instagram
-            <span className="disc">
-              <ArrowUpRight size={15} strokeWidth={2.6} />
-            </span>
-          </a>
-          <a href={LINKS.discord} target="_blank" rel="noopener noreferrer" className="btn btn-lilac">
+          </ArrowLink>
+          <ArrowLink href={LINKS.discord} className="btn btn-lilac">
             Discord
-            <span className="disc">
-              <ArrowUpRight size={15} strokeWidth={2.6} />
-            </span>
-          </a>
+          </ArrowLink>
         </div>
         <Pin r={-8} className="absolute right-[6%] top-16 hidden md:block" hint="drag me">
           <Badge tone="butter" className="!text-base">

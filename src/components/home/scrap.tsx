@@ -199,3 +199,14 @@ export function Mark({ children, tone = "var(--butter)", className }: { children
     </span>
   );
 }
+
+/** A tiny fake barcode, because passes and receipts need one. Deterministic, so the server and the browser draw the same bars. */
+export function Barcode({ seed = 0, bars = 34, className = "" }: { seed?: number; bars?: number; className?: string }) {
+  return (
+    <div className={`flex h-9 items-stretch gap-[2px] ${className}`} aria-hidden="true">
+      {Array.from({ length: bars }, (_, i) => (
+        <span key={i} className="bg-[var(--ink)]" style={{ width: (1 + ((i * 7 + seed * 3 + (i % 3) * 5) % 4)) * 1.4 }} />
+      ))}
+    </div>
+  );
+}

@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import { MaskLine, Reveal } from "@/components/home/motion-primitives";
 import { Badge, Pin, Sticker } from "@/components/home/scrap";
+import { ArrowLink } from "@/components/home/arrow-link";
 
 export function AboutCta() {
   return (
@@ -25,24 +24,15 @@ export function AboutCta() {
           </p>
         </Reveal>
         <div className="mt-10 flex flex-wrap items-center gap-x-4 gap-y-5">
-          <Link href="/#join" className="btn btn-ink">
+          <ArrowLink href="/#join" className="btn btn-ink">
             Join the network
-            <span className="disc">
-              <ArrowUpRight size={15} strokeWidth={2.6} />
-            </span>
-          </Link>
-          <Link href="/#team" className="btn btn-paper">
+          </ArrowLink>
+          <ArrowLink href="/#team" className="btn btn-paper">
             Meet the team
-            <span className="disc">
-              <ArrowUpRight size={15} strokeWidth={2.6} />
-            </span>
-          </Link>
-          <Link href="/events" className="btn btn-butter">
+          </ArrowLink>
+          <ArrowLink href="/events" className="btn btn-butter">
             See events
-            <span className="disc">
-              <ArrowUpRight size={15} strokeWidth={2.6} />
-            </span>
-          </Link>
+          </ArrowLink>
         </div>
 
         <Pin r={-8} className="absolute right-[6%] top-16 hidden md:block" hint="drag me">

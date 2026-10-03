@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { motion, useMotionValue, useMotionValueEvent, useScroll, useTransform, type MotionValue } from "framer-motion";
+import { Pin, Tape } from "./scrap";
 
 type Pt = { x: number; y: number };
 
@@ -194,6 +195,25 @@ export function Thread({
         </svg>
       )}
       {children}
+    </div>
+  );
+}
+
+/** The tag hanging off the end of a thread: a knot, and a note pinned beside it. */
+export function ThreadTail({ children }: { children: ReactNode }) {
+  return (
+    <div className="grid grid-cols-[2.75rem_1fr] lg:grid-cols-[1fr_8rem_1fr]">
+      <span className="col-start-1 grid place-items-center lg:col-start-2">
+        <span data-knot className="block size-6" />
+      </span>
+      <div className="col-start-2 pb-24 pt-4 lg:col-start-3">
+        <Pin r={-3} drag={false}>
+          <div className="paper relative inline-block px-7 py-5">
+            <Tape tone="pink" className="-top-3 left-1/2 -translate-x-1/2" rotate={-3} />
+            <p className="hand text-[2rem] leading-none">{children}</p>
+          </div>
+        </Pin>
+      </div>
     </div>
   );
 }

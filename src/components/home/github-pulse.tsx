@@ -1,9 +1,9 @@
 import Image from "next/image";
-import { ArrowUpRight } from "lucide-react";
 import { LINKS } from "./data";
 import { MaskLine, Reveal } from "./motion-primitives";
 import { Badge, Pin, Tape } from "./scrap";
 import { StickerArt, type ArtId } from "./sticker-art";
+import { ArrowLink } from "./arrow-link";
 
 const OWNER = "usarfoss";
 
@@ -131,12 +131,9 @@ export async function GithubPulse() {
               <span className="ping relative inline-block size-1.5 rounded-full bg-[var(--signal)]" />
               live from github.com/{OWNER}
             </p>
-            <a href={LINKS.github} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm">
+            <ArrowLink href={LINKS.github} className="btn btn-ghost btn-sm" size={13}>
               view all repositories
-              <span className="disc">
-                <ArrowUpRight size={13} strokeWidth={2.6} />
-              </span>
-            </a>
+            </ArrowLink>
           </div>
         </Reveal>
 
