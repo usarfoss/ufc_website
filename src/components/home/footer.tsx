@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CREDITS, LINKS, NAV_LINKS } from "./data";
-import { PixelMark } from "./pixel-mark";
+import { Logo } from "./logo";
 import { FooterArt } from "./footer-art";
 
 const COMMUNITY = [
@@ -20,7 +20,7 @@ export function Footer() {
       <div className="mx-auto grid max-w-7xl gap-12 px-5 pb-10 pt-20 sm:px-8 md:grid-cols-12">
         <div className="md:col-span-5">
           <div className="flex items-center gap-3">
-            <PixelMark size={30} className="text-[var(--text)]" />
+            <Logo size={40} className="rounded-xl" />
             <span className="text-lg font-semibold tracking-tight">USAR FOSS Club</span>
           </div>
           <p className="serif mt-6 max-w-sm text-3xl leading-[1.1] text-[var(--text)]">

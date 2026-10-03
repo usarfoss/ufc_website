@@ -10,10 +10,10 @@ import { Ransom } from "./ransom";
 const PIN_TONES = ["#ff6b5e", "#ffe36e", "#2ee58f", "#c7b3ff", "#9bd7ff", "#ffb3cf"];
 const TILT = [-3, 2.2, -1.6, 3, -2.4, 1.4, -3.2, 2.6, -1.2, 3.2, -2, 1.8];
 
-/** Who is wired to whom on the wall. A chain through everyone, plus a few cross-links. */
+/** Who is wired to whom on the wall: a chain through everyone, plus cross-links so it reads as a web. */
 const STRINGS: [number, number][] = [
-  [0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 9], [9, 10], [10, 11],
-  [0, 5], [2, 7], [4, 9], [6, 11], [1, 6],
+  ...TEAM.slice(1).map((_, i): [number, number] => [i, i + 1]),
+  ...TEAM.flatMap((_, i): [number, number][] => (i % 2 === 0 && i + 5 < TEAM.length ? [[i, i + 5]] : [])),
 ];
 
 function PushPin({ tone }: { tone: string }) {
@@ -54,7 +54,7 @@ function MemberCard({ m, i }: { m: Member; i: number }) {
         </div>
         <figcaption className="px-1 pb-4 pt-3">
           <p className="pixel text-[0.68rem] uppercase leading-none text-[var(--signal-deep)]">{m.role}</p>
-          <p className="hand mt-1.5 line-clamp-2 text-[1.12rem] leading-[1.02] text-[#2a2a20]">“{m.line}”</p>
+          <p className="hand mt-1.5 line-clamp-3 text-[1.12rem] leading-[1.02] text-[#2a2a20]">“{m.line}”</p>
         </figcaption>
       </figure>
     </Pin>
@@ -180,14 +180,14 @@ export function Team() {
                 </PostIt>
               </Pin>
 
-              <div className="relative flex min-h-[11rem] items-center justify-center">
-                <Pin r={-8} delay={0.35} className="absolute left-[2%] top-[6%] w-[44%]" hint="drag me">
+              <div className="relative flex min-h-[11rem] items-center justify-center md:col-span-3 lg:col-span-3">
+                <Pin r={-8} delay={0.35} className="absolute left-[4%] top-[6%] w-28" hint="drag me">
                   <Sticker src="/collage/wilber.webp" alt="Wilber, the GIMP mascot" className="aspect-square w-full" sizes="120px" />
                 </Pin>
-                <Pin r={9} delay={0.45} className="absolute right-[2%] top-[22%] w-[48%]" hint="drag me">
+                <Pin r={9} delay={0.45} className="absolute left-[34%] top-[24%] w-32" hint="drag me">
                   <Sticker src="/collage/ferris.webp" alt="Ferris, the Rust crab" className="aspect-[3/2] w-full" sizes="140px" />
                 </Pin>
-                <Pin r={-4} delay={0.5} className="absolute bottom-[4%] left-[10%]" hint="drag me">
+                <Pin r={-4} delay={0.5} className="absolute bottom-[4%] left-[62%]" hint="drag me">
                   <Badge tone="butter" className="!text-sm">now hiring: you</Badge>
                 </Pin>
               </div>

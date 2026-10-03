@@ -186,18 +186,29 @@ export type Member = {
 };
 
 export const TEAM: Member[] = [
-  { name: "Siddharth Bansal", role: "President", img: "/team-images/siddharth.jpg", line: "The One Piece… THE ONE PIECE IS REAL!!", focus: "50% 25%" },
-  { name: "Moksh", role: "Co-Lead", img: "/team-images/moksh.jpg", line: "Organizing events and mentoring students on AI/ML projects.", focus: "50% 20%" },
-  { name: "Dhruv Sharma", role: "Tech Lead", img: "/team-images/dhruv.jpg", line: "Kept you waiting, huh?", focus: "50% 30%" },
-  { name: "Pranshu Bansal", role: "Non-Tech Lead", img: "/team-images/pranshu.jpg", line: "Sleeping half the time, bored half the time, sharing cat memes all the time.", focus: "50% 22%" },
-  { name: "Ojaswini Fauzdar", role: "PR Lead", img: "/team-images/ojaswini.jpg", line: "Building strong connections with the wider developer community.", focus: "50% 25%" },
-  { name: "Ananya Jain", role: "External Affairs Lead", img: "/team-images/ananya.jpg", line: "Forging partnerships and representing us at external events.", focus: "50% 25%" },
-  { name: "Manandeep Singh", role: "classified.", img: "/team-images/manandeep.jpg", line: "Sometimes it takes a man to be best girl. — Gigguk", focus: "50% 25%" },
-  { name: "Avish Chaudhary", role: "Underpaid Intern", img: "/team-images/avish.jpg", line: "Proud member of Kanye’s Kool Koderz.", focus: "50% 35%" },
-  { name: "Trisha Verma", role: "Core Member", img: "/team-images/trisha.jpg", line: "Supporting core development and community growth.", focus: "50% 20%" },
-  { name: "Prithvi Kaushik", role: "Core Member", img: "/team-images/prithvi%20.jpg", line: "Helping maintain high standards across the community.", focus: "50% 30%" },
-  { name: "Piyush Gupta", role: "Core Member", img: "/team-images/piyush.jpg", line: "Driving community initiatives alongside the President.", focus: "50% 25%" },
-  { name: "Vikram Aditya Verma", role: "Anonymous Member", img: "/team-images/vikram.jpg", line: "Mera khel khatam hai.", focus: "50% 30%" },
+  // presidents
+  { name: "Siddharth Bansal", role: "President 1.0", img: "/team-images/siddharth.jpg", line: "The One Piece… THE ONE PIECE IS REAL!!", focus: "50% 25%" },
+  { name: "Vikram Aditya Verma", role: "President 2.0", img: "/team-images/vikram.jpg", line: "Mera khel khatam hai.", focus: "50% 30%" },
+
+  // current leads
+  { name: "Harsh", role: "Tech Lead", img: "/team-images/harsh.jpg", line: "Believes every problem can be solved with one more npm install.", focus: "50% 38%" },
+  { name: "Harshit", role: "Tech Lead", img: "/team-images/harshit.jpg", line: "“I dont care.” (He cares deeply. About everything.)", focus: "50% 22%" },
+  { name: "Mridul", role: "Tech Lead", img: "/team-images/mridul.jpg", line: "Pushed to main at 3 a.m. and called it “a small fix”.", focus: "50% 12%" },
+  { name: "Ayush", role: "Tech Lead", img: "/team-images/ayush-katoch.jpg", line: "Spotted travelling through dimensions. Pull request still pending.", focus: "50% 6%" },
+  { name: "Shifali", role: "Non-Tech Lead", img: "/team-images/shifali.jpg", line: "Runs on chai, spreadsheets and zero tolerance for missed deadlines.", focus: "50% 32%" },
+  { name: "Sujal", role: "Non-Tech Lead", img: "/team-images/sujal.jpg", line: "Main character of every landscape photo. The waterfall is just a prop.", focus: "37% 40%" },
+  { name: "Abhi", role: "Operations Lead", img: "/team-images/abhi.jpg", line: "Plans events like a pro. Trusts the projector like an amateur.", focus: "50% 10%" },
+  { name: "Meyank", role: "Operations Lead", img: "/team-images/meyank.jpg", line: "Keeps the whole club organised. Cannot explain his own desktop.", focus: "50% 15%" },
+
+  // oldies
+  { name: "Dhruv Sharma", role: "Oldie", img: "/team-images/dhruv.jpg", line: "Merged on a Friday. Zero regrets, several incidents.", focus: "50% 30%" },
+  { name: "Pranshu Bansal", role: "Oldie", img: "/team-images/pranshu.jpg", line: "Retired, but the cat memes never will.", focus: "50% 22%" },
+  { name: "Ojaswini Fauzdar", role: "Oldie", img: "/team-images/ojaswini.jpg", line: "Has seen every bug in this club and still hears “works on my machine”.", focus: "50% 25%" },
+  { name: "Ananya Jain", role: "Oldie", img: "/team-images/ananya.jpg", line: "Fluent in LGTM, Python and politely savage PR comments.", focus: "50% 25%" },
+  { name: "Manandeep Singh", role: "Oldie", img: "/team-images/manandeep.jpg", line: "Went to touch grass in 2024. Grass is still loading.", focus: "50% 25%" },
+  { name: "Avish Chaudhary", role: "Oldie", img: "/team-images/avish.jpg", line: "Still waiting on the intern stipend. Buffering since forever.", focus: "50% 35%" },
+  { name: "Piyush Gupta", role: "Oldie", img: "/team-images/piyush.jpg", line: "Legend says he once closed an issue by deleting the issue.", focus: "50% 25%" },
+  { name: "Moksh", role: "Oldie", img: "/team-images/moksh.jpg", line: "Trained a model to predict his wake-up time. Accuracy: 0%.", focus: "50% 20%" },
 ];
 
 export type RoleId = "dev" | "design" | "hardware" | "data" | "words" | "people" | "newbie";

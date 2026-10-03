@@ -7,32 +7,34 @@ import { Polaroid, Scribble } from "./scrap";
 import { MaskLine, Reveal } from "./motion-primitives";
 import { Ransom } from "./ransom";
 
-const img = (id: string, src: string, alt: string, w: number, h: number): PileItem => ({
+const img = (id: string, src: string, alt: string, w: number, h: number, outline = true): PileItem => ({
   id,
   w,
   h,
   node: (
-    <div className="die-cut relative size-full">
+    <div className={`${outline ? "die-cut" : "soft-shadow"} relative size-full`}>
       <Image src={src} alt={alt} fill sizes={`${w}px`} className="object-contain" draggable={false} />
     </div>
   ),
 });
 const art = (id: ArtId, round = false): PileItem => ({ id, w: ART_SIZE[id][0], h: ART_SIZE[id][1], round, node: <StickerArt id={id} className="die-cut size-full" /> });
 
-/** Phones keep the first seven, so the best-known mascots come first. */
+/** Phones keep the first seven, so the best-known mascots (and the club's own in-jokes) come first. */
 const ITEMS: PileItem[] = [
   img("tux", "/collage/tux.webp", "Tux, the Linux penguin", 112, 133),
   img("wilber", "/collage/wilber.webp", "Wilber, the GIMP mascot", 132, 132),
+  img("oggy", "/collage/oggy.webp", "Oggy and the Cockroaches meme sticker", 150, 152, false),
   img("ferris", "/collage/ferris.webp", "Ferris, the Rust crab", 150, 100),
+  img("sidd", "/collage/sidd.webp", "Sidd, a UFC member, sitting on steps", 140, 140),
   img("gopher", "/collage/gopher.webp", "The Go gopher", 88, 120),
+  img("pandu", "/collage/pandu.webp", "Pandu Ranga, a chihuahua in a hoodie", 104, 148),
   img("git", "/collage/git.webp", "The Git logo", 168, 70),
+  img("ayush", "/collage/ayush.webp", "Ayush Katoch, spotted travelling through dimensions", 150, 150),
   img("gnu", "/collage/gnu.webp", "The GNU head", 106, 104),
-  art("seal", true),
+  img("messi-dog", "/collage/messi-dog.webp", "A dog receiving a kiss on the head", 140, 139),
   img("inkscape", "/collage/inkscape.webp", "The Inkscape logo", 104, 104),
   img("kicad", "/collage/kicad.webp", "The KiCad logo", 96, 96),
   img("osm", "/collage/osm.webp", "The OpenStreetMap logo", 108, 108),
-  img("pi", "/collage/pi.webp", "A Raspberry Pi board", 150, 100),
-  img("oshw", "/collage/oshw.webp", "The open-source-hardware gear", 94, 99),
   {
     id: "kiki",
     w: 150,
@@ -40,7 +42,6 @@ const ITEMS: PileItem[] = [
     node: <Polaroid src="/collage/kiki.webp" alt="Kiki, the Krita mascot" caption="kiki (krita)" tone="lilac" sizes="160px" className="size-full" />,
   },
   art("heart"),
-  art("bug"),
   art("burst"),
 ];
 

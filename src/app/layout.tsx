@@ -115,6 +115,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: "/brand/ufc-logo.svg", type: "image/svg+xml" },
       { url: "/favicon.ico", sizes: "any" },
       { url: "/favicon.ico", sizes: "32x32", type: "image/x-icon" },
     ],
@@ -139,7 +140,7 @@ export default function RootLayout({
     "alternateName": ["USAR FOSS Club", "IPU FOSS Club", "University FOSS Club"],
     "description": "UFC - University FOSS Club, USAR FOSS Club, IPU FOSS Club. Open Source, Open Minds. Building the future together through collaborative development and community-driven innovation.",
     "url": "https://ufc-ipu.tech",
-    "logo": "https://ufc-ipu.tech/favicon.ico",
+    "logo": "https://ufc-ipu.tech/brand/ufc-logo.svg",
     "sameAs": [
       "https://github.com/usarfoss"
     ],

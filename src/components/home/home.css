@@ -431,3 +431,6 @@ html.lenis, html.lenis body { height: auto; }
 .ufc-home .die-flat {
   filter: drop-shadow(2.5px 0 0 #fff) drop-shadow(-2.5px 0 0 #fff) drop-shadow(0 2.5px 0 #fff) drop-shadow(0 -2.5px 0 #fff);
 }
+
+/* A sticker with no white border: just a soft lift shadow. */
+.ufc-home .soft-shadow { filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.35)); }

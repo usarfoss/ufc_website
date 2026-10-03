@@ -168,9 +168,6 @@ export function ClotheslineLog() {
           <h2 className="text-[clamp(2.4rem,4.8vw,4.6rem)] font-semibold leading-[0.95] tracking-[-0.055em]">
             Our history is a <span className="serif">git log.</span>
           </h2>
-          <p className="code mt-3 inline-block rounded bg-[var(--ink)] px-2.5 py-1 text-[0.74rem] text-[var(--text)]">
-            <span className="text-[var(--signal)]">$</span> git log --reverse --graph · few events, done well
-          </p>
         </div>
 
         {/* the clothesline */}

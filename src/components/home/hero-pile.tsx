@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Badge, Polaroid } from "./scrap";
+import { Badge } from "./scrap";
 import { StickerArt, ART_SIZE, type ArtId } from "./sticker-art";
 import { StickerPile, type PileItem } from "./sticker-pile";
 
@@ -26,25 +26,8 @@ const img = (id: string, src: string, alt: string, w: number, h: number): PileIt
 
 /** Order matters: phones keep only the first seven. Defined at module scope so the physics world isn't rebuilt on re-render. */
 const ITEMS: PileItem[] = [
-  art("seal", true),
+  img("oggy", "/collage/oggy.webp", "Oggy and the Cockroaches meme sticker", 140, 141),
   img("tux", "/collage/tux.webp", "Tux, the Linux penguin", 118, 140),
-  {
-    id: "polaroid",
-    w: 168,
-    h: 214,
-    node: (
-      <Polaroid
-        src="/about-images/team.jpg"
-        alt="UFC members on stage at the orientation"
-        caption="orientation day ✿"
-        aspect="aspect-square"
-        position="50% 35%"
-        tone="pink"
-        sizes="170px"
-        className="size-full"
-      />
-    ),
-  },
   {
     id: "welcome",
     w: 260,
@@ -56,11 +39,11 @@ const ITEMS: PileItem[] = [
     ),
   },
   art("heart"),
-  art("bug"),
+  img("sidd", "/collage/sidd.webp", "Sidd, a UFC member, sitting on steps", 128, 128),
   img("gnu", "/collage/gnu.webp", "The GNU head", 108, 106),
   art("lgtm"),
   art("floppy"),
-  art("coffee"),
+  img("messi-dog", "/collage/messi-dog.webp", "A dog receiving a kiss on the head", 128, 127),
   art("bubble"),
   img("oshw", "/collage/oshw.webp", "The open-source-hardware gear", 100, 105),
   art("burst"),

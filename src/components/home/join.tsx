@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { ArrowUpRight, Check, Copy } from "lucide-react";
 import { LINKS } from "./data";
 import { MaskLine, Reveal } from "./motion-primitives";
+import { Logo } from "./logo";
 import { PixelMark } from "./pixel-mark";
 import { Badge, Pin, Scribble, Sticker, Tape } from "./scrap";
 
@@ -99,7 +100,7 @@ function Flyer() {
             <p className="pixel text-[3.4rem] leading-[0.9] tracking-wide sm:text-[4.4rem]">JOIN</p>
             <p className="pixel -mt-1 text-[3.4rem] leading-[0.9] tracking-wide text-[var(--signal-deep)] sm:text-[4.4rem]">UFC</p>
           </div>
-          <PixelMark size={64} className="mt-1 shrink-0 text-black/80" />
+          <Logo size={76} className="mt-1 shrink-0 -rotate-3 rounded-2xl border-2 border-black/80" />
         </div>
         <p className="serif mt-3 text-[1.6rem] leading-[1.05]">open source, open minds.</p>
 

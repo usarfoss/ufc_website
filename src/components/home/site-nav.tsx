@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring } from "framer-motion";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import { LINKS, NAV_LINKS, SECTIONS } from "./data";
-import { PixelMark } from "./pixel-mark";
+import { Logo } from "./logo";
 import { Badge, Tape } from "./scrap";
 import { StickerArt } from "./sticker-art";
 
@@ -158,8 +158,8 @@ export function SiteNav() {
           <Tape tone="pink" className="-top-3.5 right-[22%] !w-16" rotate={5} />
 
           <Link href="/" className="group flex items-center gap-2.5" aria-label="UFC — home">
-            <span className="grid size-10 place-items-center rounded-xl bg-[var(--ink)] shadow-[2px_2px_0_var(--signal)] transition-transform duration-500 [transition-timing-function:cubic-bezier(0.3,1.7,0.5,1)] group-hover:rotate-[14deg] group-hover:scale-110">
-              <PixelMark size={22} className="text-[var(--cream)]" />
+            <span className="block size-11 overflow-hidden rounded-xl border-2 border-[var(--ink)] shadow-[2px_2px_0_var(--signal)] transition-transform duration-500 [transition-timing-function:cubic-bezier(0.3,1.7,0.5,1)] group-hover:rotate-[10deg] group-hover:scale-110">
+              <Logo size={44} className="size-full" />
             </span>
             <span className="leading-none">
               <span className="block text-[1.5rem] font-extrabold tracking-[-0.05em]">UFC</span>
