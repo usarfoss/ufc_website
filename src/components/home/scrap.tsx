@@ -182,8 +182,8 @@ export function Scribble({ className, dir = "down", flip = false }: { className?
     >
       {/* shaft sweeps in from the lower left and ends pointing right; the whole thing is then rotated */}
       <path d="M8 64 C 9 42, 26 35, 44 33 S 66 31, 82 38" />
-      {/* arrowhead, centred on the shaft's end tangent */}
-      <path d="M82 38 L 68 36 M82 38 L 72 50" />
+      {/* arrowhead: two barbs of equal length, 28 degrees either side of the way back along the shaft's end tangent (16, 7) */}
+      <path d="M82 38 L 73.3 27 M82 38 L 68 39.1" />
     </svg>
   );
 }

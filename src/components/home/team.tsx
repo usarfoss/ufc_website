@@ -194,11 +194,11 @@ export function Team() {
               {/* extras to fill the wall */}
               <Pin r={3} delay={0.2} className="relative" z={3} hint="drag me">
                 <Polaroid
-                  src="/about-images/team.jpg"
-                  alt="UFC members introducing themselves on stage"
-                  caption="the team, on a stage. we're friendly."
-                  aspect="aspect-square"
-                  position="50% 35%"
+                  src="/about-images/team-group.webp"
+                  alt="The UFC team standing together on a stage, arms around each other's shoulders"
+                  caption="the team, all in one frame. we're friendly."
+                  aspect="aspect-[16/9]"
+                  position="50% 40%"
                   tone="sky"
                   sizes="260px"
                 />

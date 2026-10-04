@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, m, useMotionValueEvent, useScroll, useSpring } from "framer-motion";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import { LINKS, NAV_LINKS, SECTIONS } from "./data";
@@ -19,7 +19,7 @@ const CENTER_LINKS = [
   { label: "About", href: "/about", hint: "how we started" },
   { label: "Events", href: "/events", hint: "what we've run" },
   { label: "Achievements", href: "/achievements", hint: "where we've landed", wide: true },
-  { label: "Team", href: "/#team", hint: "the humans", chapter: "team" },
+  { label: "Archive", href: "/archive", hint: "everything, kept" },
 ] as const;
 
 const scrollToId = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -144,7 +144,6 @@ function MenuOverlay({ origin, onClose, onHome }: { origin: { x: number; y: numb
 
 export function SiteNav() {
   const pathname = usePathname();
-  const router = useRouter();
   const onHome = pathname === "/";
   const { user } = useAuth();
   const inDashboard = pathname?.startsWith("/dashboard");
@@ -156,14 +155,32 @@ export function SiteNav() {
   const [hovered, setHovered] = useState<string | null>(null);
   const [section, setSection] = useState<(typeof SECTIONS)[number] | null>(null);
 
-  const measure = useCallback(() => {
-    let current: (typeof SECTIONS)[number] | null = null;
-    for (const s of SECTIONS) {
+  // Where each chapter starts, measured once and again when the page changes size. Reading it from the scroll position
+  // keeps the nav from asking the browser for a layout on every scroll frame.
+  const tops = useRef<{ s: (typeof SECTIONS)[number]; top: number }[]>([]);
+  const measured = useRef(false);
+  const measureTops = useCallback(() => {
+    measured.current = true;
+    tops.current = SECTIONS.flatMap((s) => {
       const el = document.getElementById(s.id);
-      if (el && el.getBoundingClientRect().top <= window.innerHeight * 0.45) current = s;
-    }
-    setSection(current);
+      return el ? [{ s, top: el.getBoundingClientRect().top + window.scrollY }] : [];
+    });
   }, []);
+  const measure = useCallback(() => {
+    if (!measured.current) measureTops();
+    const line = window.scrollY + window.innerHeight * 0.45;
+    let current: (typeof SECTIONS)[number] | null = null;
+    for (const t of tops.current) if (t.top <= line) current = t.s;
+    setSection(current);
+  }, [measureTops]);
+
+  useEffect(() => {
+    if (!onHome) return;
+    measureTops();
+    const ro = new ResizeObserver(measureTops);
+    ro.observe(document.body);
+    return () => ro.disconnect();
+  }, [onHome, measureTops]);
 
   useMotionValueEvent(scrollY, "change", (y) => {
     const prev = scrollY.getPrevious() ?? 0;
@@ -211,8 +228,7 @@ export function SiteNav() {
 
           <ul className="hidden items-center gap-1.5 md:flex" onMouseLeave={() => setHovered(null)}>
             {CENTER_LINKS.map((l, i) => {
-              const active =
-                !("chapter" in l) && (l.href === "/" ? pathname === "/" : pathname === l.href || pathname?.startsWith(`${l.href}/`));
+              const active = l.href === "/" ? pathname === "/" : pathname === l.href || pathname?.startsWith(`${l.href}/`);
               const common = {
                 onMouseEnter: () => setHovered(l.href),
                 onFocus: () => setHovered(l.href),
@@ -236,22 +252,9 @@ export function SiteNav() {
                       transition={{ type: "spring", stiffness: 420, damping: 30 }}
                     />
                   )}
-                  {"chapter" in l ? (
-                    <a
-                      {...common}
-                      href={l.href}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        goToChapter(l.chapter, onHome, router.push);
-                      }}
-                    >
-                      {inner}
-                    </a>
-                  ) : (
-                    <Link {...common} href={l.href}>
-                      {inner}
-                    </Link>
-                  )}
+                  <Link {...common} href={l.href}>
+                    {inner}
+                  </Link>
                   {hovered === l.href && !active && (
                     <m.span
                       layoutId="nav-blob"

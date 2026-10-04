@@ -1,46 +1,23 @@
-import { MetadataRoute } from "next";
-import { EVENTS } from "@/data/events";
+import type { MetadataRoute } from "next";
+import { EVENTS, EVENTS_NEWEST_FIRST } from "@/data/events";
+import { SITE, absoluteUrl } from "@/data/site";
 
+/**
+ * Only pages that should show up in search. Sign in, the dashboard and the archive placeholder are left out on purpose.
+ * `lastModified` is the date of the newest thing on the page, not "now", so crawlers are not told that everything changed today.
+ */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://ufc-ipu.tech";
-
+  const newest = new Date(EVENTS_NEWEST_FIRST[0].sort);
   return [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/about`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/achievements`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/events`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/login`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-    // Individual event pages
+    { url: SITE.url, lastModified: newest, changeFrequency: "monthly", priority: 1 },
+    { url: absoluteUrl("/about"), changeFrequency: "yearly", priority: 0.8 },
+    { url: absoluteUrl("/events"), lastModified: newest, changeFrequency: "monthly", priority: 0.8 },
+    { url: absoluteUrl("/achievements"), changeFrequency: "yearly", priority: 0.6 },
     ...EVENTS.map((e) => ({
-      url: `${baseUrl}/events/${e.slug}`,
-      lastModified: new Date(),
-      changeFrequency: "monthly" as const,
-      priority: 0.7,
+      url: absoluteUrl(`/events/${e.slug}`),
+      lastModified: new Date(e.sort),
+      changeFrequency: "yearly" as const,
+      priority: 0.6,
     })),
   ];
 }

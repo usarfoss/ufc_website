@@ -6,7 +6,7 @@ import { Bazaar } from "@/components/home/bazaar";
 import { BigTent } from "@/components/home/big-tent";
 import { GitLog } from "@/components/home/git-log";
 import { Team } from "@/components/home/team";
-import { GithubPulse } from "@/components/home/github-pulse";
+import { Workshop } from "@/components/home/workshop";
 import { Zoo } from "@/components/home/zoo";
 import { Join } from "@/components/home/join";
 import { Footer } from "@/components/home/footer";
@@ -22,7 +22,7 @@ export default function Page() {
         <BigTent />
         <GitLog />
         <Team />
-        <GithubPulse />
+        <Workshop />
         <Zoo />
         <Join />
       </main>

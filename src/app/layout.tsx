@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, Caveat, DM_Sans, Fraunces, Pixelify_Sans, Space_Mo
 import "./globals.css";
 import { AppProviders } from "@/app/providers";
 import { REVEAL_SCRIPT } from "@/components/home/reveal-script";
+import { SITE, jsonLd } from "@/data/site";
 
 // Landing-page type system: a chunky grotesque for display, a wonky soft serif for emphasis, a warm sans for reading, a quirky mono for labels.
 const bricolage = Bricolage_Grotesque({
@@ -43,119 +44,59 @@ const pixelify = Pixelify_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE.url),
   title: {
-    default: "UFC - USAR FOSS Club",
-    template: "%s | UFC - USAR FOSS Club",
+    default: "UFC, the USAR FOSS Club | Student open source community at GGSIPU, Delhi",
+    template: "%s | UFC, the USAR FOSS Club",
   },
-  description:
-    "UFC - USAR FOSS Club (University School of Automation & Robotics). Open Source, Open Minds. We build, collaborate, and ship real projects in the USAR/GGSIPU community.",
+  description: SITE.description,
+  applicationName: SITE.shortName,
   keywords: [
-    "UFC",
     "USAR FOSS Club",
-    "UFC USAR",
-    "UFC IPU",
-    "USAR",
-    "IPU",
+    "UFC",
+    "FOSS club",
+    "open source club",
     "GGSIPU",
+    "IPU Delhi",
     "University School of Automation and Robotics",
-    "University School of Automation & Robotics",
-    "FOSS",
-    "Free and Open Source Software",
-    "Open Source",
-    "Open-Source",
-    "OSS",
-    "Git",
-    "GitHub",
-    "Pull Requests",
-    "Issues",
-    "Commits",
-    "Contributions",
-    "Hackathon",
-    "Events",
-    "Workshops",
-    "Meetups",
-    "Leaderboard",
-    "Projects",
-    "Repo Sprint",
-    "Git Clash",
-    "Pokemon YAML Showdown",
-    "FOSS FORGE",
-    "Git Gud",
-    "Programming",
-    "JavaScript",
-    "TypeScript",
-    "React",
-    "Next.js",
-    "Node.js",
-    "Tailwind",
-    "Web Development",
-    "Software Development",
-    "DevOps",
-    "CI/CD",
-    "Delhi",
-    "Delhi NCR",
-    "GGSIPU USAR",
-    "USAR FOSS",
-    "IPU FOSS",
-    "USAR Open Source",
-    "IPU Open Source",
-    "University Open Source",
-    "Student Developers",
-    "Developer Community",
-    "College Tech Club",
-    "Coding Club",
+    "student developer community",
+    "open source for beginners",
+    "FOSS United",
   ],
-  authors: [{ name: "UFC Tech Team" }],
-  creator: "UFC - USAR FOSS Club",
-  publisher: "UFC - USAR FOSS Club",
+  authors: [{ name: "UFC", url: SITE.url }],
+  creator: SITE.name,
+  publisher: SITE.name,
+  formatDetection: { telephone: false, email: false, address: false },
   robots: {
     index: true,
     follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
+    googleBot: { index: true, follow: true, "max-video-preview": -1, "max-image-preview": "large", "max-snippet": -1 },
   },
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
-    locale: "en_US",
-    url: "https://ufc-ipu.tech",
-    title: "UFC - USAR FOSS Club",
-    description:
-      "UFC - USAR FOSS Club (University School of Automation & Robotics). Open Source, Open Minds. Build, collaborate, and grow with the USAR/GGSIPU community.",
-    siteName: "UFC - USAR FOSS Club",
-    images: [
-      {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "UFC - USAR FOSS Club",
-      },
-    ],
+    locale: SITE.locale,
+    url: "/",
+    title: "UFC, the USAR FOSS Club: Open Source, Open Minds",
+    description: SITE.description,
+    siteName: SITE.name,
+    images: [SITE.ogImage],
   },
   twitter: {
     card: "summary_large_image",
-    title: "UFC - USAR FOSS Club",
-    description:
-      "UFC - USAR FOSS Club (University School of Automation & Robotics). Open Source, Open Minds. Build, collaborate, and grow with the USAR/GGSIPU community.",
-    images: ["/og-image.jpg"],
+    title: "UFC, the USAR FOSS Club: Open Source, Open Minds",
+    description: SITE.description,
+    images: [SITE.ogImage.url],
     creator: "@ufc_tech",
   },
   icons: {
     icon: [
-      { url: "/brand/ufc-logo.svg", type: "image/svg+xml" },
       { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon.ico", sizes: "32x32", type: "image/x-icon" },
+      { url: "/brand/ufc-logo.svg", type: "image/svg+xml" },
+      { url: "/brand/icon-192.png", sizes: "192x192", type: "image/png" },
     ],
     shortcut: "/favicon.ico",
-    apple: "/favicon.ico",
-  },
-  metadataBase: new URL("https://ufc-ipu.tech"),
-  alternates: {
-    canonical: "/",
+    apple: { url: "/brand/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
   },
 };
 
@@ -164,30 +105,47 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Who we are, and what this site is. Home page and every other page share it, so search engines learn the name once.
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "UFC - University FOSS Club",
-    alternateName: ["USAR FOSS Club", "IPU FOSS Club", "University FOSS Club"],
-    description:
-      "UFC - University FOSS Club, USAR FOSS Club, IPU FOSS Club. Open Source, Open Minds. Building the future together through collaborative development and community-driven innovation.",
-    url: "https://ufc-ipu.tech",
-    logo: "https://ufc-ipu.tech/brand/ufc-logo.svg",
-    sameAs: ["https://github.com/usarfoss"],
-    contactPoint: {
-      "@type": "ContactPoint",
-      contactType: "General Inquiry",
-      email: "contact@ufc-tech.com",
-    },
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${SITE.url}/#organization`,
+        name: "UFC, the USAR FOSS Club",
+        alternateName: ["UFC", "USAR FOSS Club", "University FOSS Club", "IPU FOSS Club"],
+        description: SITE.description,
+        url: SITE.url,
+        logo: { "@type": "ImageObject", url: `${SITE.url}/brand/icon-512.png`, width: 512, height: 512 },
+        image: `${SITE.url}${SITE.ogImage.url}`,
+        slogan: "Open Source, Open Minds.",
+        foundingDate: "2025-08-09",
+        areaServed: "Delhi, India",
+        parentOrganization: {
+          "@type": "CollegeOrUniversity",
+          name: "University School of Automation and Robotics, Guru Gobind Singh Indraprastha University",
+        },
+        sameAs: SITE.sameAs,
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${SITE.url}/#website`,
+        url: SITE.url,
+        name: SITE.name,
+        description: SITE.description,
+        inLanguage: "en-IN",
+        publisher: { "@id": `${SITE.url}/#organization` },
+      },
+    ],
   };
 
   return (
-    <html lang="en">
+    <html lang="en-IN">
       <head>
         <noscript>
           <style>{`[data-reveal="r"]{opacity:1!important;transform:none!important}[data-reveal="m"]>.mask-line{transform:none!important}`}</style>
         </noscript>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(structuredData)} />
       </head>
       <body
         className={`${bricolage.variable} ${fraunces.variable} ${dmSans.variable} ${spaceMono.variable} ${caveat.variable} ${pixelify.variable} antialiased`}

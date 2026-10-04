@@ -45,7 +45,7 @@ export function Zoo() {
     <section id="zoo" className="pat-dots relative overflow-hidden bg-[#c7b3ff] pt-24 text-[var(--ink)] sm:pt-32">
       <div className="pointer-events-none relative z-10 mx-auto max-w-7xl px-5 sm:px-8">
         <Reveal>
-          <p className="eyebrow mb-8 inline-block bg-[var(--cream)] px-2 py-1 text-[var(--signal-deep)]">§ 06 — the zoo</p>
+          <p className="eyebrow mb-8 inline-block bg-[var(--cream)] px-2 py-1 text-[var(--signal-deep)]">§ 07 — the zoo</p>
         </Reveal>
         <div className="pointer-events-none relative z-10 grid items-end gap-8 lg:grid-cols-12">
           <h2 className="text-[clamp(2.6rem,6.6vw,6.2rem)] font-semibold leading-[0.92] tracking-[-0.058em] lg:col-span-9">

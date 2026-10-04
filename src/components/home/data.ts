@@ -11,6 +11,7 @@ export const NAV_LINKS = [
   { label: "About", href: "/about" },
   { label: "Events", href: "/events" },
   { label: "Achievements", href: "/achievements" },
+  { label: "Archive", href: "/archive" },
   { label: "Dashboard", href: "/dashboard" },
 ] as const;
 
@@ -21,8 +22,9 @@ export const SECTIONS = [
   { id: "big-tent", n: "03", label: "The big tent" },
   { id: "history", n: "04", label: "The log" },
   { id: "team", n: "05", label: "The core leads" },
-  { id: "zoo", n: "06", label: "The zoo" },
-  { id: "join", n: "07", label: "The invitation" },
+  { id: "workshop", n: "06", label: "The workshop" },
+  { id: "zoo", n: "07", label: "The zoo" },
+  { id: "join", n: "08", label: "The invitation" },
 ] as const;
 
 export const RIBBON_WORDS = [

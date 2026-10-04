@@ -165,7 +165,7 @@ export function Join() {
 
       <div className="relative mx-auto max-w-7xl px-5 py-28 sm:px-8 sm:py-40">
         <Reveal>
-          <p className="eyebrow mb-8">§ 07 — the invitation</p>
+          <p className="eyebrow mb-8">§ 08 — the invitation</p>
         </Reveal>
         <Pin r={-8} delay={0.3} className="absolute right-6 top-24 z-10 hidden md:block lg:right-[8%] lg:top-28" hint="drag me">
           <Badge tone="butter" className="!text-base">

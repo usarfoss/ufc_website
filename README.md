@@ -27,15 +27,16 @@ The site is not a brochure with a list of features. It tries to explain the club
 
 **One idea per section.** The home page is a single scroll, and each chapter has one job.
 
-| Chapter        | What it says                                                                                                                                                                                          |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Premise        | The four freedoms of free software (run, study, share, improve), numbered 0 to 3 like a programmer would, each one paired with something the club actually does about it.                             |
-| The bazaar     | Eric Raymond's cathedral and bazaar: closed software is built by a few people behind doors, open software by everyone who turns up. And the people who turned up first were never one type of person. |
-| The big tent   | Open source needs designers, writers, hardware people and beginners, not only programmers. Pick what sounds like you.                                                                                 |
-| The log        | A clothesline of the things we have run so far, from Genesis to Build with TRAE, so the history is easy to see.                                                                                       |
-| The core leads | The students who keep the community alive, shown as a wall of photos with a short note each.                                                                                                          |
-| The zoo        | The mascots and logos of the open source world, as stickers you can grab and throw around.                                                                                                            |
-| The invitation | Where to join us.                                                                                                                                                                                     |
+| Chapter        | What it says                                                                                                                                                                                                                                                                                                                                                                  |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Premise        | The four freedoms of free software (run, study, share, improve), numbered 0 to 3 like a programmer would, each one paired with something the club actually does about it.                                                                                                                                                                                                     |
+| The bazaar     | Eric Raymond's cathedral and bazaar: closed software is built by a few people behind doors, open software by everyone who turns up. And the people who turned up first were never one type of person.                                                                                                                                                                         |
+| The big tent   | Open source needs designers, writers, hardware people and beginners, not only programmers. Pick what sounds like you.                                                                                                                                                                                                                                                         |
+| The log        | A clothesline of the things we have run so far, from Genesis to Build with TRAE, so the history is easy to see.                                                                                                                                                                                                                                                               |
+| The core leads | The students who keep the community alive, shown as a wall of photos with a short note each.                                                                                                                                                                                                                                                                                  |
+| The workshop   | The projects the community is proudest of, each one an exploded drawing. The layers of the project float apart in 3D with a label on each, and scrolling pushes them back together. Then a stamp lands on it. Every project has its own coloured paper, and the next one is pulled up over the last like a torn sheet. A blank last scene invites you to bring the next idea. |
+| The zoo        | The mascots and logos of the open source world, as stickers you can grab and throw around.                                                                                                                                                                                                                                                                                    |
+| The invitation | Where to join us.                                                                                                                                                                                                                                                                                                                                                             |
 
 **Show, do not only tell.** The design is a scrapbook on purpose. Tape, polaroids, sticky notes and stickers say that this is a club made by people, not a company. Several pieces are interactive, such as the stickers you can drag and the thread that follows you down the About page. They are there to be fun, and the text still works without them.
 
@@ -53,8 +54,14 @@ All the words on the public pages are plain data, so you can fix wording without
 | About page story and beliefs                        | [src/components/about/story-data.ts](src/components/about/story-data.ts) |
 | Events and the per-event pages                      | [src/data/events.ts](src/data/events.ts)                                 |
 | Achievements                                        | [src/data/achievements.ts](src/data/achievements.ts)                     |
+| The workshop (the featured projects)                | [src/data/flagship.ts](src/data/flagship.ts)                             |
+| The whole first bootcamp, for the archive           | [src/data/projects.ts](src/data/projects.ts)                             |
 
 The events file is the single source of truth for event dates and details. Every events page reads from it, so fix a detail there and it is fixed everywhere.
+
+## Search and link previews
+
+The address, the site description and the picture shown when a link is shared all live in [src/data/site.ts](src/data/site.ts), so a change of domain happens in one place. Every page sets its own canonical address and preview through `pageMetadata()`, and each event page also describes itself to search engines as an event. If you add a public page, give it `pageMetadata()` and add it to [src/app/sitemap.ts](src/app/sitemap.ts). Pages that are not for search, such as sign in and the dashboard, are kept out of the sitemap and marked `noindex`.
 
 ## What is in the site
 

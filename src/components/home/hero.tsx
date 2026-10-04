@@ -33,6 +33,7 @@ export function Hero() {
         </div>
 
         <h1 className="relative text-[clamp(3.3rem,15.5vw,5.6rem)] leading-[0.86] tracking-[-0.038em] sm:text-[clamp(4.2rem,10.2vw,10.2rem)]">
+          <span className="sr-only">UFC, the USAR FOSS Club: </span>
           <MaskLine delay={0.15}>Open Source,</MaskLine>
           <span className="mt-[0.08em] flex flex-wrap items-end gap-x-[0.2em]">
             <MaskLine delay={0.28} className="!w-auto">
