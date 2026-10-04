@@ -83,7 +83,7 @@ The address, the site description and the picture shown when a link is shared al
 You need Node.js and a PostgreSQL database. A free Neon or Supabase database works fine.
 
 ```bash
-git clone https://github.com/usarfoss/ufc_website.git
+git clone https://github.com/USAR-FOSS/ufc_website.git
 cd ufc_website
 npm install
 cp .env.example .env
@@ -136,7 +136,7 @@ The first run downloads the right binary for your system. If npm blocks the pack
 
 We would love your help, and you do not need to be an expert.
 
-1. Fork [usarfoss/ufc_website](https://github.com/usarfoss/ufc_website) and clone your fork.
+1. Fork [USAR-FOSS/ufc_website](https://github.com/USAR-FOSS/ufc_website) and clone your fork.
 2. Create a branch with `git checkout -b my-change`.
 3. Make your change. Run `npm run lint` before you commit.
 4. Push the branch and open a pull request. Tell us what you changed and why, in your own words.

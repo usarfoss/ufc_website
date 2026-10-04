@@ -1,7 +1,7 @@
 /** Static content for the landing page. Kept apart from markup so copy edits stay one-line diffs. */
 
 export const LINKS = {
-  github: "https://github.com/usarfoss",
+  github: "https://github.com/USAR-FOSS",
   whatsapp: "https://chat.whatsapp.com/CyN8KlKDUfh8zmzp5VYGSh",
   discord: "https://discord.com/invite/7HrTYAUpdd",
   instagram: "https://www.instagram.com/foss_usar/",

@@ -12,7 +12,7 @@ export const SITE = {
   locale: "en_IN",
   ogImage: { url: "/og-image.jpg", width: 1200, height: 630, alt: "UFC, the USAR FOSS Club: Open Source, Open Minds" },
   sameAs: [
-    "https://github.com/usarfoss",
+    "https://github.com/USAR-FOSS",
     "https://www.instagram.com/foss_usar/",
     "https://discord.com/invite/7HrTYAUpdd",
     "https://fossunited.org/c/university-school-of-automation-and-robotics",

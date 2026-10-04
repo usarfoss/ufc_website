@@ -10,7 +10,7 @@ import { Logo } from "./logo";
 import { PixelMark } from "./pixel-mark";
 import { Badge, Pin, Scribble, Sticker, Tape } from "./scrap";
 
-const CLONE = "git clone https://github.com/usarfoss/ufc_website";
+const CLONE = "git clone https://github.com/USAR-FOSS/ufc_website";
 
 const STEPS = [
   { n: "1", title: "Say hello", body: "Join the community chat. Event links and first-timer help land there." },

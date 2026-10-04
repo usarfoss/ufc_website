@@ -193,9 +193,9 @@ export function ClotheslineLog() {
   const bar = useSpring(p, { stiffness: 140, damping: 26, mass: 0.4 });
 
   return (
-    <section ref={ref} className="relative" style={{ height: travel + vp.h }}>
+    <section ref={ref} className="relative" style={{ height: `calc(${travel}px + 100lvh)` }}>
       <TornEdge color="var(--paper)" className="absolute inset-x-0 top-0 z-30" />
-      <div className="cv-auto sticky top-0 h-[100svh] overflow-hidden bg-[linear-gradient(to_bottom,#6cbcff,#bfe3ff_58%,#e6f4ff)] text-[var(--ink)]">
+      <div className="cv-auto sticky top-0 h-[100lvh] overflow-hidden bg-[linear-gradient(to_bottom,#6cbcff,#bfe3ff_58%,#e6f4ff)] text-[var(--ink)]">
         <Clouds />
 
         <div className="absolute right-[4%] top-[4.6rem] z-[5] w-16 sm:w-28 xl:w-36">

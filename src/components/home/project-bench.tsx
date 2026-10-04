@@ -595,7 +595,7 @@ function Scene({
   const stamped = item ? STAMPS[item.stage] : { text: "open", color: "#0b874f" };
 
   const inner = (
-    <div className="mx-auto grid h-full w-full max-w-7xl grid-cols-1 grid-rows-[auto_minmax(0,1fr)] gap-1 px-5 pb-3 pt-[4.6rem] sm:px-8 lg:grid-cols-12 lg:grid-rows-1 lg:items-center lg:gap-6 lg:pb-0 lg:pt-8">
+    <div className="mx-auto grid h-full w-full max-w-7xl grid-cols-1 grid-rows-[auto_minmax(0,1fr)] gap-1 px-5 pb-[calc(0.75rem+100lvh-100svh)] pt-[4.6rem] sm:px-8 lg:grid-cols-12 lg:grid-rows-1 lg:items-center lg:gap-6 lg:pb-[calc(100lvh-100svh)] lg:pt-8">
       <div className="relative z-10 text-[var(--ink)] lg:col-span-6 lg:max-w-[38rem]">
         <Copy item={item} index={index} show={show} />
         {nav}
@@ -721,12 +721,12 @@ function BenchStage({ projects }: { projects: Flagship[] }) {
   };
 
   return (
-    <div ref={track} className="relative" style={{ height: `${(1 + range) * 100}svh` }}>
+    <div ref={track} className="relative" style={{ height: `${(1 + range) * 100}lvh` }}>
       {/* the first scene's paper is torn along its top edge, and the last one along its bottom, so neither meets the blueprint in a straight line */}
       <TornEdge color={PAPERS[0].bg} flip className="pointer-events-none absolute inset-x-0 bottom-full z-30 translate-y-px" />
       <TornEdge color={BLANK_PAPER.bg} className="pointer-events-none absolute inset-x-0 top-full z-30 -translate-y-px" />
       <div
-        className="cv-auto sticky top-0 h-[100svh] overflow-hidden"
+        className="cv-auto sticky top-0 h-[100lvh] overflow-hidden"
         onPointerMove={
           fine
             ? (e) => {

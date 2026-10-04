@@ -294,10 +294,12 @@ function Stage() {
     smoothScrollTo(top + (el.offsetHeight - window.innerHeight) * STOPS[i], tween);
   };
 
+  // On phones the address bar slides away as you scroll, so the screen grows. The pinned stage is as tall as the biggest the screen
+  // gets (lvh) so it always fills it, and the content is padded to stay inside the smallest (svh) so nothing hides under the bar.
   return (
-    <div ref={ref} className="relative" style={{ height: `${FREEDOMS.length * 85 + 15}vh` }}>
+    <div ref={ref} className="relative" style={{ height: `${FREEDOMS.length * 85 + 15}lvh` }}>
       <TornEdge color="var(--paper)" className="absolute inset-x-0 top-0 z-30 -translate-y-px" />
-      <div className="cv-auto sticky top-0 h-[100svh] overflow-hidden">
+      <div className="cv-auto sticky top-0 h-[100lvh] overflow-hidden">
         {FREEDOMS.map((f, i) => {
           const sc = SCENES[i];
           const Body = SCENE_BODY[i];
@@ -308,7 +310,7 @@ function Stage() {
               className={`absolute inset-0 ${sc.pat}`}
               style={{ backgroundColor: sc.bg, clipPath: clips[i] ?? undefined, zIndex: i + 1 }}
             >
-              <div className="mx-auto grid h-full w-full max-w-7xl grid-cols-1 content-center gap-3 px-5 pt-20 sm:px-8 lg:grid-cols-12 lg:items-center lg:gap-8 lg:pt-8">
+              <div className="mx-auto grid h-full w-full max-w-7xl grid-cols-1 content-center gap-3 px-5 pb-[calc(100lvh-100svh)] pt-20 sm:px-8 lg:grid-cols-12 lg:items-center lg:gap-8 lg:pt-8">
                 <div className="text-[var(--ink)] lg:col-span-6">
                   <Copy f={f} show={show} />
                   <div className="mt-4 flex items-center gap-4 lg:mt-10">
