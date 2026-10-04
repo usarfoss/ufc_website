@@ -369,7 +369,7 @@ export const ROLES: Role[] = [
     tools: ["KiCad", "Arduino", "ROS", "FreeCAD", "Raspberry Pi"],
     first: "Reproduce an open-hardware build and document where it broke.",
     tone: "butter",
-    stickers: ["oshw", "kicad", "pi"],
+    stickers: ["oshw", "kicad", "arduino-cutout"],
   },
   {
     id: "data",

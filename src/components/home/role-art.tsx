@@ -21,12 +21,23 @@ export function RoleArt({ id, className }: { id: RoleId; className?: string }) {
         <g {...common}>
           <circle cx="63" cy="65" r="46" fill={INK} opacity="0.22" />
           <circle cx="58" cy="60" r="46" fill="#ffb3cf" />
-          <path d="M22 88C34 28 70 106 96 34" strokeWidth="5" />
-          <path d="M22 88 38 50M96 34l-8 34" strokeWidth="2.4" strokeDasharray="1 6" />
-          <rect x="14" y="80" width="16" height="16" fill="#fff" />
-          <rect x="88" y="26" width="16" height="16" fill="#fff" />
-          <circle cx="38" cy="50" r="6" fill="#c7b3ff" />
-          <circle cx="88" cy="68" r="6" fill="#c7b3ff" />
+          {/* the palette */}
+          <path
+            d="M24 60C22 35 41 20 62 20c25 0 38 17 34 36-3 14-17 14-23 12-8-2-12 4-8 12 4 10-9 16-22 12C32 88 25 74 24 60z"
+            fill="#f7f2e4"
+          />
+          <ellipse cx="41" cy="77" rx="6.5" ry="5" fill="#ffb3cf" />
+          <circle cx="38" cy="45" r="6.5" fill="#ff6b5e" />
+          <circle cx="53" cy="33" r="6.5" fill="#ffe36e" />
+          <circle cx="70" cy="33" r="6.5" fill="#2ee58f" />
+          <circle cx="84" cy="46" r="6.5" fill="#9bd7ff" />
+          <circle cx="58" cy="52" r="6.5" fill="#c7b3ff" />
+          {/* a brush, laid across the corner */}
+          <g transform="rotate(38 96 78)">
+            <rect x="91" y="26" width="10" height="46" rx="2" fill="#ffe36e" />
+            <rect x="91" y="70" width="10" height="11" fill="#cfd3c8" />
+            <path d="M91 81h10c1 8-2 15-5 19-3-4-6-11-5-19z" fill="#ff6b5e" />
+          </g>
         </g>
       )}
       {id === "hardware" && (
