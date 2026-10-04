@@ -6,6 +6,7 @@ import { TEAM, LINKS, type Member } from "./data";
 import { MaskLine, Reveal } from "./motion-primitives";
 import { Badge, Pin, Polaroid, PostIt, Scribble, Sticker, Tape } from "./scrap";
 import { Ransom } from "./ransom";
+import { ChalkBackdrop } from "./team-chalk";
 
 const PIN_TONES = ["#ff6b5e", "#ffe36e", "#2ee58f", "#c7b3ff", "#9bd7ff", "#ffb3cf"];
 const TILT = [-3, 2.2, -1.6, 3, -2.4, 1.4, -3.2, 2.6, -1.2, 3.2, -2, 1.8];
@@ -122,7 +123,8 @@ export function Team() {
 
   return (
     <section id="team" className="relative bg-[var(--ink)] pb-28 pt-28 sm:pb-40 sm:pt-40">
-      <div className="mx-auto max-w-7xl px-5 sm:px-8">
+      <ChalkBackdrop />
+      <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
         <div className="mb-14 grid items-end gap-8 lg:mb-20 lg:grid-cols-12">
           <div className="lg:col-span-8">
             <Reveal>
@@ -157,7 +159,7 @@ export function Team() {
 
           <div
             ref={board}
-            className="cork relative rounded-[1.5rem] border-[12px] border-[#6b4423] p-5 pb-12 pt-12 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.8)] sm:border-[16px] sm:p-9 sm:pb-14 sm:pt-14"
+            className="cork relative rounded-[1.5rem] border-[12px] border-[#6b4423] p-5 pb-[4.5rem] pt-12 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.8)] sm:border-[16px] sm:p-9 sm:pb-14 sm:pt-14"
           >
             <svg className="pointer-events-none absolute inset-0 z-[1] size-full" aria-hidden="true">
               {STRINGS.map((_, i) => (
@@ -184,12 +186,24 @@ export function Team() {
               ))}
             </svg>
 
-            <div className="relative z-[2] grid grid-cols-2 gap-x-5 gap-y-14 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-16">
+            <div className="relative z-[2] grid grid-cols-2 gap-x-5 gap-y-12 sm:gap-y-14 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-16">
               {TEAM.map((m, i) => (
                 <MemberCard key={m.name} m={m} i={i} />
               ))}
 
               {/* extras to fill the wall */}
+              <Pin r={3} delay={0.2} className="relative" z={3} hint="drag me">
+                <Polaroid
+                  src="/about-images/team.jpg"
+                  alt="UFC members introducing themselves on stage"
+                  caption="the team, on a stage. we're friendly."
+                  aspect="aspect-square"
+                  position="50% 35%"
+                  tone="sky"
+                  sizes="260px"
+                />
+              </Pin>
+
               <Pin r={-2} delay={0.1} className="relative" z={3} hint="drag me">
                 <div className="paper relative px-3 pb-5 pt-7 text-center [container-type:inline-size] sm:px-5 sm:pb-6 sm:pt-8">
                   <Tape tone="signal" className="-top-3 left-1/2 -translate-x-1/2" rotate={-2} />
@@ -201,18 +215,6 @@ export function Team() {
                     reward: your name in <span className="font-bold">git blame</span>
                   </p>
                 </div>
-              </Pin>
-
-              <Pin r={3} delay={0.2} className="relative" z={3} hint="drag me">
-                <Polaroid
-                  src="/about-images/team.jpg"
-                  alt="UFC members introducing themselves on stage"
-                  caption="the team, on a stage. we're friendly."
-                  aspect="aspect-square"
-                  position="50% 35%"
-                  tone="sky"
-                  sizes="260px"
-                />
               </Pin>
 
               <Pin r={-4} delay={0.3} className="relative" z={4} hint="drag me">
@@ -231,14 +233,15 @@ export function Team() {
                 </PostIt>
               </Pin>
 
-              <div className="relative flex min-h-[11rem] items-center justify-center md:col-span-3 lg:col-span-3">
-                <Pin r={-8} delay={0.35} className="absolute left-[4%] top-[6%] w-14 sm:w-28" hint="drag me">
+              {/* Shares the last row with the cards above it: two columns wide on desktop and tablet, a slim strip on phones. */}
+              <div className="relative -mt-12 h-0 sm:mt-0 sm:h-auto sm:min-h-[9rem] md:min-h-[11rem] col-span-2 flex items-center justify-center">
+                <Pin r={-8} delay={0.35} className="absolute left-[2%] top-2 w-14 sm:left-[4%] sm:top-[6%] sm:w-28" hint="drag me">
                   <Sticker src="/collage/wilber.webp" alt="Wilber, the GIMP mascot" className="aspect-square w-full" sizes="120px" />
                 </Pin>
-                <Pin r={9} delay={0.45} className="absolute left-[44%] top-[30%] w-16 sm:left-[34%] sm:top-[24%] sm:w-32" hint="drag me">
+                <Pin r={9} delay={0.45} className="absolute left-[30%] top-3 w-16 sm:left-[34%] sm:top-[24%] sm:w-32" hint="drag me">
                   <Sticker src="/collage/ferris.webp" alt="Ferris, the Rust crab" className="aspect-[3/2] w-full" sizes="140px" />
                 </Pin>
-                <Pin r={-4} delay={0.5} className="absolute bottom-[4%] left-[8%] sm:left-[62%]" hint="drag me">
+                <Pin r={-4} delay={0.5} className="absolute left-[58%] top-4 sm:bottom-[4%] sm:top-auto sm:left-[62%]" hint="drag me">
                   <Badge tone="butter" className="!px-2.5 !py-1 !text-[0.62rem] sm:!px-4 sm:!py-1.5 sm:!text-sm">
                     now hiring: you
                   </Badge>

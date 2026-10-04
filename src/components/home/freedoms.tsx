@@ -157,7 +157,7 @@ function ShareScene({ show }: { show: boolean }) {
       <Item show={show} left={4} top={67} w={52} r={-2} z={5} delay={0.35}>
         <PostIt color="butter">
           <Tape tone="signal" className="-top-3 left-1/2 -translate-x-1/2" rotate={-2} />
-          talks are open to everyone — links drop on WhatsApp
+          talks are open to everyone, links drop on WhatsApp
         </PostIt>
       </Item>
       <Item show={show} left={62} top={64} w={34} r={8} z={5} delay={0.45}>
@@ -372,13 +372,13 @@ export function Freedoms() {
           </MaskLine>
           <MaskLine inView delay={0.2}>
             as in <span className="serif underline decoration-[var(--signal)] decoration-[0.06em] underline-offset-[0.12em]">freedom</span>
-            <span className="text-[var(--ink)]/35"> — four of them.</span>
+            <span className="text-[var(--ink)]/35">. Four of them.</span>
           </MaskLine>
         </h2>
         <Reveal delay={0.1}>
           <p className="mt-8 max-w-xl text-lg leading-relaxed text-[var(--ink)]/65">
-            The Free Software Foundation numbers them from zero, because programmers do. We built a club around each one — scroll to meet
-            them.
+            The Free Software Foundation counts them from zero, the way a programmer would. At UFC each one turns into something you can
+            actually do: show up, take things apart, share what you learn, and send a fix. Scroll down to see how.
           </p>
         </Reveal>
       </div>
