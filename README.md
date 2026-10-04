@@ -153,7 +153,7 @@ A few things that make a pull request easy to review:
 - [WhatsApp community](https://chat.whatsapp.com/CyN8KlKDUfh8zmzp5VYGSh)
 - [Discord](https://discord.com/invite/7HrTYAUpdd)
 - [Instagram](https://www.instagram.com/foss_usar/)
-- [GitHub organisation](https://github.com/usarfoss)
+- [GitHub organisation](https://github.com/USAR-FOSS)
 
 Whether you are a beginner or have been doing this for years, you are welcome here.
 
