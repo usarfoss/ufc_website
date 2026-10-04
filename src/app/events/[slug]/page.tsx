@@ -4,7 +4,7 @@ import { HomeShell } from "@/components/home/home-shell";
 import { Footer } from "@/components/home/footer";
 import { EventDetail } from "@/components/events/event-detail";
 import { EVENTS, LEGACY_IDS, getEvent, type EventItem } from "@/data/events";
-import { SITE, absoluteUrl, jsonLd, pageMetadata } from "@/data/site";
+import { SITE, absoluteUrl, breadcrumbs, jsonLd, pageMetadata } from "@/data/site";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -12,19 +12,35 @@ export function generateStaticParams() {
   return EVENTS.map((e) => ({ slug: e.slug }));
 }
 
-/** The poster or photo, when there is one, so a shared link shows the event itself. */
-const pictureOf = (event: EventItem) => (event.image ? { url: event.image.src, alt: event.image.alt } : undefined);
+/** Short titles get their subtitle, so "Genesis" becomes "Genesis: Orientation and founding". Long ones stand alone. */
+const seoTitle = (event: EventItem) => (event.title.length < 30 ? `${event.title}: ${event.subtitle}` : event.title);
+
+/** The summary, plus when and where, so a short summary still fills a search result. */
+const seoDescription = (event: EventItem) => {
+  const where = /online/i.test(event.location) ? "online" : `at ${event.location}`;
+  const full = `${event.summary} ${event.dateLabel}, ${where}.`;
+  return full.length <= 165 ? full : event.summary;
+};
+
+/** A 1200x630 card made from the event's poster or photo (public/og/events). The posters themselves are too heavy for link previews. */
+const cardOf = (event: EventItem) => ({
+  url: `/og/events/${event.slug}.jpg`,
+  width: 1200,
+  height: 630,
+  alt: event.image?.alt ?? `${event.title}, an event by UFC`,
+});
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const event = getEvent(slug);
   if (!event) return {};
   return pageMetadata({
-    title: `${event.title}: ${event.subtitle}`,
-    description: event.summary,
+    title: seoTitle(event),
+    description: seoDescription(event),
     path: `/events/${event.slug}`,
-    image: pictureOf(event),
+    image: cardOf(event),
     type: "article",
+    publishedTime: event.sort,
   });
 }
 
@@ -39,7 +55,7 @@ function eventSchema(event: EventItem) {
         "@type": "Event",
         "@id": `${url}#event`,
         name: `${event.title}: ${event.subtitle}`,
-        description: event.summary,
+        description: seoDescription(event),
         startDate: event.sort,
         eventStatus: "https://schema.org/EventScheduled",
         eventAttendanceMode: online ? "https://schema.org/OnlineEventAttendanceMode" : "https://schema.org/OfflineEventAttendanceMode",
@@ -50,19 +66,12 @@ function eventSchema(event: EventItem) {
               name: event.location,
               address: { "@type": "PostalAddress", addressLocality: "Delhi", addressCountry: "IN" },
             },
-        image: [absoluteUrl(event.image?.src ?? SITE.ogImage.url)],
+        image: [absoluteUrl(cardOf(event).url)],
         isAccessibleForFree: true,
         organizer: { "@id": `${SITE.url}/#organization` },
         url,
       },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: SITE.url },
-          { "@type": "ListItem", position: 2, name: "Events", item: absoluteUrl("/events") },
-          { "@type": "ListItem", position: 3, name: event.title, item: url },
-        ],
-      },
+      breadcrumbs({ name: "Events", path: "/events" }, { name: event.title, path: `/events/${event.slug}` }),
     ],
   };
 }

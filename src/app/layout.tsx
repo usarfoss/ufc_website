@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Caveat, DM_Sans, Fraunces, Pixelify_Sans, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/app/providers";
@@ -46,11 +46,12 @@ const pixelify = Pixelify_Sans({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: "UFC, the USAR FOSS Club | Student open source community at GGSIPU, Delhi",
-    template: "%s | UFC, the USAR FOSS Club",
+    default: "UFC, the USAR FOSS Club | Open Source at GGSIPU, Delhi",
+    template: "%s | UFC",
   },
   description: SITE.description,
-  applicationName: SITE.shortName,
+  applicationName: SITE.name,
+  appleWebApp: { title: SITE.name, capable: true },
   keywords: [
     "USAR FOSS Club",
     "UFC",
@@ -100,6 +101,8 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = { themeColor: "#090c0a", colorScheme: "dark light" };
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -112,8 +115,8 @@ export default function RootLayout({
       {
         "@type": "Organization",
         "@id": `${SITE.url}/#organization`,
-        name: "UFC, the USAR FOSS Club",
-        alternateName: ["UFC", "USAR FOSS Club", "University FOSS Club", "IPU FOSS Club"],
+        name: SITE.name,
+        alternateName: [...SITE.alternateNames, "IPU FOSS Club"],
         description: SITE.description,
         url: SITE.url,
         logo: { "@type": "ImageObject", url: `${SITE.url}/brand/icon-512.png`, width: 512, height: 512 },
@@ -132,6 +135,7 @@ export default function RootLayout({
         "@id": `${SITE.url}/#website`,
         url: SITE.url,
         name: SITE.name,
+        alternateName: SITE.alternateNames,
         description: SITE.description,
         inLanguage: "en-IN",
         publisher: { "@id": `${SITE.url}/#organization` },

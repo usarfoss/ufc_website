@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { EVENTS_NEWEST_FIRST } from "@/data/events";
-import { SITE, absoluteUrl, jsonLd, pageMetadata } from "@/data/site";
+import { SITE, absoluteUrl, breadcrumbs, jsonLd, pageMetadata } from "@/data/site";
 import { HomeShell } from "@/components/home/home-shell";
 import { Footer } from "@/components/home/footer";
 import { EventsCta, EventsList } from "@/components/events/events-list";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Events",
+  title: "Events by the USAR FOSS Club",
   description:
     "Every workshop, talk and competition the USAR FOSS Club has run: Git Gud, FOSS Forge, the Open Community Chintans and more. Click any event for the full story.",
   path: "/events",
@@ -30,6 +30,10 @@ export default function EventsPage() {
   return (
     <HomeShell>
       <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(eventList)} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={jsonLd({ "@context": "https://schema.org", ...breadcrumbs({ name: "Events", path: "/events" }) })}
+      />
       <main>
         <EventsList />
         <EventsCta />
