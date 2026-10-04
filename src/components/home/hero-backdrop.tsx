@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Image from "next/image";
 import { Tape } from "./scrap";
 
 /** A cross-hatch of tiny plus signs, like registration marks on a printer's proof. */
@@ -99,6 +100,17 @@ export function HeroBackdrop() {
           +
         </span>
       ))}
+
+      {/* one of the wall's hand-drawn flowers, filling the open space beside the headline */}
+      <Image
+        src="/flowers/flower-10.webp"
+        alt=""
+        width={205}
+        height={212}
+        sizes="144px"
+        className="absolute left-[68%] top-[31%] hidden w-[clamp(5.5rem,9vw,9rem)] rotate-[14deg] drop-shadow-[0_3px_0_rgba(0,0,0,0.35)] md:block"
+        draggable={false}
+      />
 
       {/* tape across the corners */}
       <Tape tone="butter" className="!h-9 !w-[26rem] -left-24 top-24 opacity-90" rotate={-34} />
