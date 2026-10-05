@@ -16,26 +16,26 @@ const JOBS = [
   {
     id: "live-poll",
     path: "/api/jobs/live-poll",
-    cron: "* * * * *",
-    what: "check every active member for new GitHub and LeetCode activity, every minute",
+    cron: "*/2 * * * *",
+    what: "check every active member for new GitHub and LeetCode activity, every 2 minutes (every minute while a dashboard is open)",
   },
   {
     id: "github-reconcile",
     path: "/api/jobs/github-reconcile",
-    cron: "0 */3 * * *",
-    what: "refresh GitHub numbers for active members, every 3 hours",
+    cron: "0 22 * * *",
+    what: "refresh GitHub numbers for active members, once a day (03:30 IST)",
   },
   {
     id: "leetcode-reconcile",
     path: "/api/jobs/leetcode-reconcile",
-    cron: "30 */3 * * *",
-    what: "refresh LeetCode numbers for linked members, every 3 hours",
+    cron: "30 22 * * *",
+    what: "refresh LeetCode numbers for linked members, once a day (04:00 IST)",
   },
   {
     id: "activity-cleanup",
     path: "/api/jobs/activity-cleanup",
-    cron: "15 * * * *",
-    what: "delete activity older than 36 hours, every hour",
+    cron: "15 */3 * * *",
+    what: "delete activity older than 36 hours, every 3 hours",
   },
 ] as const;
 

@@ -1,5 +1,6 @@
 import "server-only";
-import { invalidateCache, getRedis } from "@/server/cache/cache";
+import { invalidateCache } from "@/server/cache/cache";
+import { PollState, claimPoll } from "@/server/features/live/poll-state";
 import { prisma } from "@/server/db/prisma";
 import { syncGitHubUser } from "@/server/features/github/github-sync.service";
 import { createGitHubService } from "@/server/integrations/github.service";
@@ -19,8 +20,8 @@ import { decryptToken } from "@/server/security/token-encryption";
  *  - LeetCode: one request for the solved counts, compared with the database. LeetCode has no conditional request and is not ours, so each
  *    member is checked at most every couple of minutes.
  *
- * Everything the poll remembers between runs (when a member was last checked, the events ETag) lives in Redis and is only a hint: losing
- * it just means one extra check.
+ * Everything the poll remembers between runs (when a member was last checked, the events ETag) lives in one Redis hash (see poll-state.ts),
+ * read once at the start of a run and saved once at the end. It is only a hint: losing it just means one extra check.
  */
 
 const GITHUB_ACTIVE_WITHIN_MS = 30 * 24 * 60 * 60 * 1000;
@@ -28,7 +29,7 @@ const LEETCODE_MIN_GAP_MS = 2 * 60 * 1000;
 
 /**
  * How often each member is polled depends on whether they have been active lately.
- *  - HOT: any GitHub or LeetCode activity in the last 36 hours. Polled every run (every minute).
+ *  - HOT: any GitHub or LeetCode activity in the last 36 hours. Polled every run.
  *  - COLD: none. Polled once every 6 hours, with a little random spread so they do not all fall on the same minute.
  * A cold member whose 6 hourly check finds something becomes hot again straight away, and stays hot until they have gone 36 hours quiet.
  * A member with the dashboard open right now is treated as hot too, so a live dashboard really is live for the person looking at it.
@@ -39,34 +40,6 @@ const COLD_SPREAD_MS = 20 * 60 * 1000;
 const RETRY_AFTER_FAILURE_MS = 30 * 60 * 1000;
 const GITHUB_CONCURRENCY = 6;
 const LEETCODE_CONCURRENCY = 3;
-
-/* ------------------------------------------------------------------------------------------------ what we remember between runs */
-
-const memory = new Map<string, { value: string; expires: number }>();
-
-const kv = {
-  async get(key: string) {
-    const redis = getRedis();
-    if (redis) return (await redis.get<string | number>(key))?.toString() ?? null;
-    const hit = memory.get(key);
-    return hit && hit.expires > Date.now() ? hit.value : null;
-  },
-  async getMany(keys: string[]) {
-    const redis = getRedis();
-    if (redis && keys.length) return (await redis.mget<(string | number | null)[]>(...keys)).map((v) => (v === null ? null : String(v)));
-    return Promise.all(keys.map((key) => kv.get(key)));
-  },
-  async set(key: string, value: string, seconds: number) {
-    const redis = getRedis();
-    if (redis) await redis.set(key, value, { ex: seconds });
-    else memory.set(key, { value, expires: Date.now() + seconds * 1000 });
-  },
-  async del(key: string) {
-    const redis = getRedis();
-    if (redis) await redis.del(key);
-    else memory.delete(key);
-  },
-};
 
 const DAY = 24 * 60 * 60;
 
@@ -97,16 +70,16 @@ interface Member {
   leetcodeStats: { easySolved: number; mediumSolved: number; hardSolved: number } | null;
 }
 
-async function pollGitHub(member: Member): Promise<Outcome> {
+async function pollGitHub(member: Member, state: PollState): Promise<Outcome> {
   if (!member.githubUsername || !member.githubTokenCiphertext) return "skipped";
-  if (await kv.get(`live:backoff:${member.id}`)) return "skipped";
+  if (state.get("backoff", member.id)) return "skipped";
 
   try {
     const service = createGitHubService(decryptToken(member.githubTokenCiphertext));
-    const etag = (await kv.get(`live:gh:etag:${member.id}`)) ?? undefined;
+    const etag = state.get("gh:etag", member.id) ?? undefined;
     const probe = await service.probe(member.githubUsername, etag);
 
-    const known = await kv.get(`live:gh:event:${member.id}`);
+    const known = state.get("gh:event", member.id);
     const stored = member.githubStats;
     const numbersMoved =
       !stored || probe.commits !== stored.commits || probe.pullRequests !== stored.pullRequests || probe.issues !== stored.issues;
@@ -114,13 +87,14 @@ async function pollGitHub(member: Member): Promise<Outcome> {
     const newEvent = probe.events.modified && !!probe.events.latestEventId && !!known && probe.events.latestEventId !== known;
 
     if (probe.events.modified) {
-      if (probe.events.etag) await kv.set(`live:gh:etag:${member.id}`, probe.events.etag, DAY);
-      if (probe.events.latestEventId && !newEvent) await kv.set(`live:gh:event:${member.id}`, probe.events.latestEventId, DAY);
+      if (probe.events.etag) state.set("gh:etag", member.id, probe.events.etag, DAY);
+      if (probe.events.latestEventId && !newEvent) state.set("gh:event", member.id, probe.events.latestEventId, DAY);
     }
 
     // Two reasons to look again even though the cheap check saw nothing new: this member has not been read with the current logic yet, or a
     // re-check that was promised after their last change has come due.
-    const [version, settle] = await Promise.all([kv.get(`live:gh:v:${member.id}`), kv.get(`live:settle:${member.id}`)]);
+    const version = state.get("gh:v", member.id);
+    const settle = state.get("settle", member.id);
     const settleTimes = (settle ?? "").split(",").filter(Boolean).map(Number);
     const settleDue = settleTimes.length > 0 && settleTimes[0] <= Date.now();
     const needsReread = version !== GITHUB_LOGIC_VERSION;
@@ -128,17 +102,17 @@ async function pollGitHub(member: Member): Promise<Outcome> {
     if (!numbersMoved && !newEvent && !settleDue && !needsReread) return "unchanged";
 
     const result = await syncGitHubUser(member.id);
-    if (probe.events.modified && probe.events.latestEventId) await kv.set(`live:gh:event:${member.id}`, probe.events.latestEventId, DAY);
-    await kv.set(`live:gh:v:${member.id}`, GITHUB_LOGIC_VERSION, 30 * DAY);
+    if (probe.events.modified && probe.events.latestEventId) state.set("gh:event", member.id, probe.events.latestEventId, DAY);
+    state.set("gh:v", member.id, GITHUB_LOGIC_VERSION, 30 * DAY);
 
     if (settleDue) {
       // That re-check is done. If more are promised, keep them. If there are none left, forget the list.
       const rest = settleTimes.slice(1);
-      if (rest.length) await kv.set(`live:settle:${member.id}`, rest.join(","), 60 * 60);
-      else await kv.del(`live:settle:${member.id}`);
+      if (rest.length) state.set("settle", member.id, rest.join(","), 60 * 60);
+      else state.del("settle", member.id);
     } else if ((numbersMoved || newEvent) && result.changed) {
       // A real change just landed. Come back soon, since GitHub's feeds may not have caught up yet.
-      await kv.set(`live:settle:${member.id}`, SETTLE_AFTER_MS.map((ms) => Date.now() + ms).join(","), 60 * 60);
+      state.set("settle", member.id, SETTLE_AFTER_MS.map((ms) => Date.now() + ms).join(","), 60 * 60);
     }
 
     // Something looked different, but the sync compares with what is stored and only writes real differences. If it found none (for example
@@ -147,21 +121,25 @@ async function pollGitHub(member: Member): Promise<Outcome> {
   } catch (error) {
     const status = (error as { status?: number }).status;
     // A revoked token needs a fresh sign in, and a rate limit needs time. Either way, leave this member alone for a while.
-    if (status === 401) await kv.set(`live:backoff:${member.id}`, "token", 60 * 60);
-    else if (status === 403 || status === 429) await kv.set(`live:backoff:${member.id}`, "limit", 10 * 60);
+    if (status === 401) state.set("backoff", member.id, "token", 60 * 60);
+    else if (status === 403 || status === 429) state.set("backoff", member.id, "limit", 10 * 60);
     console.error(`Live poll failed for GitHub member ${member.githubUsername}:`, error);
     return "failed";
   }
 }
 
-async function pollLeetCode(member: Member, force: boolean): Promise<{ outcome: Outcome; changed: boolean; activityAdded?: boolean }> {
+async function pollLeetCode(
+  member: Member,
+  force: boolean,
+  state: PollState,
+): Promise<{ outcome: Outcome; changed: boolean; activityAdded?: boolean }> {
   if (!member.leetcodeUsername) return { outcome: "skipped", changed: false };
-  const last = Number((await kv.get(`live:lc:checked:${member.id}`)) ?? 0);
+  const last = Number(state.get("lc:checked", member.id) ?? 0);
   // A hot member is checked at most every couple of minutes. A cold member is only here because their 6 hour check is due, so it always goes.
   if (!force && Date.now() - last < LEETCODE_MIN_GAP_MS) return { outcome: "skipped", changed: false };
 
   try {
-    await kv.set(`live:lc:checked:${member.id}`, String(Date.now()), DAY);
+    state.set("lc:checked", member.id, String(Date.now()), DAY);
     const stats = await leetcodeService.getUserStats(member.leetcodeUsername, { fast: true });
     if (!stats) return { outcome: "failed", changed: false };
 
@@ -202,7 +180,32 @@ const tally = (outcomes: Outcome[]) => ({
   skipped: outcomes.filter((o) => o === "skipped").length,
 });
 
-export async function runLivePoll(options: { budgetMs?: number; onlyUserIds?: string[] } = {}) {
+interface PollOptions {
+  budgetMs?: number;
+  onlyUserIds?: string[];
+  /** Members known to have the dashboard open on this very server, treated as hot even if Redis has not heard about them yet. */
+  watching?: string[];
+}
+
+/**
+ * A poll that first checks nobody else has just run one. Both QStash (on its schedule) and a server with a dashboard open start polls, so
+ * this keeps them from doubling up. Returns null when it stood aside.
+ */
+export async function runGatedLivePoll(options: PollOptions = {}) {
+  if (!(await claimPoll(40))) return null;
+  return runLivePoll(options);
+}
+
+export async function runLivePoll(options: PollOptions = {}) {
+  const state = await PollState.load();
+  try {
+    return await poll(state, options);
+  } finally {
+    await state.flush();
+  }
+}
+
+async function poll(state: PollState, options: PollOptions) {
   const started = Date.now();
   const deadline = started + (options.budgetMs ?? 45_000);
   const hotSince = new Date(started - HOT_WINDOW_MS);
@@ -237,30 +240,26 @@ export async function runLivePoll(options: { budgetMs?: number; onlyUserIds?: st
         ).map((row) => row.userId)
       : [],
   );
-  const [watching, coldDue, lastChecked] = await Promise.all([
-    kv.getMany(ids.map((id) => `live:watching:${id}`)),
-    kv.getMany(ids.map((id) => `live:cold:due:${id}`)),
-    kv.getMany(ids.map((id) => `live:gh:checked:${id}`)),
-  ]);
-  const index = new Map(ids.map((id, i) => [id, i]));
-  const isHot = (m: Member) => !!watching[index.get(m.id)!] || (!!m.liveActiveAt && m.liveActiveAt >= hotSince) || recent.has(m.id);
-  const isDue = (m: Member) => isHot(m) || Number(coldDue[index.get(m.id)!] ?? 0) <= started;
+  const open = new Set(options.watching);
+  const isHot = (m: Member) =>
+    open.has(m.id) || !!state.get("watching", m.id) || (!!m.liveActiveAt && m.liveActiveAt >= hotSince) || recent.has(m.id);
+  const isDue = (m: Member) => isHot(m) || Number(state.get("cold:due", m.id) ?? 0) <= started;
 
   const hot = members.filter(isHot);
   const due = members.filter(isDue);
   // The member who has gone longest without a check goes first, so a slow minute never starves the same people.
-  due.sort((a, b) => Number(lastChecked[index.get(a.id)!] ?? 0) - Number(lastChecked[index.get(b.id)!] ?? 0));
+  due.sort((a, b) => Number(state.get("gh:checked", a.id) ?? 0) - Number(state.get("gh:checked", b.id) ?? 0));
   const hotIds = new Set(hot.map((m) => m.id));
 
   const [github, leetcode] = await Promise.all([
     lane(due, GITHUB_CONCURRENCY, deadline, async (member) => {
-      const outcome = await pollGitHub(member);
-      if (outcome !== "skipped") await kv.set(`live:gh:checked:${member.id}`, String(Date.now()), DAY);
+      const outcome = await pollGitHub(member, state);
+      if (outcome !== "skipped") state.set("gh:checked", member.id, String(Date.now()), DAY);
       return { id: member.id, outcome };
     }),
     lane(due, LEETCODE_CONCURRENCY, deadline, async (member) => ({
       id: member.id,
-      ...(await pollLeetCode(member, !hotIds.has(member.id))),
+      ...(await pollLeetCode(member, !hotIds.has(member.id), state)),
     })),
   ]);
 
@@ -278,12 +277,10 @@ export async function runLivePoll(options: { budgetMs?: number; onlyUserIds?: st
     ...leetcode.filter((r) => r.outcome === "failed").map((r) => r.id),
   ]);
   const checkedCold = new Set([...github, ...leetcode].map((r) => r.id).filter((id) => !hotIds.has(id) && !changed.has(id)));
-  await Promise.all(
-    [...checkedCold].map((id) => {
-      const wait = failed.has(id) ? RETRY_AFTER_FAILURE_MS : COLD_INTERVAL_MS + Math.floor(Math.random() * COLD_SPREAD_MS);
-      return kv.set(`live:cold:due:${id}`, String(Date.now() + wait), Math.ceil((wait + 60_000) / 1000));
-    }),
-  );
+  for (const id of checkedCold) {
+    const wait = failed.has(id) ? RETRY_AFTER_FAILURE_MS : COLD_INTERVAL_MS + Math.floor(Math.random() * COLD_SPREAD_MS);
+    state.set("cold:due", id, String(Date.now() + wait), Math.ceil((wait + 60_000) / 1000));
+  }
 
   // GitHub syncs clear the caches themselves. LeetCode changes are written directly, so clear what shows them once, here.
   if (leetcode.some((r) => r.changed)) await invalidateCache("dashboard", "leaderboard", "members");

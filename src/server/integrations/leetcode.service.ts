@@ -102,7 +102,7 @@ export class LeetCodeService {
   }
 
   /**
-   * A member's LeetCode numbers. LeetCode itself is always asked first, and every caller (linking, the live poll, the 3 hourly refresh) gets
+   * A member's LeetCode numbers. LeetCode itself is always asked first, and every caller (linking, the live poll, the daily refresh) gets
    * its answer, so they all see the same numbers. The community API is only a fallback when LeetCode could not be reached, and `fast` skips it
    * (the live poll would rather try again in a minute than wait on a slow service).
    * Two sources that can disagree, taking turns, made one member's numbers (and leaderboard place) swing back and forth.

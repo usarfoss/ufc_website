@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 /**
  * Removes GitHub and LeetCode activity that is too old to show, from the club feed and from every member's dashboard (they are the same
- * table). Event activity is never touched. Invoked hourly by QStash.
+ * table). Event activity is never touched. Invoked every 3 hours by QStash.
  */
 const handler = async () => {
   const cutoff = activityCutoff();

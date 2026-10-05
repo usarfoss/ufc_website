@@ -11,7 +11,7 @@ export const GET = withApiErrorHandling(async (request: NextRequest) => {
   const limit = Math.min(Math.max(Number(searchParams.get("limit")) || 10, 1), 50);
   const offset = Math.max(Number(searchParams.get("offset")) || 0, 0);
   const payload = await getOrSetCached("activity-feed", `user:${session.userId}:${limit}:${offset}`, 30, async () => {
-    // Hide GitHub and LeetCode activity that has expired, even if the hourly cleanup has not got to it yet. Event activity always shows.
+    // Hide GitHub and LeetCode activity that has expired, even if the cleanup has not got to it yet. Event activity always shows.
     const where = { userId: session.userId, ...notExpired() };
     const [activities, total] = await Promise.all([
       prisma.activity.findMany({

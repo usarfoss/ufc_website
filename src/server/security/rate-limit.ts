@@ -10,16 +10,24 @@ import { getRedis } from "@/server/cache/cache";
  */
 const local = new Map<string, { count: number; resetsAt: number }>();
 
-async function hit(key: string, windowSeconds: number): Promise<{ count: number; retryAfter: number }> {
-  const redis = getRedis();
+/**
+ * One step in Redis: count this call, and make sure the counter has a lifetime. (Giving the key its lifetime in the same step means a crash
+ * can never leave a counter that never expires, and a counter that somehow lost its lifetime is given one again.)
+ */
+const countScript = getRedis()?.createScript<[number, number]>(`
+  local count = redis.call('INCR', KEYS[1])
+  local ttl = redis.call('TTL', KEYS[1])
+  if ttl < 0 then
+    redis.call('EXPIRE', KEYS[1], ARGV[1])
+    ttl = tonumber(ARGV[1])
+  end
+  return { count, ttl }
+`);
 
-  if (redis) {
+async function hit(key: string, windowSeconds: number): Promise<{ count: number; retryAfter: number }> {
+  if (countScript) {
     try {
-      const redisKey = `ratelimit:${key}`;
-      // SET ... NX gives the key its lifetime only when it is new, so a crash can never leave a counter that never expires.
-      await redis.set(redisKey, 0, { ex: windowSeconds, nx: true });
-      const count = await redis.incr(redisKey);
-      const ttl = await redis.ttl(redisKey);
+      const [count, ttl] = await countScript.exec([`ratelimit:${key}`], [String(windowSeconds)]);
       return { count, retryAfter: ttl > 0 ? ttl : windowSeconds };
     } catch (error) {
       console.error("Rate limiter could not reach Redis, letting the request through:", error);

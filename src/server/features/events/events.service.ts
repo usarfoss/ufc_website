@@ -1,6 +1,6 @@
 import "server-only";
 import { Prisma, type ApprovalStatus, type Event, type EventStatus } from "@prisma/client";
-import { getCached, getOrSetCached, invalidateCache, setCached } from "@/server/cache/cache";
+import { getOrSetCached, invalidateCache, readCache, writeCache } from "@/server/cache/cache";
 import { prisma } from "@/server/db/prisma";
 import { isAdminAccount } from "@/server/auth/roles";
 import { badRequest, conflict, forbidden, notFound, tooManyRequests, unauthorized } from "@/server/http/api";
@@ -255,12 +255,13 @@ export async function getEventDetail(eventId: string, viewerId: string | null) {
   // proposals are never cached, so nobody can fill the cache by asking for made-up addresses.
   type PublicDetail = ReturnType<typeof present> & { creatorId: string };
   const key = `detail:${eventId}`;
-  let cached = await getCached<PublicDetail>("events", key);
+  const read = await readCache<PublicDetail>("events", key);
+  let cached = read.value;
   if (!cached) {
     const event = await load();
     if (event && event.approvalStatus === "APPROVED" && event.status !== "CANCELLED") {
       cached = { ...present(event, null, new Set(), true), creatorId: event.creatorId };
-      await setCached("events", key, cached, 60);
+      await writeCache("events", key, read.version, cached, 60);
     }
   }
 

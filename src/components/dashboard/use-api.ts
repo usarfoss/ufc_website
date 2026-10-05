@@ -72,7 +72,34 @@ const listeners = new Set<Listener>();
 let source: EventSource | null = null;
 let lastVersions: Record<string, number | undefined> | null = null;
 
+/**
+ * A tab nobody is looking at does not need live updates, and holding the connection open costs the server a check every few seconds. So after
+ * half a minute hidden the connection is dropped, and it comes back the moment the tab does. The versions seen before are kept, so coming back
+ * refreshes only what actually changed meanwhile.
+ */
+const HIDDEN_GRACE_MS = 30_000;
+let hiddenTimer: ReturnType<typeof setTimeout> | null = null;
+let watchingVisibility = false;
+
+function watchVisibility() {
+  if (watchingVisibility || typeof document === "undefined") return;
+  watchingVisibility = true;
+  document.addEventListener("visibilitychange", () => {
+    if (hiddenTimer) clearTimeout(hiddenTimer);
+    hiddenTimer = null;
+    if (document.hidden) {
+      hiddenTimer = setTimeout(() => {
+        source?.close();
+        source = null;
+      }, HIDDEN_GRACE_MS);
+    } else if (listeners.size > 0) {
+      openStream();
+    }
+  });
+}
+
 function openStream() {
+  watchVisibility();
   if (source) return;
   source = new EventSource("/api/stream/dashboard");
   source.addEventListener("versions", (event) => {

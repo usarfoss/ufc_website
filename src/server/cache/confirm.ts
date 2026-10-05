@@ -1,6 +1,16 @@
 import "server-only";
 import { getRedis } from "@/server/cache/cache";
 
+/** Compare, then either forget or remember, in one step. */
+const seenScript = getRedis()?.createScript<number>(`
+  if redis.call('GET', KEYS[1]) == ARGV[1] then
+    redis.call('DEL', KEYS[1])
+    return 1
+  end
+  redis.call('SET', KEYS[1], ARGV[1], 'EX', ARGV[2])
+  return 0
+`);
+
 /**
  * "Seen twice." Some numbers should never fall sharply by themselves, so when one does, the first sighting is not believed: it could be a
  * failed request, or GitHub or LeetCode having a bad moment. If the very same thing is seen again shortly after, it is real.
@@ -10,17 +20,9 @@ import { getRedis } from "@/server/cache/cache";
  * without letting an old hiccup vouch for a new one. Without Redis there is nowhere to remember, so it believes everything, as before.
  */
 export async function seenTwice(key: string, signature: string, ttlSeconds = 5 * 60) {
-  const redis = getRedis();
-  if (!redis) return true;
-  const slot = `suspect:${key}`;
+  if (!seenScript) return true;
   try {
-    const before = await redis.get<string>(slot);
-    if (before === signature) {
-      await redis.del(slot);
-      return true;
-    }
-    await redis.set(slot, signature, { ex: ttlSeconds });
-    return false;
+    return (await seenScript.exec([`suspect:${key}`], [signature, String(ttlSeconds)])) === 1;
   } catch (error) {
     console.error("Could not record a suspect reading, believing it:", error);
     return true;
