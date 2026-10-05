@@ -1,8 +1,11 @@
+import type { ActivityType } from "@prisma/client";
 import type { NextRequest } from "next/server";
 import { getOrSetCached } from "@/server/cache/cache";
 import { requireSession } from "@/server/auth/session";
 import { prisma } from "@/server/db/prisma";
 import { json, withApiErrorHandling } from "@/server/http/api";
+
+const PRIVATE_TYPES: ActivityType[] = ["EVENT_PROPOSAL", "EVENT_APPROVED", "EVENT_REJECTED"];
 
 export const GET = withApiErrorHandling(async (request: NextRequest) => {
   await requireSession(request);
@@ -10,8 +13,11 @@ export const GET = withApiErrorHandling(async (request: NextRequest) => {
   const limit = Math.min(Math.max(Number(searchParams.get("limit")) || 50, 1), 100);
   const offset = Math.max(Number(searchParams.get("offset")) || 0, 0);
   const payload = await getOrSetCached("activity-feed", `global:${limit}:${offset}`, 30, async () => {
+    // Notices about someone's own proposal ("your event was rejected, because...") are for them, not for the whole club.
+    const where = { type: { notIn: PRIVATE_TYPES } };
     const [activities, total] = await Promise.all([
       prisma.activity.findMany({
+        where,
         orderBy: [{ createdAt: "desc" }, { id: "desc" }],
         take: limit,
         skip: offset,
@@ -20,7 +26,7 @@ export const GET = withApiErrorHandling(async (request: NextRequest) => {
           event: { select: { title: true } },
         },
       }),
-      prisma.activity.count(),
+      prisma.activity.count({ where }),
     ]);
 
     const formattedActivities = activities.map((activity) => ({

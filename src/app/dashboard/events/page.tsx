@@ -1,12 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, CheckCircle, Clock, MapPin, Plus, Users, X } from "lucide-react";
+import { Calendar, CheckCircle, Clock, History, MapPin, Plus, Users, X } from "lucide-react";
 import { useAuth } from "@/features/auth/auth-provider";
 import { Pin, Tape } from "@/components/home/scrap";
-import { useApi } from "@/components/dashboard/use-api";
-import { Avatar, Empty, ErrorPanel, Field, isStaff, Loading, Modal, PageHeader, useToast } from "@/components/dashboard/ui";
+import { useApi, useVersionStream } from "@/components/dashboard/use-api";
+import { Avatar, Empty, ErrorPanel, Field, isAdmin, Loading, Modal, PageHeader, useToast } from "@/components/dashboard/ui";
 import { TONE_BG, type Tone } from "@/data/tones";
+import { EventDetailsView } from "@/components/dashboard/event-details";
+import { ProposalFormView } from "@/components/dashboard/proposal-form";
+import type { buildProposal } from "@/features/events/form-codec";
+import type { EventDetails } from "@/types/events";
 
 interface DashEvent {
   id: string;
@@ -17,43 +21,61 @@ interface DashEvent {
   maxAttendees: number;
   currentAttendees: number;
   type: string;
+  subtitle?: string;
+  tags: string[];
   status: string;
   approvalStatus: string;
   rejectionReason?: string;
-  approvedAt?: string;
   creator: { name: string; githubUsername?: string };
-  approvedBy?: { name: string; githubUsername?: string };
+  reviewedBy?: { name: string; githubUsername?: string };
   isRegistered: boolean;
+  isMine: boolean;
 }
 
-type View = "approved" | "pending" | "rejected" | "all";
+interface Quota {
+  limit: number;
+  used: number;
+  remaining: number;
+  resetsAt: string | null;
+}
+
+type View = "upcoming" | "past" | "pending" | "rejected" | "all";
 
 const VIEWS: { key: View; label: string; icon: typeof Calendar }[] = [
-  { key: "approved", label: "Approved", icon: CheckCircle },
+  { key: "upcoming", label: "Upcoming", icon: CheckCircle },
+  { key: "past", label: "Past", icon: History },
   { key: "pending", label: "Pending", icon: Clock },
   { key: "rejected", label: "Rejected", icon: X },
   { key: "all", label: "All", icon: Calendar },
 ];
 
+const until = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+
 const TYPE_TONE: Record<string, Tone> = { workshop: "mint", hackathon: "pink", meetup: "butter", conference: "lilac" };
 const APPROVAL_TONE: Record<string, string> = { approved: "#9af2c6", pending: "#ffe36e", rejected: "#ffb3cf" };
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 
-const EMPTY_FORM = { title: "", description: "", date: "", location: "", maxAttendees: 50, type: "WORKSHOP" };
+/** Pulls the server's own explanation out of a failed response, so people read "you have used all five" and not "failed". */
+const errorOf = async (res: Response, fallback: string) => ((await res.json().catch(() => ({}))) as { error?: string }).error ?? fallback;
 
 export default function DashboardEventsPage() {
   const { user } = useAuth();
-  const staff = isStaff(user?.role);
+  const admin = isAdmin(user?.role);
   const { show, node } = useToast();
 
-  const [view, setView] = useState<View>("approved");
-  const { data, error, loading, reload, refresh } = useApi<{ events?: DashEvent[] }>(`/api/dashboard/events?view=${view}`, {
-    errorMessage: "We couldn't load events just now.",
-  });
+  const [view, setView] = useState<View>("upcoming");
+  const { data, error, loading, reload, refresh } = useApi<{ events?: DashEvent[]; quota?: Quota | null }>(
+    `/api/dashboard/events?view=${view}`,
+    { errorMessage: "We couldn't load events just now." },
+  );
+  useVersionStream("events", refresh); // someone proposed, decided or registered: pick it up without a reload
   const events = data?.events ?? [];
+  const quota = data?.quota ?? null;
+  const outOfProposals = !!quota && quota.remaining === 0;
+  const [withdrawingId, setWithdrawingId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   const [createOpen, setCreateOpen] = useState(false);
-  const [form, setForm] = useState(EMPTY_FORM);
   const [creating, setCreating] = useState(false);
 
   const [approvingId, setApprovingId] = useState<string | null>(null);
@@ -61,26 +83,22 @@ export default function DashboardEventsPage() {
   const [rejectFor, setRejectFor] = useState<string | null>(null);
   const [reason, setReason] = useState("");
 
-  const createEvent = async () => {
-    if (!form.title.trim() || !form.description.trim() || !form.date || !form.location.trim()) {
-      show("Please fill in every field marked with a star.", false);
-      return;
-    }
+  const createEvent = async (body: ReturnType<typeof buildProposal>) => {
     try {
       setCreating(true);
       const res = await fetch("/api/dashboard/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error((await res.json()).error || "Failed to create event");
-      setForm(EMPTY_FORM);
+      if (!res.ok) throw new Error(await errorOf(res, "Failed to create event"));
       setCreateOpen(false);
       refresh();
-      show(staff ? "Event created." : "Event proposed. A maintainer will take a look.");
+      show(admin ? "Event published." : "Proposal sent. An admin will review it.");
     } catch (err) {
       console.error("Error creating event:", err);
       show(err instanceof Error ? err.message : "Failed to create event", false);
+      refresh(); // the daily count may have changed
     } finally {
       setCreating(false);
     }
@@ -89,12 +107,13 @@ export default function DashboardEventsPage() {
   const register = async (id: string) => {
     try {
       const res = await fetch(`/api/dashboard/events/${id}/register`, { method: "POST" });
-      if (!res.ok) throw new Error("Failed to register for event");
+      if (!res.ok) throw new Error(await errorOf(res, "Couldn't register you for that event."));
       refresh();
       show("You're registered. See you there!");
     } catch (err) {
       console.error("Error registering for event:", err);
-      show("Couldn't register you for that event.", false);
+      show(err instanceof Error ? err.message : "Couldn't register you for that event.", false);
+      refresh();
     }
   };
 
@@ -102,12 +121,13 @@ export default function DashboardEventsPage() {
     try {
       setApprovingId(id);
       const res = await fetch(`/api/dashboard/events/${id}/approve`, { method: "POST" });
-      if (!res.ok) throw new Error((await res.json()).error || "Failed to approve event");
+      if (!res.ok) throw new Error(await errorOf(res, "Failed to approve event"));
       refresh();
       show("Event approved.");
     } catch (err) {
       console.error("Error approving event:", err);
       show(err instanceof Error ? err.message : "Failed to approve event", false);
+      refresh(); // most often someone else decided it first
     } finally {
       setApprovingId(null);
     }
@@ -125,7 +145,7 @@ export default function DashboardEventsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason }),
       });
-      if (!res.ok) throw new Error((await res.json()).error || "Failed to reject event");
+      if (!res.ok) throw new Error(await errorOf(res, "Failed to reject event"));
       setRejectFor(null);
       setReason("");
       refresh();
@@ -138,6 +158,23 @@ export default function DashboardEventsPage() {
     }
   };
 
+  const withdraw = async (id: string) => {
+    try {
+      setWithdrawingId(id);
+      const res = await fetch(`/api/dashboard/events/${id}/withdraw`, { method: "POST" });
+      if (!res.ok) throw new Error(await errorOf(res, "Couldn't withdraw that proposal."));
+      refresh();
+      show("Proposal withdrawn. It still counts toward today's five.");
+    } catch (err) {
+      show(err instanceof Error ? err.message : "Couldn't withdraw that proposal.", false);
+      refresh();
+    } finally {
+      setWithdrawingId(null);
+    }
+  };
+
+  const proposeLabel = admin ? "Create event" : "Propose event";
+
   return (
     <div className="space-y-10">
       <PageHeader
@@ -146,12 +183,19 @@ export default function DashboardEventsPage() {
         accent="events."
         tone="sky"
         art="play"
-        sub="Join something, or propose your own. Every event is read by a maintainer before it goes up."
+        sub="Join something, or propose your own. Every proposal is read by an admin before it goes up."
       >
-        <button onClick={() => setCreateOpen(true)} className="btn btn-ink">
+        <button onClick={() => setCreateOpen(true)} disabled={outOfProposals} className="btn btn-ink">
           <Plus size={16} strokeWidth={3} />
-          {staff ? "Create event" : "Propose event"}
+          {proposeLabel}
         </button>
+        {quota && (
+          <span className="code text-[0.78rem] font-bold" aria-live="polite">
+            {outOfProposals
+              ? `No proposals left today${quota.resetsAt ? `, back at ${until(quota.resetsAt)}` : ""}`
+              : `${quota.remaining} of ${quota.limit} proposals left today`}
+          </span>
+        )}
         <span className="hidden h-8 w-0.5 bg-[var(--ink)]/25 sm:block" />
         {VIEWS.map(({ key, label, icon: Icon }) => (
           <button
@@ -171,10 +215,10 @@ export default function DashboardEventsPage() {
       ) : error ? (
         <ErrorPanel title="Couldn't load events" message={error} onRetry={reload} />
       ) : events.length === 0 ? (
-        <Empty art="rocket" title="Nothing scheduled" body="Check back soon for workshops and meetups, or propose one yourself.">
-          <button onClick={() => setCreateOpen(true)} className="btn btn-signal">
+        <Empty art="rocket" title="Nothing here" body="Check back soon for workshops and meetups, or propose one yourself.">
+          <button onClick={() => setCreateOpen(true)} disabled={outOfProposals} className="btn btn-signal">
             <Plus size={16} strokeWidth={3} />
-            {staff ? "Create event" : "Propose event"}
+            {proposeLabel}
           </button>
         </Empty>
       ) : (
@@ -202,7 +246,18 @@ export default function DashboardEventsPage() {
                       </span>
                     </div>
                     <h2 className="mt-4 text-[1.7rem] leading-[1.05]">{e.title}</h2>
+                    {e.subtitle && <p className="serif mt-1 text-[1.1rem] leading-tight text-[var(--ink)]/70">{e.subtitle}</p>}
                     <p className="mt-3 line-clamp-3 text-[0.98rem] leading-[1.6] text-[var(--ink)]/75">{e.description}</p>
+
+                    {e.tags.length > 0 && (
+                      <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Tags">
+                        {e.tags.map((t) => (
+                          <li key={t} className="code rounded-full border border-[var(--ink)]/30 bg-white/70 px-2 py-px text-[0.68rem]">
+                            {t}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
 
                     <ul className="mt-5 space-y-2 text-[0.93rem] font-semibold text-[var(--ink)]/75">
                       <li className="flex items-center gap-2.5">
@@ -245,7 +300,9 @@ export default function DashboardEventsPage() {
                       >
                         {e.approvalStatus}
                       </span>
-                      {e.approvedBy && <span className="text-[0.82rem] text-[var(--ink)]/55">by {e.approvedBy.name}</span>}
+                      {e.reviewedBy && e.approvalStatus !== "pending" && (
+                        <span className="text-[0.82rem] text-[var(--ink)]/55">by {e.reviewedBy.name}</span>
+                      )}
                     </div>
 
                     {e.rejectionReason && (
@@ -255,7 +312,10 @@ export default function DashboardEventsPage() {
                     )}
 
                     <div className="mt-5 flex flex-col gap-2.5">
-                      {e.approvalStatus === "pending" && staff && (
+                      <button onClick={() => setOpenId(e.id)} className="btn btn-paper btn-sm justify-center !pr-4">
+                        Read the full details
+                      </button>
+                      {e.approvalStatus === "pending" && admin && e.status !== "cancelled" && (
                         <div className="flex gap-3">
                           <button
                             onClick={() => void approve(e.id)}
@@ -292,10 +352,24 @@ export default function DashboardEventsPage() {
                           Rejected
                         </span>
                       )}
-                      {e.approvalStatus === "pending" && !staff && (
+                      {e.approvalStatus === "pending" && e.status === "cancelled" && (
                         <span className="code text-center text-[0.78rem] font-bold uppercase tracking-widest text-[var(--ink)]/50">
-                          Waiting for a maintainer
+                          Withdrawn
                         </span>
+                      )}
+                      {e.approvalStatus === "pending" && e.status !== "cancelled" && !admin && (
+                        <span className="code text-center text-[0.78rem] font-bold uppercase tracking-widest text-[var(--ink)]/50">
+                          Waiting for an admin
+                        </span>
+                      )}
+                      {e.approvalStatus === "pending" && e.status !== "cancelled" && e.isMine && (
+                        <button
+                          onClick={() => void withdraw(e.id)}
+                          disabled={withdrawingId === e.id}
+                          className="btn btn-paper btn-sm justify-center !pr-4"
+                        >
+                          {withdrawingId === e.id ? "Withdrawing…" : "Withdraw proposal"}
+                        </button>
                       )}
                     </div>
                   </article>
@@ -306,65 +380,22 @@ export default function DashboardEventsPage() {
         </ul>
       )}
 
-      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title={staff ? "Create an event" : "Propose an event"} tone="sky">
-        <div className="space-y-4">
-          <Field label="Title *">
-            <input
-              className="field"
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              placeholder="React workshop"
-            />
-          </Field>
-          <Field label="Description *">
-            <textarea
-              className="field"
-              rows={3}
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="What will people learn or do?"
-            />
-          </Field>
-          <Field label="Date and time *">
-            <input className="field" type="datetime-local" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
-          </Field>
-          <Field label="Location *">
-            <input
-              className="field"
-              value={form.location}
-              onChange={(e) => setForm({ ...form, location: e.target.value })}
-              placeholder="Online or a room number"
-            />
-          </Field>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Max attendees">
-              <input
-                className="field"
-                type="number"
-                min={1}
-                value={form.maxAttendees}
-                onChange={(e) => setForm({ ...form, maxAttendees: parseInt(e.target.value) || 50 })}
-              />
-            </Field>
-            <Field label="Type">
-              <select className="field" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-                <option value="WORKSHOP">Workshop</option>
-                <option value="HACKATHON">Hackathon</option>
-                <option value="MEETUP">Meetup</option>
-                <option value="CONFERENCE">Conference</option>
-              </select>
-            </Field>
-          </div>
-        </div>
-        <div className="mt-7 flex gap-3">
-          <button onClick={() => void createEvent()} disabled={creating} className="btn btn-signal">
-            {creating ? "Saving…" : staff ? "Create event" : "Send for approval"}
-          </button>
-          <button onClick={() => setCreateOpen(false)} className="btn btn-paper">
-            Cancel
-          </button>
-        </div>
+      <Modal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        title={admin ? "Create an event" : "Propose an event"}
+        tone="sky"
+        size="lg"
+      >
+        {quota && !admin && (
+          <p className="code mb-6 rounded-lg border-2 border-[var(--ink)] bg-[var(--butter)] px-3 py-2 text-[0.78rem] font-bold">
+            {quota.remaining} of {quota.limit} proposals left today. Withdrawn and rejected ones still count.
+          </p>
+        )}
+        <ProposalFormView admin={admin} busy={creating} onSubmit={(body) => void createEvent(body)} onCancel={() => setCreateOpen(false)} />
       </Modal>
+
+      <EventDetailModal id={openId} onClose={() => setOpenId(null)} />
 
       <Modal
         open={!!rejectFor}
@@ -401,5 +432,26 @@ export default function DashboardEventsPage() {
       </Modal>
       {node}
     </div>
+  );
+}
+
+/** Opens one event and loads its full write-up. The list only carries the card, so this is fetched when someone asks. */
+function EventDetailModal({ id, onClose }: { id: string | null; onClose: () => void }) {
+  const { data, error, loading } = useApi<{ event?: DashEvent & { details?: EventDetails } }>(id ? `/api/dashboard/events/${id}` : null, {
+    errorMessage: "We couldn't load that event.",
+  });
+  const event = data?.event;
+  return (
+    <Modal open={!!id} onClose={onClose} title={event?.title ?? "Event details"} tone="butter" size="lg">
+      {loading ? (
+        <Loading label="loading the details" />
+      ) : error ? (
+        <p className="font-semibold text-[#a52a1d]">{error}</p>
+      ) : event?.details ? (
+        <EventDetailsView details={event.details} />
+      ) : (
+        <p className="text-[var(--ink)]/70">This event doesn&apos;t have a longer write-up.</p>
+      )}
+    </Modal>
   );
 }

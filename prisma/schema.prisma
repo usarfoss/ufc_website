@@ -31,7 +31,7 @@ model User {
   githubStats     GitHubStats?
   leetcodeStats   LeetCodeStats?
   createdEvents   Event[]   @relation("EventCreator")
-  approvedEvents  Event[]   @relation("EventApprover")
+  reviewedEvents  Event[]   @relation("EventApprover")
   
   @@map("users")
   @@index([joinedAt])
@@ -50,20 +50,24 @@ model Event {
   status          EventStatus @default(UPCOMING)
   approvalStatus  ApprovalStatus @default(PENDING)
   rejectionReason String?
+  /// The full write-up, in the same shape as the public event pages. See src/types/events.ts.
+  details         Json?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
-  approvedAt      DateTime?
-  approvedById    String?
+  /// Who decided this proposal and when, whichever way they decided. (Stored in the old approvedAt/approvedById columns.)
+  reviewedAt      DateTime? @map("approvedAt")
+  reviewedById    String?   @map("approvedById")
   
   // Relations
   creatorId       String
   creator         User            @relation("EventCreator", fields: [creatorId], references: [id])
-  approvedBy      User?           @relation("EventApprover", fields: [approvedById], references: [id])
+  reviewedBy      User?           @relation("EventApprover", fields: [reviewedById], references: [id])
   attendees       EventAttendee[]
   activities      Activity[]
   
   @@map("events")
   @@index([approvalStatus, date])
+  @@index([approvalStatus, createdAt])
   @@index([creatorId, createdAt])
 }
 

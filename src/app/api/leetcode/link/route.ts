@@ -3,6 +3,7 @@ import { invalidateCache } from "@/server/cache/cache";
 import { requireSession } from "@/server/auth/session";
 import { prisma } from "@/server/db/prisma";
 import { badRequest, conflict, json, notFound, withApiErrorHandling } from "@/server/http/api";
+import { enforceRateLimit } from "@/server/security/rate-limit";
 import { leetcodeService } from "@/server/integrations/leetcode.service";
 
 /** LeetCode's own rule for usernames: letters, numbers, underscores and hyphens. */
@@ -25,6 +26,8 @@ export const GET = withApiErrorHandling(async (request: NextRequest) => {
 /** Links a LeetCode account. We check that it exists and store the numbers straight away. The background job keeps them fresh after that. */
 export const POST = withApiErrorHandling(async (request: NextRequest) => {
   const session = await requireSession(request);
+  // Linking calls LeetCode's servers, so it is limited more tightly than a plain read.
+  await enforceRateLimit(`leetcode-link:${session.userId}`, 10, 60);
   const body = (await request.json().catch(() => null)) as { username?: unknown } | null;
   const username = typeof body?.username === "string" ? body.username.trim().replace(/^@/, "") : "";
 

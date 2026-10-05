@@ -11,8 +11,14 @@ export interface GitHubIdentity {
   avatar_url?: string | null;
 }
 
-const resolveRole = (githubUsername: string): "ADMIN" | "MAINTAINER" =>
-  githubUsername.toLowerCase() === process.env.ADMIN_GITHUB_USERNAME?.toLowerCase() ? "ADMIN" : "MAINTAINER";
+/** ADMIN_GITHUB_USERNAME can hold one GitHub username or several, separated by commas. Admins review proposed events. */
+const resolveRole = (githubUsername: string): "ADMIN" | "MAINTAINER" => {
+  const admins = (process.env.ADMIN_GITHUB_USERNAME ?? "")
+    .split(",")
+    .map((name) => name.trim().toLowerCase())
+    .filter(Boolean);
+  return admins.includes(githubUsername.toLowerCase()) ? "ADMIN" : "MAINTAINER";
+};
 
 /** Provisions and links the local profile to GitHub's immutable account identifier. */
 export const authService = {

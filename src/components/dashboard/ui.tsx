@@ -243,12 +243,15 @@ export function Modal({
   title,
   children,
   tone = "butter",
+  size = "md",
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   children: ReactNode;
   tone?: Tone;
+  /** `lg` is for long forms and write-ups. */
+  size?: "md" | "lg";
 }) {
   useEffect(() => {
     if (!open) return;
@@ -277,7 +280,7 @@ export function Modal({
             exit={{ y: 20, scale: 0.97, opacity: 0 }}
             transition={{ type: "spring", stiffness: 260, damping: 22 }}
             onClick={(e) => e.stopPropagation()}
-            className="paper relative my-8 w-full max-w-lg p-7 sm:p-9"
+            className={`paper relative my-8 w-full p-7 sm:p-9 ${size === "lg" ? "max-w-3xl" : "max-w-lg"}`}
             style={{ borderRadius: "1.25rem", border: "2.5px solid var(--ink)", boxShadow: "8px 8px 0 var(--ink)" }}
           >
             <Tape tone="butter" className="-top-3 left-10" rotate={-5} />
@@ -339,4 +342,5 @@ export function useToast() {
   return { show, node };
 }
 
-export const isStaff = (role?: string | null) => !!role && ["ADMIN", "MAINTAINER"].includes(role.toUpperCase());
+/** Admins review the events members propose. Everyone else signed in can propose and take part. */
+export const isAdmin = (role?: string | null) => role?.toUpperCase() === "ADMIN";

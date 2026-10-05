@@ -1,159 +1,40 @@
-import { NextRequest, NextResponse } from "next/server";
-import { invalidateCache } from "@/server/cache/cache";
-import { prisma } from "@/server/db/prisma";
+import type { NextRequest } from "next/server";
 import { getSession } from "@/server/auth/session";
+import { badRequest, json, withApiErrorHandling } from "@/server/http/api";
+import { enforceRateLimit } from "@/server/security/rate-limit";
+import { VIEWS, listEvents, parseProposal, proposeEvent, type EventView } from "@/server/features/events/events.service";
 
-export async function GET(request: NextRequest) {
-  try {
-    const session = await getSession(request);
-    const userId = session?.userId ?? null;
+/** Events the viewer is allowed to see. Anyone can read the approved ones. Proposals are only visible to their proposer and to admins. */
+export const GET = withApiErrorHandling(async (request: NextRequest) => {
+  const session = await getSession(request);
+  const params = new URL(request.url).searchParams;
 
-    const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get("limit") || "20");
-    const offset = parseInt(searchParams.get("offset") || "0");
+  const view = (params.get("view") ?? "upcoming") as EventView;
+  if (!VIEWS.includes(view)) throw badRequest(`view must be one of: ${VIEWS.join(", ")}.`);
 
-    // Fetch events with attendee count and creator info
-    const events = await prisma.event.findMany({
-      take: limit,
-      skip: offset,
-      orderBy: { date: "asc" },
-      include: {
-        creator: {
-          select: {
-            name: true,
-            githubUsername: true,
-          },
-        },
-        attendees: userId
-          ? {
-              where: { userId },
-            }
-          : false,
-        _count: {
-          select: {
-            attendees: true,
-          },
-        },
-      },
-    });
+  const limit = Math.min(Math.max(Number.parseInt(params.get("limit") ?? "", 10) || 20, 1), 50);
+  const offset = Math.max(Number.parseInt(params.get("offset") ?? "", 10) || 0, 0);
 
-    // Format events for frontend
-    const formattedEvents = events.map((event) => ({
-      id: event.id,
-      title: event.title,
-      description: event.description,
-      date: event.date.toISOString(),
-      location: event.location,
-      maxAttendees: event.maxAttendees,
-      currentAttendees: event._count.attendees,
-      type: event.type.toLowerCase(),
-      status: event.status.toLowerCase(),
-      creator: {
-        name: event.creator.name || "Unknown",
-        githubUsername: event.creator.githubUsername,
-      },
-      isRegistered: userId ? event.attendees.length > 0 : false,
-    }));
+  return json({ success: true, ...(await listEvents(session?.userId ?? null, { view, limit, offset })) });
+});
 
-    return NextResponse.json({
+/** Propose an event. Validated, limited to five a day, and queued for an admin (admins' own events are published at once). */
+export const POST = withApiErrorHandling(async (request: NextRequest) => {
+  const session = await getSession(request);
+  if (!session) return json({ error: "Unauthorized" }, { status: 401 });
+
+  // A burst guard in front of the database, on top of the five a day: it also stops a script that keeps sending invalid proposals.
+  await enforceRateLimit(`propose:${session.userId}`, 10, 60);
+
+  const body = await request.json().catch(() => null);
+  const result = await proposeEvent(session.userId, parseProposal(body));
+
+  return json(
+    {
       success: true,
-      events: formattedEvents,
-      total: formattedEvents.length,
-      hasMore: formattedEvents.length === limit,
-    });
-  } catch (error) {
-    console.error("Events fetch error:", error);
-    return NextResponse.json({ error: "Failed to fetch events" }, { status: 500 });
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const session = await getSession(request);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const userId = session.userId;
-    const userRole = session.role;
-
-    // Check if user has permission to create events
-    const allowedRoles = ["ADMIN", "MAINTAINER"];
-    if (!allowedRoles.includes(userRole?.toUpperCase())) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
-
-    const { title, description, date, location, maxAttendees, type } = await request.json();
-
-    // Validate required fields
-    if (!title?.trim() || !description?.trim() || !date || !location?.trim()) {
-      return NextResponse.json({ error: "Title, description, date, and location are required" }, { status: 400 });
-    }
-
-    // Validate date is in the future
-    const eventDate = new Date(date);
-    if (eventDate <= new Date()) {
-      return NextResponse.json({ error: "Event date must be in the future" }, { status: 400 });
-    }
-
-    // Create event
-    const event = await prisma.event.create({
-      data: {
-        title: title.trim(),
-        description: description.trim(),
-        date: eventDate,
-        location: location.trim(),
-        maxAttendees: maxAttendees || 50,
-        type: type || "WORKSHOP",
-        status: "UPCOMING",
-        creatorId: userId,
-      },
-      include: {
-        creator: {
-          select: {
-            name: true,
-            githubUsername: true,
-          },
-        },
-      },
-    });
-
-    // Create activity record
-    await prisma.activity.create({
-      data: {
-        type: "EVENT_CREATE",
-        userId,
-        description: `Created event "${event.title}"`,
-        eventId: event.id,
-        metadata: {
-          eventTitle: event.title,
-          eventType: event.type,
-          eventDate: event.date.toISOString(),
-        },
-      },
-    });
-
-    await invalidateCache("activity-feed");
-
-    return NextResponse.json({
-      success: true,
-      message: "Event created successfully",
-      event: {
-        id: event.id,
-        title: event.title,
-        description: event.description,
-        date: event.date.toISOString(),
-        location: event.location,
-        maxAttendees: event.maxAttendees,
-        currentAttendees: 0,
-        type: event.type.toLowerCase(),
-        status: event.status.toLowerCase(),
-        creator: {
-          name: event.creator.name || "Unknown",
-          githubUsername: event.creator.githubUsername,
-        },
-        isRegistered: false,
-      },
-    });
-  } catch (error) {
-    console.error("Event creation error:", error);
-    return NextResponse.json({ error: "Failed to create event" }, { status: 500 });
-  }
-}
+      ...result,
+      message: result.approvalStatus === "approved" ? "Event published." : "Proposal sent. An admin will review it.",
+    },
+    { status: 201 },
+  );
+});

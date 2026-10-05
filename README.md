@@ -133,6 +133,20 @@ Both GitHub and LeetCode work the same way. When a member signs in, or links Lee
 
 The `reconcile` routes then queue one `github-sync` or `leetcode-sync` job per member, so a slow account never holds up the others. The schedules are created once in the QStash dashboard, pointing at your deployed address.
 
+### How an event gets approved
+
+Any signed in member can propose an event, and an admin decides. The rules live in one place, [src/server/features/events/events.service.ts](src/server/features/events/events.service.ts), and the API routes only call it.
+
+1. **Propose.** The form asks for what an event page shows: title and subtitle, kind, when and where, a summary, the overview, highlights, who it is for, what to bring, a schedule (one or several days), the rounds of a competition, a speaker, registration and poster links, and tags. Only the basics and a paragraph of overview are required. Everything is validated (lengths, whole-number seats, web addresses only), and and nobody can propose more than 5 events in any rolling 24 hours. Withdrawn and rejected proposals still count, so the limit cannot be dodged. It holds even if several requests arrive at once. An admin's own proposal is published straight away.
+2. **Review queue.** Admins see waiting proposals oldest first on the Admin page.
+3. **Decide.** An admin approves or rejects. A rejection needs a reason, which the proposer can read. A proposal is decided exactly once: if two admins click at the same moment, one wins and the other is told it was already decided.
+4. **Published.** Only approved events are public and open for registration. Registration checks capacity under a lock, so the last seat cannot be given out twice.
+5. **Withdraw.** The proposer can take back a proposal that is still waiting.
+
+The public lists and each approved event's write-up are cached in Redis for a minute and cleared the moment anything changes, and the Events and Admin pages update live. Write endpoints also have a short burst limit (`src/server/security/rate-limit.ts`) in front of the database.
+
+Admins are set with `ADMIN_GITHUB_USERNAME`, which can list several GitHub usernames separated by commas.
+
 ### Useful commands
 
 | Command             | What it does                                                   |

@@ -1,7 +1,7 @@
 import "server-only";
 import { Redis } from "@upstash/redis";
 
-export type CacheNamespace = "activity-feed" | "dashboard" | "leaderboard" | "members";
+export type CacheNamespace = "activity-feed" | "dashboard" | "events" | "leaderboard" | "members";
 
 const redis = (() => {
   const url = process.env.UPSTASH_REDIS_REST_URL;
@@ -18,6 +18,9 @@ const redis = (() => {
     return null;
   }
 })();
+
+/** The shared Redis connection, or null when Redis is not configured. Other server code (such as the rate limiter) reuses it. */
+export const getRedis = () => redis;
 
 const versionKey = (namespace: CacheNamespace) => `cache:version:${namespace}`;
 const valueKey = (namespace: CacheNamespace, key: string) => `cache:${namespace}:${key}`;
@@ -95,7 +98,7 @@ export async function invalidateCache(...namespaces: CacheNamespace[]) {
 }
 
 export async function getCacheVersions() {
-  const namespaces: CacheNamespace[] = ["activity-feed", "dashboard", "leaderboard", "members"];
+  const namespaces: CacheNamespace[] = ["activity-feed", "dashboard", "events", "leaderboard", "members"];
   const entries = await Promise.all(namespaces.map(async (namespace) => [namespace, await getVersion(namespace)] as const));
   return Object.fromEntries(entries) as Record<CacheNamespace, number>;
 }
