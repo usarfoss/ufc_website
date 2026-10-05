@@ -174,37 +174,51 @@ const publicPage = (view: EventView, limit: number, offset: number) =>
     };
   });
 
+/**
+ * Every event this person is registered for, as a set of ids. Fetched on its own, in step with everything else, instead of after the list
+ * (which would add a whole round trip to the database). A person is registered for a handful of events, so fetching all of them is cheap.
+ */
+async function registeredSet(viewerId: string | null) {
+  if (!viewerId) return new Set<string>();
+  const rows = await prisma.eventAttendee.findMany({ where: { userId: viewerId }, select: { eventId: true }, take: 500 });
+  return new Set(rows.map((r) => r.eventId));
+}
+
 /** Adds the parts that belong to one viewer to events that came from the shared cache. */
-async function forViewer<T extends { id: string; creatorId: string }>(events: T[], viewerId: string | null) {
-  const registered = new Set(
-    viewerId && events.length
-      ? (
-          await prisma.eventAttendee.findMany({
-            where: { userId: viewerId, eventId: { in: events.map((e) => e.id) } },
-            select: { eventId: true },
-          })
-        ).map((a) => a.eventId)
-      : [],
-  );
+function forViewer<T extends { id: string; creatorId: string }>(events: T[], viewerId: string | null, registered: ReadonlySet<string>) {
   return events.map(({ creatorId, ...event }) => ({ ...event, isMine: creatorId === viewerId, isRegistered: registered.has(event.id) }));
 }
 
+/**
+ * The events a viewer is allowed to see. Each round trip to the database costs real time when the server and the database are far apart, so
+ * everything that does not depend on something else is asked at the same moment: who the viewer is, how many proposals they have left, what
+ * they are registered for, and the events themselves.
+ */
 export async function listEvents(viewerId: string | null, options: { view: EventView; limit: number; offset: number }) {
-  const viewer = viewerId ? { id: viewerId, admin: (await roleOf(viewerId).catch(() => null)) === "ADMIN" } : null;
-  const quota = viewer ? getQuota(viewer.id) : Promise.resolve(null);
+  const isPublic = options.view === "upcoming" || options.view === "past";
+  const adminCheck = viewerId
+    ? roleOf(viewerId).then(
+        (role) => role === "ADMIN",
+        () => false,
+      )
+    : Promise.resolve(false);
+  const quotaPromise = viewerId ? getQuota(viewerId) : Promise.resolve(null);
+  const registeredPromise = registeredSet(viewerId);
 
   // Upcoming and past are public, so they are shared and cached. Proposals (pending, rejected, all) depend on who is asking, so they are not.
-  if (options.view === "upcoming" || options.view === "past") {
-    const page = await publicPage(options.view, options.limit, options.offset);
-    return {
-      events: await forViewer(page.events, viewerId),
-      total: page.total,
-      hasMore: page.hasMore,
-      isAdmin: viewer?.admin ?? false,
-      quota: await quota,
-    };
+  if (isPublic) {
+    const [admin, quota, registered, page] = await Promise.all([
+      adminCheck,
+      quotaPromise,
+      registeredPromise,
+      publicPage(options.view as "upcoming" | "past", options.limit, options.offset),
+    ]);
+    return { events: forViewer(page.events, viewerId, registered), total: page.total, hasMore: page.hasMore, isAdmin: admin, quota };
   }
 
+  // The proposals a person may see depend on whether they are an admin, so that comes first, alongside the other things that do not depend on it.
+  const [admin, quota, registered] = await Promise.all([adminCheck, quotaPromise, registeredPromise]);
+  const viewer = viewerId ? { id: viewerId, admin } : null;
   const where = visibility(options.view, viewer);
   const [events, total] = await Promise.all([
     prisma.event.findMany({
@@ -218,23 +232,12 @@ export async function listEvents(viewerId: string | null, options: { view: Event
     prisma.event.count({ where }),
   ]);
 
-  const registered = new Set(
-    viewer && events.length
-      ? (
-          await prisma.eventAttendee.findMany({
-            where: { userId: viewer.id, eventId: { in: events.map((e) => e.id) } },
-            select: { eventId: true },
-          })
-        ).map((a) => a.eventId)
-      : [],
-  );
-
   return {
     events: events.map((e) => present(e, viewer, registered)),
     total,
     hasMore: options.offset + events.length < total,
-    isAdmin: viewer?.admin ?? false,
-    quota: await quota,
+    isAdmin: admin,
+    quota,
   };
 }
 
@@ -261,7 +264,7 @@ export async function getEventDetail(eventId: string, viewerId: string | null) {
     }
   }
 
-  if (cached) return (await forViewer([cached], viewerId))[0];
+  if (cached) return forViewer([cached], viewerId, await registeredSet(viewerId))[0];
 
   // Not public (or not there at all): only its proposer or an admin may see it, and that is not cached.
   const viewer = viewerId ? { id: viewerId, admin: (await roleOf(viewerId).catch(() => null)) === "ADMIN" } : null;
