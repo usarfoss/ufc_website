@@ -24,6 +24,7 @@
     "@types/matter-js": "^0.20.2",
     "@upstash/qstash": "^2.11.3",
     "@upstash/redis": "^1.38.3",
+    "@vercel/analytics": "^2.0.1",
     "dotenv": "^17.4.2",
     "framer-motion": "^13.1.1",
     "lucide-react": "^1.38.0",

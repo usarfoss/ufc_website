@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Caveat, DM_Sans, Fraunces, Pixelify_Sans, Space_Mono } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 import { AppProviders } from "@/app/providers";
 import { REVEAL_SCRIPT } from "@/components/home/reveal-script";
 import { SITE, jsonLd } from "@/data/site";
@@ -156,6 +157,8 @@ export default function RootLayout({
       >
         <AppProviders>{children}</AppProviders>
         <script dangerouslySetInnerHTML={{ __html: REVEAL_SCRIPT }} />
+        {/* Page views for the Vercel dashboard. It only reports from a Vercel deployment, so it does nothing locally. */}
+        <Analytics />
       </body>
     </html>
   );
