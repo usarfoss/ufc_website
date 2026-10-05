@@ -1,7 +1,8 @@
 import "server-only";
 import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
-import { unauthorized } from "@/server/http/api";
+import { needsSignIn } from "@/server/auth/reauth";
+import { reauthRequired, unauthorized } from "@/server/http/api";
 
 export interface AuthSession {
   userId: string;
@@ -10,7 +11,9 @@ export interface AuthSession {
   githubAccessToken: string;
 }
 
-export async function getSession(request: NextRequest): Promise<AuthSession | null> {
+type SessionRead = { session: AuthSession } | { session: null; reauth: boolean };
+
+async function readSession(request: NextRequest): Promise<SessionRead> {
   const token = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
@@ -23,23 +26,36 @@ export async function getSession(request: NextRequest): Promise<AuthSession | nu
     typeof token.githubUsername !== "string" ||
     typeof token.githubAccessToken !== "string"
   ) {
-    return null;
+    return { session: null, reauth: false };
+  }
+
+  // Their GitHub connection has run out and could not be renewed, so the sign in cookie is no use any more: it is treated as signed out
+  // until they sign in again (which takes them off the list).
+  if (await needsSignIn(token.userId)) {
+    return { session: null, reauth: true };
   }
 
   return {
-    userId: token.userId,
-    role: token.role,
-    githubUsername: token.githubUsername,
-    githubAccessToken: token.githubAccessToken,
+    session: {
+      userId: token.userId,
+      role: token.role,
+      githubUsername: token.githubUsername,
+      githubAccessToken: token.githubAccessToken,
+    },
   };
 }
 
-export async function requireSession(request: NextRequest): Promise<AuthSession> {
-  const session = await getSession(request);
+export async function getSession(request: NextRequest): Promise<AuthSession | null> {
+  return (await readSession(request)).session;
+}
 
-  if (!session) {
-    throw unauthorized();
+export async function requireSession(request: NextRequest): Promise<AuthSession> {
+  const result = await readSession(request);
+
+  if (!result.session) {
+    // The page uses the "reauth" code to send them to sign in again instead of just showing an error.
+    throw result.reauth ? reauthRequired() : unauthorized();
   }
 
-  return session;
+  return result.session;
 }

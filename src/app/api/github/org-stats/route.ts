@@ -2,7 +2,8 @@ import type { NextRequest } from "next/server";
 import { requireSession } from "@/server/auth/session";
 import { OrgGitHubService } from "@/server/integrations/github-org.service";
 import { isAdminUser } from "@/server/auth/roles";
-import { badRequest, forbidden, json, withApiErrorHandling } from "@/server/http/api";
+import { githubTokenFor } from "@/server/integrations/github-token";
+import { badRequest, forbidden, json, reauthRequired, withApiErrorHandling } from "@/server/http/api";
 import { enforceRateLimit } from "@/server/security/rate-limit";
 
 export const GET = withApiErrorHandling(async (request: NextRequest) => {
@@ -16,7 +17,11 @@ export const GET = withApiErrorHandling(async (request: NextRequest) => {
     throw badRequest("GITHUB_ORG must be configured");
   }
 
-  const service = new OrgGitHubService(session.githubAccessToken, org);
+  // The token in the sign in cookie is only good for 8 hours, so the stored one (renewed when needed) is used instead.
+  const auth = await githubTokenFor(session.userId);
+  if (auth.token === null) throw reauthRequired();
+
+  const service = new OrgGitHubService(auth.token, org);
   const scope = new URL(request.url).searchParams.get("scope") || "members";
 
   if (scope === "repos") {

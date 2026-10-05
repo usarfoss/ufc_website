@@ -28,7 +28,21 @@ export function useApi<T>(url: string | null, { timeoutMs = 20_000, errorMessage
     }, timeoutMs);
 
     fetch(url, { signal: controller.signal })
-      .then((res) => {
+      .then(async (res) => {
+        if (
+          res.status === 401 &&
+          (
+            (await res
+              .clone()
+              .json()
+              .catch(() => null)) as { code?: string } | null
+          )?.code === "reauth"
+        ) {
+          // Their GitHub connection ran out and could not be renewed: the site signs them out, and this is where they sign back in. A full page
+          // load on purpose, so the signed out cookie is picked up and nothing from the old session lingers in the page.
+          // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+          window.location.assign("/login?reauth=1");
+        }
         if (!res.ok) throw new Error(`Request failed (${res.status})`);
         return res.json() as Promise<T>;
       })

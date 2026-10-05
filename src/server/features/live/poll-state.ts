@@ -23,6 +23,17 @@ const decode = (raw: unknown, now: number) => {
 // Used when there is no Redis (local development): the same hints, kept in this process.
 const memory = new Map<string, string>();
 
+/** Lets the poll try a member again straight away, for example after they sign in with a fresh GitHub token. */
+export async function clearPollBackoff(userId: string) {
+  const field = `backoff:${userId}`;
+  memory.delete(field);
+  try {
+    await getRedis()?.hdel(POLL_STATE_KEY, field);
+  } catch (error) {
+    console.error("Could not clear a member's poll backoff:", error);
+  }
+}
+
 let localGateUntil = 0;
 
 /**

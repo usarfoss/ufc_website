@@ -6,8 +6,9 @@ import { prisma } from "@/server/db/prisma";
 import { activityCutoff } from "@/server/features/activity/retention";
 import { looksWrong } from "./sanity";
 import { createGitHubService, type GitHubActivity } from "@/server/integrations/github.service";
+import { markNeedsSignIn } from "@/server/auth/reauth";
+import { TOKEN_FIELDS, usableGitHubToken } from "@/server/integrations/github-token";
 import { enqueueGitHubSync } from "@/server/jobs/github-sync";
-import { decryptToken } from "@/server/security/token-encryption";
 
 const activityTypeFor = (activity: GitHubActivity): ActivityType | null => {
   switch (activity.type.toLowerCase()) {
@@ -38,9 +39,8 @@ export async function syncGitHubUser(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
-      id: true,
+      ...TOKEN_FIELDS,
       githubUsername: true,
-      githubTokenCiphertext: true,
       avatar: true,
       location: true,
       bio: true,
@@ -52,8 +52,34 @@ export async function syncGitHubUser(userId: string) {
     throw new Error("GitHub authorization is missing for this user.");
   }
 
-  const github = createGitHubService(decryptToken(user.githubTokenCiphertext));
-  const { profile, contributions } = await github.fetchUserSnapshot(user.githubUsername);
+  const skipped = (reason: string) => ({
+    userId: user.id,
+    syncedAt: new Date().toISOString(),
+    activityCount: 0,
+    changed: false,
+    skipped: reason,
+  });
+
+  // GitHub tokens last 8 hours, so this renews the member's if it has run out. If it cannot be renewed they are asked to sign in again, and
+  // there is nothing to retry until they do (a failed job here would only be retried by QStash to the same end).
+  const auth = await usableGitHubToken(user);
+  if (auth.token === null) {
+    if (auth.reason === "retry") throw new Error("GitHub could not be reached to renew this member's token.");
+    return skipped(auth.reason);
+  }
+
+  let snapshot: Awaited<ReturnType<ReturnType<typeof createGitHubService>["fetchUserSnapshot"]>>;
+  try {
+    snapshot = await createGitHubService(auth.token).fetchUserSnapshot(user.githubUsername);
+  } catch (error) {
+    // The token had time left on paper but GitHub no longer accepts it (the member revoked it, for one). Only signing in again fixes that.
+    if ((error as { status?: number }).status === 401) {
+      await markNeedsSignIn(user.id);
+      return skipped("needs-sign-in");
+    }
+    throw error;
+  }
+  const { profile, contributions } = snapshot;
   const now = new Date();
   // GitHub reports events from the last few weeks. Anything older than we keep would be added now and deleted by the next cleanup, then
   // added again by the next sync, so it would keep coming back onto dashboards. Only recent events are imported.

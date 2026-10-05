@@ -15,6 +15,8 @@ export class ApiError extends Error {
 
 export const badRequest = (message: string) => new ApiError(message, 400);
 export const unauthorized = (message = "Unauthorized") => new ApiError(message, 401);
+/** 401 with a code the pages recognise: this member's GitHub connection ran out, so they are sent to sign in again. */
+export const reauthRequired = () => new ApiError("Your GitHub connection has run out. Please sign in again.", 401, { code: "reauth" });
 export const forbidden = (message = "Forbidden") => new ApiError(message, 403);
 export const notFound = (message: string) => new ApiError(message, 404);
 export const conflict = (message: string) => new ApiError(message, 409);

@@ -18,6 +18,11 @@ model User {
   githubUsername  String?  @unique
   githubTokenCiphertext String?
   githubTokenUpdatedAt  DateTime?
+  /// GitHub gives this app's sign-in tokens an 8 hour life. The refresh token (kept encrypted, like the access token) is how a new one is
+  /// obtained without the member signing in again. It is used once and replaced each time.
+  githubRefreshTokenCiphertext String?
+  /// When the access token stops working. Null on members who signed in before this was recorded.
+  githubTokenExpiresAt  DateTime?
   leetcodeUsername String?
   location        String?
   bio             String?

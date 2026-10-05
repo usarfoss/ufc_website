@@ -11,11 +11,12 @@ export const metadata: Metadata = pageMetadata({
   noindex: true,
 });
 
-export default function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ reauth?: string }> }) {
+  const { reauth } = await searchParams;
   return (
     <HomeShell>
       <main>
-        <Login />
+        <Login reauth={reauth === "1"} />
       </main>
       <Footer />
     </HomeShell>

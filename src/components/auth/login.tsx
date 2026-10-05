@@ -123,7 +123,8 @@ function Pass() {
   );
 }
 
-export function Login() {
+/** `reauth` is set when the site signed someone out because their GitHub connection ran out (GitHub only keeps these for 8 hours). */
+export function Login({ reauth = false }: { reauth?: boolean }) {
   return (
     <section className="pat-dots relative flex min-h-[100svh] items-center overflow-hidden bg-[var(--butter)] text-[var(--ink)]">
       <div className="mx-auto grid w-full max-w-7xl items-center gap-12 px-5 pb-20 pt-32 sm:px-8 lg:grid-cols-12 lg:gap-12 lg:pb-24 lg:pt-36">
@@ -143,6 +144,18 @@ export function Login() {
               building. No new password, no sign-up form.
             </p>
           </Reveal>
+
+          {reauth && (
+            <Reveal delay={0.15}>
+              <p
+                role="status"
+                className="mt-6 max-w-xl rounded-lg border-2 border-[var(--ink)] bg-[var(--cream)] px-4 py-3 text-[0.98rem] font-semibold leading-snug"
+              >
+                Your GitHub connection ran out, so your stats had stopped updating. Sign in once more and it will keep itself fresh from
+                here.
+              </p>
+            </Reveal>
+          )}
 
           <ul className="mt-10 grid max-w-2xl gap-x-6 gap-y-5 sm:grid-cols-2">
             {PERKS.map((p, i) => (

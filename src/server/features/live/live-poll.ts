@@ -4,9 +4,10 @@ import { PollState, claimPoll } from "@/server/features/live/poll-state";
 import { prisma } from "@/server/db/prisma";
 import { syncGitHubUser } from "@/server/features/github/github-sync.service";
 import { createGitHubService } from "@/server/integrations/github.service";
+import { TOKEN_FIELDS, usableGitHubToken, type TokenRow } from "@/server/integrations/github-token";
 import { leetcodeService } from "@/server/integrations/leetcode.service";
+import { markNeedsSignIn, membersNeedingSignIn } from "@/server/auth/reauth";
 import { SERVICE_ACTIVITY_TYPES } from "@/server/features/activity/retention";
-import { decryptToken } from "@/server/security/token-encryption";
 
 /**
  * The live poll. It runs about once a minute, looks at every active member, and does the cheapest possible check for each one: has anything
@@ -60,11 +61,9 @@ const SETTLE_AFTER_MS = [3 * 60 * 1000, 10 * 60 * 1000];
 
 type Outcome = "unchanged" | "synced" | "skipped" | "failed";
 
-interface Member {
-  id: string;
+interface Member extends TokenRow {
   liveActiveAt: Date | null;
   githubUsername: string | null;
-  githubTokenCiphertext: string | null;
   leetcodeUsername: string | null;
   githubStats: { commits: number; pullRequests: number; issues: number } | null;
   leetcodeStats: { easySolved: number; mediumSolved: number; hardSolved: number } | null;
@@ -75,7 +74,11 @@ async function pollGitHub(member: Member, state: PollState): Promise<Outcome> {
   if (state.get("backoff", member.id)) return "skipped";
 
   try {
-    const service = createGitHubService(decryptToken(member.githubTokenCiphertext));
+    // GitHub tokens last 8 hours: this renews the member's if it has run out, and puts them on the "sign in again" list if it cannot.
+    const auth = await usableGitHubToken(member);
+    if (auth.token === null) return auth.reason === "retry" ? "failed" : "skipped";
+
+    const service = createGitHubService(auth.token);
     const etag = state.get("gh:etag", member.id) ?? undefined;
     const probe = await service.probe(member.githubUsername, etag);
 
@@ -120,9 +123,12 @@ async function pollGitHub(member: Member, state: PollState): Promise<Outcome> {
     return result.changed ? "synced" : "unchanged";
   } catch (error) {
     const status = (error as { status?: number }).status;
-    // A revoked token needs a fresh sign in, and a rate limit needs time. Either way, leave this member alone for a while.
-    if (status === 401) state.set("backoff", member.id, "token", 60 * 60);
-    else if (status === 403 || status === 429) state.set("backoff", member.id, "limit", 10 * 60);
+    // A token GitHub no longer accepts (the member revoked it, for one) needs a fresh sign in: they are put on that list and not tried again
+    // until they have. A rate limit just needs time.
+    if (status === 401) {
+      await markNeedsSignIn(member.id);
+      state.set("backoff", member.id, "token", 60 * 60);
+    } else if (status === 403 || status === 429) state.set("backoff", member.id, "limit", 10 * 60);
     console.error(`Live poll failed for GitHub member ${member.githubUsername}:`, error);
     return "failed";
   }
@@ -210,17 +216,21 @@ async function poll(state: PollState, options: PollOptions) {
   const deadline = started + (options.budgetMs ?? 45_000);
   const hotSince = new Date(started - HOT_WINDOW_MS);
 
+  // Members whose GitHub connection has run out are left alone until they sign in again: there is nothing to check with. (LeetCode needs no
+  // sign in, but a member in this state is not looking at the site, so it can wait too.)
+  const signInNeeded = await membersNeedingSignIn();
+
   const members = await prisma.user.findMany({
     where: {
       ...(options.onlyUserIds ? { id: { in: options.onlyUserIds } } : {}),
+      ...(signInNeeded.size ? { id: { notIn: [...signInNeeded], ...(options.onlyUserIds ? { in: options.onlyUserIds } : {}) } } : {}),
       lastActive: { gte: new Date(started - GITHUB_ACTIVE_WITHIN_MS) },
       OR: [{ githubTokenCiphertext: { not: null } }, { leetcodeUsername: { not: null } }],
     },
     select: {
-      id: true,
+      ...TOKEN_FIELDS,
       liveActiveAt: true,
       githubUsername: true,
-      githubTokenCiphertext: true,
       leetcodeUsername: true,
       githubStats: { select: { commits: true, pullRequests: true, issues: true } },
       leetcodeStats: { select: { easySolved: true, mediumSolved: true, hardSolved: true } },

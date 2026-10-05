@@ -2,6 +2,9 @@ import "server-only";
 import { invalidateCache } from "@/server/cache/cache";
 import { isAdminAccount } from "@/server/auth/roles";
 import { prisma } from "@/server/db/prisma";
+import { clearNeedsSignIn } from "@/server/auth/reauth";
+import { clearPollBackoff } from "@/server/features/live/poll-state";
+import { NEVER_EXPIRES } from "@/server/integrations/github-token";
 import { encryptToken } from "@/server/security/token-encryption";
 
 export interface GitHubIdentity {
@@ -22,7 +25,15 @@ export const authService = {
     return (await prisma.gitHubStats.count({ where: { userId } })) > 0;
   },
 
-  async upsertGitHubUser(profile: GitHubIdentity, accessToken: string) {
+  /**
+   * `tokens` is what GitHub handed over with the access token: a refresh token and the time (in seconds since 1970) the access token stops
+   * working. Signing in also puts the member back in good standing: they are no longer asked to sign in again, and the live poll tries them again.
+   */
+  async upsertGitHubUser(
+    profile: GitHubIdentity,
+    accessToken: string,
+    tokens: { refreshToken?: string | null; expiresAt?: number | null } = {},
+  ) {
     const githubId = String(profile.id);
     const role = resolveRole(githubId, profile.login);
 
@@ -61,22 +72,20 @@ export const authService = {
       role,
       githubTokenCiphertext: encryptToken(accessToken),
       githubTokenUpdatedAt: new Date(),
+      githubRefreshTokenCiphertext: tokens.refreshToken ? encryptToken(tokens.refreshToken) : null,
+      // If GitHub reports no expiry this token does not run out. (A row with no expiry at all is one from before this was recorded.)
+      githubTokenExpiresAt: tokens.expiresAt ? new Date(tokens.expiresAt * 1000) : NEVER_EXPIRES,
     };
 
-    if (existingUser) {
-      const user = await prisma.user.update({
-        where: { id: existingUser.id },
-        data,
-      });
-      await invalidateCache("members");
-      return user;
-    }
+    const user = existingUser
+      ? await prisma.user.update({ where: { id: existingUser.id }, data })
+      : await prisma.user.create({ data: { ...data } });
 
-    const user = await prisma.user.create({
-      data: {
-        ...data,
-      },
-    });
+    // A fresh sign in is a good token: stop asking them to sign in again, and let the live poll try them again straight away.
+    await Promise.all([clearNeedsSignIn(user.id), clearPollBackoff(user.id)]);
+    console.info(
+      `Sign in for ${profile.login}: GitHub token ${tokens.expiresAt ? `expires ${new Date(tokens.expiresAt * 1000).toISOString()}` : "has no expiry"}, refresh token ${tokens.refreshToken ? "received" : "not received"}.`,
+    );
     await invalidateCache("members");
     return user;
   },
