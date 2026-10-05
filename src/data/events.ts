@@ -298,6 +298,87 @@ export const EVENTS: EventItem[] = [
       ],
     },
   },
+  {
+    slug: "open-source-awareness",
+    n: "06",
+    title: "Awareness About Open Source",
+    subtitle: "Community, digital commons and our principles",
+    dateLabel: "5 Oct 2026",
+    sort: "2026-10-05",
+    time: "8:00 PM to 9:00 PM IST",
+    location: "Online, on Jitsi",
+    type: "Orientation",
+    tone: "mint",
+    summary:
+      "An introductory session on open source and digital commons, why a community beats a club, and the principles and plan we want the club to run on.",
+    tags: ["open source", "digital commons", "community", "online", "orientation"],
+    image: {
+      src: "/event-images/os-awareness.jpeg",
+      alt: "Poster for Awareness About Open Source with Siddharth Bansal, a free online webinar on 5th October 2026, 8 to 9 PM. Topics: what open source and digital commons are, why you should care, and our vision and principles.",
+      aspect: "aspect-[1131/1600]",
+    },
+    overview: [
+      "Awareness About Open Source was an introductory session for the people in the club, a chance to recentre around what community and digital commons actually mean. It also laid out, from our side, how we plan to work towards them from here on.",
+      "It began with the basics: what open source is, what open source advocacy is, what digital commons are, and why anyone should care about either. From there it asked why a community is worth more than a club, and how we want to build one. The short version is to serve no master and build freely.",
+      "Then it got to the part that shapes everything else, our principles and objectives. For the people, of the people, from the people. Why we believe in open data, which means keeping everything public and visible, on the record, on the forum and the website. And the first ask of everyone: make an account on fossunited.org and join the Telegram group.",
+      "It closed with how the club will work. Five pillars build the rapport of the community: events, project bootcamps, discussions and the Open Community Chintans, content and personal growth, and a fifth that runs through all of them, doing everything with these values in mind. The functioning plan for the club itself rests on four pillars.",
+    ],
+    highlights: [
+      "What open source and digital commons are",
+      "Why a community is worth more than a club",
+      "Our principles: for the people, of the people, from the people",
+      "Why we keep everything open, public and on the record",
+      "The five pillars of the community and the four of the club",
+    ],
+    whoFor: "Everyone in the club, and anyone curious about open source and digital commons. No experience needed.",
+    speaker: {
+      name: "Siddharth Bansal",
+      bio: "Our first president, who started the club in 2025 with a few friends. He interns at FOSS United and OWASP.",
+      topic: "What open source and digital commons are, why they matter, and how we want to run the club as a community.",
+      links: [],
+    },
+  },
+  {
+    slug: "open-designing",
+    n: "07",
+    title: "Open Designing",
+    subtitle: "Design, inclusivity and open source",
+    dateLabel: "9 Oct 2026",
+    sort: "2026-10-09",
+    time: "7:00 PM to 9:00 PM IST",
+    location: "Online, link shared in the community group",
+    type: "Open talk",
+    tone: "lilac",
+    summary:
+      "Muneer S, Design Fellow at FOSS United, on why design matters in open source, how it makes a community welcoming, and where designers fit in.",
+    tags: ["design", "inclusivity", "open source", "online", "talk"],
+    image: {
+      src: "/event-images/open-designing.webp",
+      alt: "Poster for Open Designing, a talk by Muneer S on how designers can increase inclusivity and advocacy in open source. 9th October, 7 PM IST, online.",
+      aspect: "aspect-[1080/1350]",
+    },
+    overview: [
+      "Open Designing is an online talk on why design matters in open source, and on what it takes for a community to feel welcoming to everyone who wants to be part of it. It starts with the basics. Many people never find open source because nobody told them it exists, or that there is a place in it for whatever they are good at. Code is only one way in.",
+      "From there it moves to a problem communities meet more often than they admit: making room for the people at either far end of the usual crowd, who are easy to overlook because they do not look like the average contributor.",
+      "Then Muneer brings it home with a call to action. He will talk about where design is needed in these communities, what it was like for him, and what he hopes we do better for the people who come after us.",
+      "The talk is aimed mostly at designers, and especially our university's design department. Your skills are needed in open source, and there are several career paths ahead if you step in. We are also hoping some of you will join our team, because like many communities, we could really use designers.",
+    ],
+    highlights: [
+      "Why design matters in open source",
+      "Making room for people at the edges of a community",
+      "Muneer's own experience, and what he hopes we do better",
+      "Career paths for designers in open source",
+    ],
+    whoFor:
+      "Designers and design students most of all, and anyone who wants open source to feel welcoming to more people. You do not need to code.",
+    speaker: {
+      name: "Muneer S",
+      bio: "Design Fellow at FOSS United and a former intern. His talk draws on his own experience of design in open source communities.",
+      topic: "Why design is needed in open source, his own experience, and how to make communities more welcoming.",
+      links: [{ label: "FOSS United", href: "https://fossunited.org" }],
+    },
+    registration: { label: "Join the community group for the meet link", href: "https://chat.whatsapp.com/BM3sZRi1GUnDkYwH5Ib9k7" },
+  },
 ];
 
 /** Newest first, the order the events page shows them in. */

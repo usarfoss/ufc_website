@@ -13,7 +13,10 @@ import { TAPE_CYCLE, TONE_BG } from "@/data/tones";
 import { ArrowLink } from "@/components/home/arrow-link";
 
 /** Tall posters get cropped in the list so a card never turns into a skyscraper. */
-const isPoster = (e: EventItem) => !!e.image && /1587|2942/.test(e.image.aspect);
+const isPoster = (e: EventItem) => {
+  const size = e.image?.aspect.match(/\[(\d+)\/(\d+)\]/);
+  return !!size && Number(size[2]) / Number(size[1]) > 1.2;
+};
 
 function EventCard({ e, i, latest }: { e: EventItem; i: number; latest: boolean }) {
   const right = i % 2 === 1;

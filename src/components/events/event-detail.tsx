@@ -41,6 +41,9 @@ function Fact({ icon, label, children }: { icon: React.ReactNode; label: string;
   );
 }
 
+/** Events that have not happened yet are written about in the present tense. (Pages are built ahead of time, so this settles at the next deploy.) */
+const isUpcoming = (e: EventItem) => new Date(`${e.sort}T23:59:59+05:30`).getTime() >= Date.now();
+
 function Hero({ e }: { e: EventItem }) {
   return (
     <section
@@ -107,7 +110,7 @@ function Overview({ e }: { e: EventItem }) {
       <div className="mx-auto grid max-w-7xl gap-14 px-5 pb-20 pt-24 sm:px-8 lg:grid-cols-12 lg:pb-28 lg:pt-32">
         <div className="lg:col-span-7">
           <Reveal>
-            <p className="eyebrow mb-6 text-[var(--signal-deep)]">§ 01 · what it was</p>
+            <p className="eyebrow mb-6 text-[var(--signal-deep)]">§ 01 · {isUpcoming(e) ? "what it is" : "what it was"}</p>
           </Reveal>
           <h2 className="text-[clamp(2.2rem,4.6vw,4.2rem)] leading-[1]">
             The <span className="serif text-[var(--signal-deep)]">story.</span>
@@ -160,7 +163,7 @@ function Overview({ e }: { e: EventItem }) {
                 {e.whoFor && (
                   <>
                     <p className="code flex items-center gap-2 text-[0.7rem] font-bold uppercase tracking-widest text-[var(--signal-deep)]">
-                      <Users size={14} /> who it was for
+                      <Users size={14} /> {isUpcoming(e) ? "who it is for" : "who it was for"}
                     </p>
                     <p className="mt-2 leading-[1.6] text-[var(--ink)]/80">{e.whoFor}</p>
                   </>
@@ -294,8 +297,29 @@ function Schedule({ e, n }: { e: EventItem; n: string }) {
   );
 }
 
+/** The side note next to a speaker: the talk series for the Chintans, otherwise where to get the meet link (or, once it is over, where to hear about the next one). */
+const sideNote = (e: EventItem) =>
+  e.subtitle.startsWith("Open Community Chintan")
+    ? {
+        eyebrow: "about the series",
+        title: "Open Community Chintans",
+        body: "Our online talk series. Different topics, different speakers, real conversations, and no gatekeeping. Event details and meet links drop on WhatsApp.",
+      }
+    : isUpcoming(e)
+      ? {
+          eyebrow: "how to join",
+          title: "Join the community",
+          body: "The meet link is shared in our community group on WhatsApp, along with updates about events like this one.",
+        }
+      : {
+          eyebrow: "stay in the loop",
+          title: "Join the community",
+          body: "What is coming up, and the meet links for it, are shared in our community group on WhatsApp.",
+        };
+
 function SpeakerCard({ e }: { e: EventItem }) {
   const s = e.speaker!;
+  const note = sideNote(e);
   return (
     <section className="relative bg-[var(--paper)] pb-24 text-[var(--ink)] lg:pb-32">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
@@ -323,12 +347,9 @@ function SpeakerCard({ e }: { e: EventItem }) {
             <Pin r={-2} drag={false}>
               <div className="paper relative p-7">
                 <Tape tone="butter" className="-top-3 left-1/2 -translate-x-1/2" rotate={-3} />
-                <p className="code text-[0.7rem] font-bold uppercase tracking-widest text-[var(--signal-deep)]">about the series</p>
-                <p className="serif mt-3 text-[1.7rem] leading-[1.1]">Open Community Chintans</p>
-                <p className="mt-3 leading-[1.6] text-[var(--ink)]/75">
-                  Our online talk series. Different topics, different speakers, real conversations, and no gatekeeping. Event details and
-                  meet links drop on WhatsApp.
-                </p>
+                <p className="code text-[0.7rem] font-bold uppercase tracking-widest text-[var(--signal-deep)]">{note.eyebrow}</p>
+                <p className="serif mt-3 text-[1.7rem] leading-[1.1]">{note.title}</p>
+                <p className="mt-3 leading-[1.6] text-[var(--ink)]/75">{note.body}</p>
               </div>
             </Pin>
           </div>
