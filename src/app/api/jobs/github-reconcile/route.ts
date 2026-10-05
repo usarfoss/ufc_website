@@ -4,6 +4,9 @@ import { enqueueGitHubSync } from "@/server/jobs/github-sync";
 
 export const runtime = "nodejs";
 
+/** The safety-net jobs queue one sync per member. Fired all at once, that is dozens of syncs hitting GitHub in the same second, which is how requests get refused. Spread over up to ten minutes instead. */
+const spread = (index: number, total: number) => (total <= 1 ? 0 : Math.min(600, total * 3) * (index / total));
+
 const handler = async () => {
   const activeSince = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   const users = await prisma.user.findMany({
@@ -15,7 +18,7 @@ const handler = async () => {
     take: 250,
   });
 
-  const queued = await Promise.all(users.map((user) => enqueueGitHubSync(user.id, "scheduled")));
+  const queued = await Promise.all(users.map((user, i) => enqueueGitHubSync(user.id, "scheduled", spread(i, users.length))));
 
   return Response.json({
     success: true,

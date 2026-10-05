@@ -74,7 +74,7 @@ const DAY = 24 * 60 * 60;
  * Bump this whenever the way GitHub is read or stored changes. Each member is then synced once with the new logic (a sync only writes real
  * differences, so for most people nothing changes), which also repairs anything the older logic had missed.
  */
-const GITHUB_LOGIC_VERSION = "2";
+const GITHUB_LOGIC_VERSION = "3";
 
 /**
  * GitHub's own feeds run behind: a commit is counted at once, but the activity list built from GitHub's events can take minutes more. So after

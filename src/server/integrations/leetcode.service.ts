@@ -18,121 +18,99 @@ export interface LeetCodeSubmission {
 }
 
 export class LeetCodeService {
-  /** `fast` skips the community API (which sleeps when idle and can take seconds to answer) and asks LeetCode directly. The live poll uses it. */
-  async getUserStats(username: string, options: { fast?: boolean } = {}): Promise<LeetCodeUserStats | null> {
+  /**
+   * LeetCode's own numbers. Returns the stats, `null` if LeetCode says the user does not exist, and `undefined` if we simply could not get an
+   * answer (a timeout, a block, a bad reply), so the caller knows whether to try somewhere else.
+   */
+  private async fromLeetCode(username: string): Promise<LeetCodeUserStats | null | undefined> {
     try {
-      // Try primary API (alfa-leetcode-api)
-      try {
-        if (options.fast) throw new Error("skipped: fast path");
-        const response = await fetch(`https://alfa-leetcode-api.onrender.com/${username}/solved`, {
-          headers: {
-            Accept: "application/json",
-          },
-          // That service sleeps when idle and can take a minute to wake. Give up quickly and use LeetCode's own API instead.
-          signal: AbortSignal.timeout(6_000),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-
-          // For a name that does not exist this service still answers 200, with an error instead of numbers. Only trust real numbers.
-          if (typeof data.solvedProblem !== "number" || data.errors) {
-            throw new Error("The primary LeetCode API returned no stats for that user");
-          }
-
-          const stats: LeetCodeUserStats = {
-            username: username,
-            ranking: data.ranking || null,
-            reputation: data.reputation || 0,
-            totalSolved: data.solvedProblem || 0,
-            easySolved: data.easySolved || 0,
-            mediumSolved: data.mediumSolved || 0,
-            hardSolved: data.hardSolved || 0,
-            acceptanceRate: data.acceptanceRate || null,
-          };
-
-          return stats;
-        }
-      } catch (error) {
-        if (!options.fast) console.warn("Primary LeetCode API failed, trying fallback:", error);
-      }
-
-      // Fallback: Try LeetCode GraphQL API
-      try {
-        const graphqlQuery = {
+      const response = await fetch("https://leetcode.com/graphql", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
           query: `
             query getUserProfile($username: String!) {
               matchedUser(username: $username) {
                 username
-                profile {
-                  ranking
-                  reputation
-                }
-                submitStats {
-                  acSubmissionNum {
-                    difficulty
-                    count
-                  }
-                }
+                profile { ranking reputation }
+                submitStats { acSubmissionNum { difficulty count } }
               }
             }
           `,
           variables: { username },
-        };
+        }),
+        signal: AbortSignal.timeout(8_000),
+      });
+      if (!response.ok) return undefined;
 
-        const response = await fetch("https://leetcode.com/graphql", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(graphqlQuery),
-          signal: AbortSignal.timeout(8_000),
-        });
+      const result = await response.json();
+      const userData = result.data?.matchedUser;
+      if (!userData) return result.errors?.some((e: { message?: string }) => /does not exist/i.test(e.message ?? "")) ? null : undefined;
 
-        if (response.ok) {
-          const result = await response.json();
-          const userData = result.data?.matchedUser;
-
-          if (!userData) {
-            console.error(`LeetCode user '${username}' not found`);
-            return null;
-          }
-
-          // Parse submission stats
-          const submissions = userData.submitStats?.acSubmissionNum || [];
-          let easySolved = 0;
-          let mediumSolved = 0;
-          let hardSolved = 0;
-
-          for (const sub of submissions) {
-            if (sub.difficulty === "Easy") easySolved = sub.count;
-            else if (sub.difficulty === "Medium") mediumSolved = sub.count;
-            else if (sub.difficulty === "Hard") hardSolved = sub.count;
-          }
-
-          const stats: LeetCodeUserStats = {
-            username: userData.username,
-            ranking: userData.profile?.ranking || null,
-            reputation: userData.profile?.reputation || 0,
-            totalSolved: easySolved + mediumSolved + hardSolved,
-            easySolved,
-            mediumSolved,
-            hardSolved,
-            acceptanceRate: null,
-          };
-
-          return stats;
-        }
-      } catch (error) {
-        console.error("LeetCode GraphQL API failed:", error);
+      let easySolved = 0;
+      let mediumSolved = 0;
+      let hardSolved = 0;
+      for (const sub of userData.submitStats?.acSubmissionNum || []) {
+        if (sub.difficulty === "Easy") easySolved = sub.count;
+        else if (sub.difficulty === "Medium") mediumSolved = sub.count;
+        else if (sub.difficulty === "Hard") hardSolved = sub.count;
       }
 
-      return null;
+      return {
+        username: userData.username,
+        ranking: userData.profile?.ranking || null,
+        reputation: userData.profile?.reputation || 0,
+        totalSolved: easySolved + mediumSolved + hardSolved,
+        easySolved,
+        mediumSolved,
+        hardSolved,
+        acceptanceRate: null,
+      };
     } catch (error) {
-      console.error(`Error fetching LeetCode stats for ${username}:`, error);
+      console.error("LeetCode GraphQL API failed:", error);
+      return undefined;
+    }
+  }
+
+  /** The community mirror of LeetCode's numbers. It sleeps when idle, rate-limits, and can lag behind, so it is only a last resort. */
+  private async fromCommunityApi(username: string): Promise<LeetCodeUserStats | null> {
+    try {
+      const response = await fetch(`https://alfa-leetcode-api.onrender.com/${username}/solved`, {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(6_000),
+      });
+      if (!response.ok) return null;
+
+      const data = await response.json();
+      // For a name that does not exist this service still answers 200, with an error instead of numbers. Only trust real numbers.
+      if (typeof data.solvedProblem !== "number" || data.errors) return null;
+
+      return {
+        username,
+        ranking: data.ranking || null,
+        reputation: data.reputation || 0,
+        totalSolved: data.solvedProblem || 0,
+        easySolved: data.easySolved || 0,
+        mediumSolved: data.mediumSolved || 0,
+        hardSolved: data.hardSolved || 0,
+        acceptanceRate: data.acceptanceRate || null,
+      };
+    } catch (error) {
+      console.warn("Community LeetCode API failed:", error);
       return null;
     }
+  }
+
+  /**
+   * A member's LeetCode numbers. LeetCode itself is always asked first, and every caller (linking, the live poll, the 3 hourly refresh) gets
+   * its answer, so they all see the same numbers. The community API is only a fallback when LeetCode could not be reached, and `fast` skips it
+   * (the live poll would rather try again in a minute than wait on a slow service).
+   * Two sources that can disagree, taking turns, made one member's numbers (and leaderboard place) swing back and forth.
+   */
+  async getUserStats(username: string, options: { fast?: boolean } = {}): Promise<LeetCodeUserStats | null> {
+    const official = await this.fromLeetCode(username);
+    if (official !== undefined) return official;
+    return options.fast ? null : this.fromCommunityApi(username);
   }
 
   /**
@@ -156,6 +134,23 @@ export class LeetCodeService {
       stored.hardSolved === stats.hardSolved
     ) {
       return { changed: false, activityAdded: false };
+    }
+
+    // Solved counts only go up. A fall is not believed the first time: it may be a failed or partial reply. If the next look says the same, it is real.
+    if (stored && stored.leetcodeUsername === leetcodeUsername && stats.totalSolved < stored.totalSolved) {
+      const { seenTwice } = await import("@/server/cache/confirm");
+      if (!(await seenTwice(`leetcode:${userId}`, `${stats.easySolved}/${stats.mediumSolved}/${stats.hardSolved}`))) {
+        console.warn(
+          `LeetCode count for ${leetcodeUsername} fell (${stored.totalSolved} to ${stats.totalSolved}); waiting for a second look.`,
+        );
+        // Take that second look in a minute, for this member only (quiet members are otherwise only checked every six hours).
+        const { allowRecheck } = await import("@/server/cache/confirm");
+        if (await allowRecheck(`leetcode:${userId}`)) {
+          const { enqueueLeetCodeSync } = await import("@/server/jobs/leetcode-sync");
+          await enqueueLeetCodeSync(userId, "recheck", 60).catch((error) => console.error("Could not queue the re-check:", error));
+        }
+        return { changed: false, activityAdded: false };
+      }
     }
 
     const data = {

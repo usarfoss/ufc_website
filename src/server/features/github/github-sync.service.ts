@@ -1,9 +1,12 @@
 import "server-only";
 import { type ActivityType, type Prisma } from "@prisma/client";
 import { invalidateCache, type CacheNamespace } from "@/server/cache/cache";
+import { allowRecheck, seenTwice } from "@/server/cache/confirm";
 import { prisma } from "@/server/db/prisma";
 import { activityCutoff } from "@/server/features/activity/retention";
+import { looksWrong } from "./sanity";
 import { createGitHubService, type GitHubActivity } from "@/server/integrations/github.service";
+import { enqueueGitHubSync } from "@/server/jobs/github-sync";
 import { decryptToken } from "@/server/security/token-encryption";
 
 const activityTypeFor = (activity: GitHubActivity): ActivityType | null => {
@@ -109,6 +112,23 @@ export async function syncGitHubUser(userId: string) {
     languages: JSON.stringify(contributions.languages),
     contributionCalendar: contributions.contributionCalendar as unknown as Prisma.InputJsonValue,
   };
+  // A sharp fall in the totals is not believed the first time (see sanity.ts). Nothing is written, and the next look decides: if GitHub says the
+  // same again it was real, and if the numbers come back it was a hiccup that never touched the leaderboard.
+  if (old && looksWrong(old, nextStats)) {
+    const signature = `${nextStats.commits}/${nextStats.pullRequests}/${nextStats.issues}`;
+    if (!(await seenTwice(`github:${user.id}`, signature))) {
+      console.warn(
+        `GitHub totals for ${user.githubUsername} fell sharply (${old.commits}/${old.pullRequests}/${old.issues} to ${signature}); waiting for a second look.`,
+      );
+      // Take that second look in a minute, for this member only, whichever group they are in. (Members who have been active would be looked
+      // at again by the next poll anyway, but quiet ones are only polled every six hours.)
+      if (await allowRecheck(`github:${user.id}`)) {
+        await enqueueGitHubSync(user.id, "recheck", 60).catch((error) => console.error("Could not queue the re-check:", error));
+      }
+      return { userId: user.id, syncedAt: now.toISOString(), activityCount: activities.length, changed: false };
+    }
+  }
+
   const statsChanged =
     !old ||
     old.commits !== nextStats.commits ||

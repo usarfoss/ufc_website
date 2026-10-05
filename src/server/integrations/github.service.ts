@@ -207,8 +207,9 @@ export class GitHubService {
         pushed_at: repository.pushed_at || new Date().toISOString(),
       }));
     } catch (error) {
+      // Not an empty list: an empty list would be saved as "no languages", and then corrected on the next look, so the chart would flicker.
       console.error(`Error fetching GitHub repositories for ${username}:`, error);
-      return [];
+      throw error;
     }
   }
 
@@ -257,8 +258,9 @@ export class GitHubService {
         contributions,
       };
     } catch (error) {
+      // Not zero: a failed request must never be saved as "no contributions", which dropped the member down the leaderboard until the next sync.
       console.error(`Error fetching GitHub contribution calendar for ${username}:`, error);
-      return { totalContributions: 0, contributions: [] };
+      throw error;
     }
   }
 
@@ -500,8 +502,9 @@ export class GitHubService {
         );
         return data.search?.issueCount || 0;
       } catch (error) {
+        // Not zero: a failed search is not "no pull requests", and saving it as one dropped the member down the leaderboard until the next sync.
         console.error(`Error fetching GitHub search count for ${username}:`, error);
-        return 0;
+        throw error;
       }
     };
     const [totalPRs, totalIssues] = await Promise.all([
