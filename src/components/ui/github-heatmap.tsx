@@ -3,7 +3,7 @@
 import { GithubIcon } from "@/components/ui/social-icons";
 import { ActivityCalendar, CalendarCard, plural, type ApiDay } from "@/components/ui/activity-calendar";
 import { SkeletonCalendar } from "@/components/dashboard/skeleton";
-import { useApi } from "@/components/dashboard/use-api";
+import { useApi, useVersionStream } from "@/components/dashboard/use-api";
 
 interface Props {
   username: string;
@@ -18,10 +18,12 @@ export default function GitHubHeatmap({ username }: Props) {
     error,
     loading,
     reload,
+    refresh,
   } = useApi<{ contributions?: ApiDay[]; lastSynced?: string | null }>(
     username ? `/api/github/contributions?username=${encodeURIComponent(username)}` : null,
     { errorMessage: "We couldn't load your contribution calendar just now." },
   );
+  useVersionStream("dashboard", refresh); // a new commit lights up its box without a reload
   const days = body?.contributions ?? [];
   const synced = body?.lastSynced ?? null;
   const total = days.reduce((n, d) => n + d.count, 0);

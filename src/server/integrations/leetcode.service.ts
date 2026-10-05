@@ -138,7 +138,11 @@ export class LeetCodeService {
   /**
    * Writes numbers we already have to the database, but only if they differ from what is stored. The solved counts are what people see and what
    * the leaderboard uses, so those decide. Ranking and reputation drift on their own and differ a little between the two sources we read, so
-   * they are saved along with a real change and never cause a write by themselves. Returns whether anything was written.
+   * they are saved along with a real change and never cause a write by themselves.
+   *
+   * When the counts went up for a member we already knew, a line is added to the activity feed for each difficulty that rose ("Solved 2 Medium
+   * problems on LeetCode"). LeetCode only gives totals, so that is all it can say: how many, and when we noticed. A first link adds nothing, so
+   * nobody's whole history lands in the feed, and a count that went down adds nothing either.
    */
   async saveStats(userId: string, leetcodeUsername: string, stats: LeetCodeUserStats) {
     const { prisma } = await import("@/server/db/prisma");
@@ -151,7 +155,7 @@ export class LeetCodeService {
       stored.mediumSolved === stats.mediumSolved &&
       stored.hardSolved === stats.hardSolved
     ) {
-      return false;
+      return { changed: false, activityAdded: false };
     }
 
     const data = {
@@ -165,8 +169,38 @@ export class LeetCodeService {
       acceptanceRate: stats.acceptanceRate,
       lastSynced: new Date(),
     };
-    await prisma.leetCodeStats.upsert({ where: { userId }, update: data, create: { userId, ...data } });
-    return true;
+
+    // Only for the same account as before: a different username is a different history, not new solves.
+    const rises =
+      stored && stored.leetcodeUsername === leetcodeUsername
+        ? (
+            [
+              { type: "LEETCODE_EASY", label: "Easy", before: stored.easySolved, after: stats.easySolved },
+              { type: "LEETCODE_MEDIUM", label: "Medium", before: stored.mediumSolved, after: stats.mediumSolved },
+              { type: "LEETCODE_HARD", label: "Hard", before: stored.hardSolved, after: stats.hardSolved },
+            ] as const
+          ).filter((r) => r.after > r.before)
+        : [];
+    const now = new Date();
+
+    await prisma.$transaction(async (tx) => {
+      await tx.leetCodeStats.upsert({ where: { userId }, update: data, create: { userId, ...data } });
+      if (rises.length) {
+        await tx.activity.createMany({
+          data: rises.map((r) => ({
+            type: r.type,
+            userId,
+            description: `Solved ${r.after - r.before} ${r.label} problem${r.after - r.before === 1 ? "" : "s"} on LeetCode`,
+            // One line per new total, so noticing the same rise twice can never add it twice.
+            sourceKey: `leetcode:${userId}:${r.label.toLowerCase()}:${r.after}`,
+            metadata: { source: "leetcode", difficulty: r.label, solved: r.after - r.before, total: r.after },
+            createdAt: now,
+          })),
+          skipDuplicates: true,
+        });
+      }
+    });
+    return { changed: true, activityAdded: rises.length > 0 };
   }
 
   /** Fetches the numbers from LeetCode and stores them. */
@@ -177,8 +211,8 @@ export class LeetCodeService {
       throw new Error(`LeetCode profile not found for ${leetcodeUsername}`);
     }
 
-    const changed = await this.saveStats(userId, leetcodeUsername, stats);
-    return { success: true, stats, changed };
+    const { changed, activityAdded } = await this.saveStats(userId, leetcodeUsername, stats);
+    return { success: true, stats, changed, activityAdded };
   }
 
   calculatePoints(stats: { easySolved: number; mediumSolved: number; hardSolved: number }): number {

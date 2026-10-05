@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
     start(controller) {
       let closed = false;
       let previous = "";
+      let lastWatching = 0;
 
       const send = (event: string, data: unknown) => {
         if (!closed) {
@@ -27,8 +28,12 @@ export async function GET(request: NextRequest) {
 
       const checkVersions = async () => {
         try {
-          // Someone is looking at their dashboard, so the live poll treats them as active for the next minute and a half.
-          await getRedis()?.set(`live:watching:${session.userId}`, "1", { ex: 90 });
+          // Someone is looking at their dashboard, so the live poll treats them as active for the next two minutes. Said once a minute, not on
+          // every check, because every request here is multiplied by every open tab.
+          if (Date.now() - lastWatching > 60_000) {
+            lastWatching = Date.now();
+            await getRedis()?.set(`live:watching:${session.userId}`, "1", { ex: 120 });
+          }
           const versions = await getCacheVersions();
           const serialized = JSON.stringify(versions);
 
@@ -42,7 +47,7 @@ export async function GET(request: NextRequest) {
       };
 
       void checkVersions();
-      const versionTimer = setInterval(() => void checkVersions(), 10_000);
+      const versionTimer = setInterval(() => void checkVersions(), 5_000);
       const heartbeatTimer = setInterval(() => send("heartbeat", { at: Date.now() }), 25_000);
 
       request.signal.addEventListener("abort", () => {

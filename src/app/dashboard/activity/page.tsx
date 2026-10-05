@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Activity, Calendar, GitCommit, GitPullRequest, type LucideIcon } from "lucide-react";
+import { Activity, Calendar, Code2, GitCommit, GitPullRequest, type LucideIcon } from "lucide-react";
 import { useApi, useVersionStream } from "@/components/dashboard/use-api";
 import { Avatar, Empty, ErrorPanel, PageHeader, Pager, pageRange } from "@/components/dashboard/ui";
 import { TONE_BG, type Tone } from "@/data/tones";
@@ -23,6 +23,9 @@ const KINDS: Record<string, { icon: LucideIcon; tone: Tone }> = {
   pull_request: { icon: GitPullRequest, tone: "butter" },
   issue: { icon: Activity, tone: "pink" },
   event_join: { icon: Calendar, tone: "lilac" },
+  leetcode_easy: { icon: Code2, tone: "mint" },
+  leetcode_medium: { icon: Code2, tone: "butter" },
+  leetcode_hard: { icon: Code2, tone: "pink" },
 };
 
 const PER_PAGE = 20;

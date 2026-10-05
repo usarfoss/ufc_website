@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Activity, Calendar, GitCommit, GitPullRequest, Star, Trophy, type LucideIcon } from "lucide-react";
+import { Activity, Calendar, Code2, GitCommit, GitPullRequest, Star, Trophy, type LucideIcon } from "lucide-react";
 import { useAuth } from "@/features/auth/auth-provider";
 import { useApi, useVersionStream } from "@/components/dashboard/use-api";
 import GitHubHeatmap from "@/components/ui/github-heatmap";
@@ -43,6 +43,9 @@ const ACTIVITY: Record<string, { icon: LucideIcon; tone: Tone }> = {
   pull_request: { icon: GitPullRequest, tone: "butter" },
   event_join: { icon: Calendar, tone: "lilac" },
   issue: { icon: Activity, tone: "pink" },
+  leetcode_easy: { icon: Code2, tone: "mint" },
+  leetcode_medium: { icon: Code2, tone: "butter" },
+  leetcode_hard: { icon: Code2, tone: "pink" },
 };
 
 export default function DashboardPage() {

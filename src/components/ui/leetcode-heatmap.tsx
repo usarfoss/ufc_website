@@ -2,7 +2,7 @@
 
 import { ActivityCalendar, CalendarCard, plural, type ApiDay } from "@/components/ui/activity-calendar";
 import { SkeletonCalendar } from "@/components/dashboard/skeleton";
-import { useApi } from "@/components/dashboard/use-api";
+import { useApi, useVersionStream } from "@/components/dashboard/use-api";
 
 interface Props {
   username: string;
@@ -19,12 +19,13 @@ const LeetCodeMark = () => (
 
 /** A member's LeetCode submissions over the last year, drawn the same way as the GitHub calendar. */
 export default function LeetCodeHeatmap({ username }: Props) {
-  const { data, error, loading, reload } = useApi<{ submissions?: ApiDay[]; fetchedAt?: string }>(
+  const { data, error, loading, reload, refresh } = useApi<{ submissions?: ApiDay[]; fetchedAt?: string }>(
     username ? "/api/leetcode/submissions" : null,
     {
       errorMessage: "We couldn't load your LeetCode submissions just now.",
     },
   );
+  useVersionStream("dashboard", refresh); // a new solve shows on the calendar without a reload
   const days = data?.submissions ?? [];
   const total = days.reduce((n, d) => n + d.count, 0);
 

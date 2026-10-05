@@ -22,7 +22,8 @@ const handler = async (request: Request) => {
 
   const result = await leetcodeService.syncUserStats(user.id, user.leetcodeUsername);
   // Caches are only cleared when the database really changed.
-  if (result.changed) await invalidateCache("dashboard", "leaderboard", "members");
+  if (result.changed)
+    await invalidateCache("dashboard", "leaderboard", "members", ...(result.activityAdded ? (["activity-feed"] as const) : []));
 
   return Response.json({ success: true, reason: body.reason, solved: result.stats.totalSolved, changed: result.changed });
 };

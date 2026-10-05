@@ -61,9 +61,27 @@ const kv = {
     if (redis) await redis.set(key, value, { ex: seconds });
     else memory.set(key, { value, expires: Date.now() + seconds * 1000 });
   },
+  async del(key: string) {
+    const redis = getRedis();
+    if (redis) await redis.del(key);
+    else memory.delete(key);
+  },
 };
 
 const DAY = 24 * 60 * 60;
+
+/**
+ * Bump this whenever the way GitHub is read or stored changes. Each member is then synced once with the new logic (a sync only writes real
+ * differences, so for most people nothing changes), which also repairs anything the older logic had missed.
+ */
+const GITHUB_LOGIC_VERSION = "2";
+
+/**
+ * GitHub's own feeds run behind: a commit is counted at once, but the activity list built from GitHub's events can take minutes more. So after
+ * a real change is found, the member is checked again a few minutes later, whatever the cheap check says, to pick up what had not arrived yet.
+ * Those re-checks cost a few GitHub requests and write nothing unless something new turned up.
+ */
+const SETTLE_AFTER_MS = [3 * 60 * 1000, 10 * 60 * 1000];
 
 /* ------------------------------------------------------------------------------------------------ one member */
 
@@ -100,10 +118,29 @@ async function pollGitHub(member: Member): Promise<Outcome> {
       if (probe.events.latestEventId && !newEvent) await kv.set(`live:gh:event:${member.id}`, probe.events.latestEventId, DAY);
     }
 
-    if (!numbersMoved && !newEvent) return "unchanged";
+    // Two reasons to look again even though the cheap check saw nothing new: this member has not been read with the current logic yet, or a
+    // re-check that was promised after their last change has come due.
+    const [version, settle] = await Promise.all([kv.get(`live:gh:v:${member.id}`), kv.get(`live:settle:${member.id}`)]);
+    const settleTimes = (settle ?? "").split(",").filter(Boolean).map(Number);
+    const settleDue = settleTimes.length > 0 && settleTimes[0] <= Date.now();
+    const needsReread = version !== GITHUB_LOGIC_VERSION;
+
+    if (!numbersMoved && !newEvent && !settleDue && !needsReread) return "unchanged";
 
     const result = await syncGitHubUser(member.id);
     if (probe.events.modified && probe.events.latestEventId) await kv.set(`live:gh:event:${member.id}`, probe.events.latestEventId, DAY);
+    await kv.set(`live:gh:v:${member.id}`, GITHUB_LOGIC_VERSION, 30 * DAY);
+
+    if (settleDue) {
+      // That re-check is done. If more are promised, keep them. If there are none left, forget the list.
+      const rest = settleTimes.slice(1);
+      if (rest.length) await kv.set(`live:settle:${member.id}`, rest.join(","), 60 * 60);
+      else await kv.del(`live:settle:${member.id}`);
+    } else if ((numbersMoved || newEvent) && result.changed) {
+      // A real change just landed. Come back soon, since GitHub's feeds may not have caught up yet.
+      await kv.set(`live:settle:${member.id}`, SETTLE_AFTER_MS.map((ms) => Date.now() + ms).join(","), 60 * 60);
+    }
+
     // Something looked different, but the sync compares with what is stored and only writes real differences. If it found none (for example
     // a new public event that is not a commit, pull request or issue), nothing was written, so this is not a change.
     return result.changed ? "synced" : "unchanged";
@@ -117,7 +154,7 @@ async function pollGitHub(member: Member): Promise<Outcome> {
   }
 }
 
-async function pollLeetCode(member: Member, force: boolean): Promise<{ outcome: Outcome; changed: boolean }> {
+async function pollLeetCode(member: Member, force: boolean): Promise<{ outcome: Outcome; changed: boolean; activityAdded?: boolean }> {
   if (!member.leetcodeUsername) return { outcome: "skipped", changed: false };
   const last = Number((await kv.get(`live:lc:checked:${member.id}`)) ?? 0);
   // A hot member is checked at most every couple of minutes. A cold member is only here because their 6 hour check is due, so it always goes.
@@ -136,8 +173,8 @@ async function pollLeetCode(member: Member, force: boolean): Promise<{ outcome: 
       stored.hardSolved === stats.hardSolved;
     if (same) return { outcome: "unchanged", changed: false };
 
-    const written = await leetcodeService.saveStats(member.id, member.leetcodeUsername, stats);
-    return written ? { outcome: "synced", changed: true } : { outcome: "unchanged", changed: false };
+    const { changed, activityAdded } = await leetcodeService.saveStats(member.id, member.leetcodeUsername, stats);
+    return changed ? { outcome: "synced", changed: true, activityAdded } : { outcome: "unchanged", changed: false };
   } catch (error) {
     console.error(`Live poll failed for LeetCode member ${member.leetcodeUsername}:`, error);
     return { outcome: "failed", changed: false };
@@ -250,6 +287,7 @@ export async function runLivePoll(options: { budgetMs?: number; onlyUserIds?: st
 
   // GitHub syncs clear the caches themselves. LeetCode changes are written directly, so clear what shows them once, here.
   if (leetcode.some((r) => r.changed)) await invalidateCache("dashboard", "leaderboard", "members");
+  if (leetcode.some((r) => r.activityAdded)) await invalidateCache("activity-feed");
 
   return {
     members: members.length,

@@ -35,7 +35,7 @@ export const GET = withApiErrorHandling(async (request: NextRequest) => {
       type: activity.type.toLowerCase(),
       message: activity.description,
       repo: (activity.metadata as { repo?: string } | null)?.repo || null,
-      target: activity.event?.title || "GitHub",
+      target: activity.event?.title || (activity.type.startsWith("LEETCODE") ? "LeetCode" : "GitHub"),
       time: timeAgo(activity.createdAt),
       timestamp: activity.createdAt.toISOString(),
       user: {

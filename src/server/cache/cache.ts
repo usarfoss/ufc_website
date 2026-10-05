@@ -26,16 +26,6 @@ const versionKey = (namespace: CacheNamespace) => `cache:version:${namespace}`;
 const valueKey = (namespace: CacheNamespace, key: string) => `cache:${namespace}:${key}`;
 const keysKey = (namespace: CacheNamespace) => `cache:keys:${namespace}`;
 
-const getVersion = async (namespace: CacheNamespace) => {
-  if (!redis) return 0;
-  try {
-    return (await redis.get<number>(versionKey(namespace))) ?? 0;
-  } catch (error) {
-    console.error(`Unable to read ${namespace} cache version:`, error);
-    return 0;
-  }
-};
-
 export async function getCached<T>(namespace: CacheNamespace, key: string) {
   if (!redis) return null;
   try {
@@ -99,6 +89,13 @@ export async function invalidateCache(...namespaces: CacheNamespace[]) {
 
 export async function getCacheVersions() {
   const namespaces: CacheNamespace[] = ["activity-feed", "dashboard", "events", "leaderboard", "members"];
-  const entries = await Promise.all(namespaces.map(async (namespace) => [namespace, await getVersion(namespace)] as const));
-  return Object.fromEntries(entries) as Record<CacheNamespace, number>;
+  // One request for all of them: every open dashboard asks this every few seconds, so each saved request is multiplied by every tab.
+  if (!redis) return Object.fromEntries(namespaces.map((namespace) => [namespace, 0])) as Record<CacheNamespace, number>;
+  try {
+    const values = await redis.mget<(number | null)[]>(...namespaces.map(versionKey));
+    return Object.fromEntries(namespaces.map((namespace, i) => [namespace, values[i] ?? 0])) as Record<CacheNamespace, number>;
+  } catch (error) {
+    console.error("Unable to read cache versions:", error);
+    return Object.fromEntries(namespaces.map((namespace) => [namespace, 0])) as Record<CacheNamespace, number>;
+  }
 }
