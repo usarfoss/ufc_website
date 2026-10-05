@@ -1,23 +1,10 @@
 import "server-only";
-import { Client } from "@upstash/qstash";
+import { jobUrl, queue } from "./queue";
 
 export type GitHubSyncReason = "login" | "scheduled" | "webhook";
 
-const queue = process.env.QSTASH_TOKEN ? new Client({ token: process.env.QSTASH_TOKEN }) : null;
-
-const getJobUrl = () => {
-  const baseUrl = process.env.NEXTAUTH_URL;
-  const localQStash = process.env.QSTASH_URL?.includes("localhost") || process.env.QSTASH_URL?.includes("127.0.0.1");
-
-  if (!baseUrl || (baseUrl.includes("localhost") && !localQStash)) {
-    return null;
-  }
-
-  return new URL("/api/jobs/github-sync", baseUrl).toString();
-};
-
 export async function enqueueGitHubSync(userId: string, reason: GitHubSyncReason) {
-  const url = getJobUrl();
+  const url = jobUrl("/api/jobs/github-sync");
 
   if (!queue || !url) {
     console.warn("GitHub sync queue is not configured; skipping asynchronous sync.");

@@ -17,11 +17,13 @@ interface AuthContextValue {
   user: AuthUser | null;
   loginWithGitHub: () => Promise<void>;
   logout: () => Promise<void>;
+  /** Re-reads the signed in member from the server, for after something on their profile changed. */
+  refresh: () => Promise<void>;
   loading: boolean;
 }
 
 function AuthStateProvider({ children }: { children: ReactNode }) {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const user = session?.user
     ? {
         id: session.user.id,
@@ -41,6 +43,9 @@ function AuthStateProvider({ children }: { children: ReactNode }) {
     },
     logout: async () => {
       await signOut({ callbackUrl: "/" });
+    },
+    refresh: async () => {
+      await update();
     },
     loading: status === "loading",
   };

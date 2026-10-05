@@ -2,6 +2,7 @@ import "server-only";
 import type { NextAuthOptions } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 import { authService } from "@/server/features/auth/auth.service";
+import { prisma } from "@/server/db/prisma";
 import { syncGitHubUser } from "@/server/features/github/github-sync.service";
 import { enqueueGitHubSync } from "@/server/jobs/github-sync";
 
@@ -86,7 +87,7 @@ export const authOptions: NextAuthOptions = {
       });
       return true;
     },
-    async jwt({ token, account, profile }) {
+    async jwt({ token, account, profile, trigger }) {
       const githubProfile = asGitHubProfile(profile);
 
       if (account?.provider === "github" && account.access_token && githubProfile) {
@@ -96,6 +97,12 @@ export const authOptions: NextAuthOptions = {
         token.githubUsername = user.githubUsername ?? githubProfile.login;
         token.leetcodeUsername = user.leetcodeUsername ?? undefined;
         token.githubAccessToken = account.access_token;
+      }
+
+      // The settings page asks for a refresh after someone links or unlinks LeetCode, so the new username shows without signing in again.
+      if (trigger === "update" && typeof token.userId === "string") {
+        const fresh = await prisma.user.findUnique({ where: { id: token.userId }, select: { leetcodeUsername: true } });
+        token.leetcodeUsername = fresh?.leetcodeUsername ?? undefined;
       }
 
       return token;

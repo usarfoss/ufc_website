@@ -26,10 +26,17 @@ export class LeetCodeService {
           headers: {
             Accept: "application/json",
           },
+          // That service sleeps when idle and can take a minute to wake. Give up quickly and use LeetCode's own API instead.
+          signal: AbortSignal.timeout(6_000),
         });
 
         if (response.ok) {
           const data = await response.json();
+
+          // For a name that does not exist this service still answers 200, with an error instead of numbers. Only trust real numbers.
+          if (typeof data.solvedProblem !== "number" || data.errors) {
+            throw new Error("The primary LeetCode API returned no stats for that user");
+          }
 
           const stats: LeetCodeUserStats = {
             username: username,
@@ -78,6 +85,7 @@ export class LeetCodeService {
             Accept: "application/json",
           },
           body: JSON.stringify(graphqlQuery),
+          signal: AbortSignal.timeout(8_000),
         });
 
         if (response.ok) {
@@ -125,49 +133,33 @@ export class LeetCodeService {
     }
   }
 
+  /** Writes numbers we already have to the database. */
+  async saveStats(userId: string, leetcodeUsername: string, stats: LeetCodeUserStats) {
+    const { prisma } = await import("@/server/db/prisma");
+    const data = {
+      leetcodeUsername,
+      totalSolved: stats.totalSolved,
+      easySolved: stats.easySolved,
+      mediumSolved: stats.mediumSolved,
+      hardSolved: stats.hardSolved,
+      ranking: stats.ranking,
+      reputation: stats.reputation,
+      acceptanceRate: stats.acceptanceRate,
+      lastSynced: new Date(),
+    };
+    await prisma.leetCodeStats.upsert({ where: { userId }, update: data, create: { userId, ...data } });
+  }
+
+  /** Fetches the numbers from LeetCode and stores them. */
   async syncUserStats(userId: string, leetcodeUsername: string) {
-    try {
-      const stats = await this.getUserStats(leetcodeUsername);
+    const stats = await this.getUserStats(leetcodeUsername);
 
-      if (!stats) {
-        throw new Error(`LeetCode profile not found for ${leetcodeUsername}`);
-      }
-
-      // Update user's LeetCode stats in database
-      const { prisma } = await import("@/server/db/prisma");
-
-      await prisma.leetCodeStats.upsert({
-        where: { userId },
-        update: {
-          leetcodeUsername,
-          totalSolved: stats.totalSolved,
-          easySolved: stats.easySolved,
-          mediumSolved: stats.mediumSolved,
-          hardSolved: stats.hardSolved,
-          ranking: stats.ranking,
-          reputation: stats.reputation,
-          acceptanceRate: stats.acceptanceRate,
-          lastSynced: new Date(),
-        },
-        create: {
-          userId,
-          leetcodeUsername,
-          totalSolved: stats.totalSolved,
-          easySolved: stats.easySolved,
-          mediumSolved: stats.mediumSolved,
-          hardSolved: stats.hardSolved,
-          ranking: stats.ranking,
-          reputation: stats.reputation,
-          acceptanceRate: stats.acceptanceRate,
-          lastSynced: new Date(),
-        },
-      });
-
-      return { success: true, stats };
-    } catch (error) {
-      console.error("Error syncing LeetCode stats:", error);
-      throw error;
+    if (!stats) {
+      throw new Error(`LeetCode profile not found for ${leetcodeUsername}`);
     }
+
+    await this.saveStats(userId, leetcodeUsername, stats);
+    return { success: true, stats };
   }
 
   calculatePoints(stats: { easySolved: number; mediumSolved: number; hardSolved: number }): number {
@@ -186,6 +178,10 @@ export const leetcodeService = {
   syncUserStats: async (userId: string, username: string) => {
     if (!_leetcodeService) _leetcodeService = new LeetCodeService();
     return _leetcodeService.syncUserStats(userId, username);
+  },
+  saveStats: async (userId: string, username: string, stats: LeetCodeUserStats) => {
+    if (!_leetcodeService) _leetcodeService = new LeetCodeService();
+    return _leetcodeService.saveStats(userId, username, stats);
   },
   calculatePoints: (stats: { easySolved: number; mediumSolved: number; hardSolved: number }) => {
     if (!_leetcodeService) _leetcodeService = new LeetCodeService();

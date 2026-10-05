@@ -6,7 +6,6 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const username = searchParams.get("username");
-    const forceSync = searchParams.get("sync") === "true";
 
     // Fetch users with LeetCode usernames
     const users = await prisma.user.findMany({
@@ -20,32 +19,8 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Auto-sync stale data or force sync if requested
-    const syncPromises = users.map(async (user) => {
-      if (!user.leetcodeUsername) return user;
-
-      const shouldSync =
-        forceSync || !user.leetcodeStats || new Date().getTime() - new Date(user.leetcodeStats.lastSynced).getTime() > 24 * 60 * 60 * 1000; // 24 hours
-
-      if (shouldSync) {
-        try {
-          await leetcodeService.syncUserStats(user.id, user.leetcodeUsername);
-          // Fetch updated stats
-          const updatedUser = await prisma.user.findUnique({
-            where: { id: user.id },
-            include: { leetcodeStats: true },
-          });
-          return updatedUser || user;
-        } catch (error) {
-          console.error(`Failed to sync stats for ${user.leetcodeUsername}:`, error);
-          return user;
-        }
-      }
-
-      return user;
-    });
-
-    const usersWithStats = await Promise.all(syncPromises);
+    // These numbers are kept fresh by the background job (api/jobs/leetcode-sync), so reading them never calls LeetCode.
+    const usersWithStats = users;
 
     // Transform stats for response
     let transformedStats = usersWithStats.map((user) => ({

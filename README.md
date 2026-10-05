@@ -121,6 +121,18 @@ Also set `NEXTAUTH_URL=http://localhost:3000`, so QStash knows where to send the
 
 The first run downloads the right binary for your system. If npm blocks the package's install script, get the CLI from the [QStash local development docs](https://upstash.com/docs/qstash/howto/local-development) and run its `dev` command instead. Do not commit the binary, it is gitignored.
 
+### What runs in the background
+
+Both GitHub and LeetCode work the same way. When a member signs in, or links LeetCode in Settings, their numbers are stored straight away, and after that QStash jobs keep them fresh. Each job is a signed request to a route in `src/app/api/jobs`:
+
+| Route                          | What it does                                                     | Schedule to create in QStash |
+| ------------------------------ | ---------------------------------------------------------------- | ---------------------------- |
+| `/api/jobs/github-reconcile`   | Queues a GitHub sync for every member active in the last 30 days | every 6 hours                |
+| `/api/jobs/leetcode-reconcile` | Queues a LeetCode sync for every active member who linked one    | every 6 hours                |
+| `/api/jobs/activity-cleanup`   | Removes activity feed entries older than 36 hours                | hourly                       |
+
+The `reconcile` routes then queue one `github-sync` or `leetcode-sync` job per member, so a slow account never holds up the others. The schedules are created once in the QStash dashboard, pointing at your deployed address.
+
 ### Useful commands
 
 | Command             | What it does                                                   |
