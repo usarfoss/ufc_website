@@ -11,7 +11,6 @@ import { TAPE_CYCLE } from "@/data/tones";
 interface Member {
   id: string;
   name: string;
-  email: string;
   githubUsername?: string;
   location?: string;
   bio?: string;
@@ -89,7 +88,7 @@ export default function MembersPage() {
                 <article className="paper relative flex h-full flex-col px-6 pb-6 pt-9">
                   <Tape tone={TAPE_CYCLE[i % TAPE_CYCLE.length]} className="-top-3 left-1/2 -translate-x-1/2" rotate={-3} />
                   <div className="flex items-center gap-4">
-                    <Avatar src={m.avatar} name={m.name || m.email} size={64} />
+                    <Avatar src={m.avatar} name={m.name || m.githubUsername} size={64} />
                     <div className="min-w-0">
                       <h3 className="truncate text-[1.35rem] leading-tight">{m.name || "Anonymous"}</h3>
                       {m.githubUsername && (
@@ -134,15 +133,17 @@ export default function MembersPage() {
                     </div>
                   )}
 
-                  <a
-                    href={m.githubUsername ? `https://github.com/${m.githubUsername}` : `mailto:${m.email}`}
-                    target={m.githubUsername ? "_blank" : undefined}
-                    rel={m.githubUsername ? "noopener noreferrer" : undefined}
-                    className="btn btn-sm btn-paper mt-auto w-full justify-center !pr-4 pt-0"
-                    style={{ marginTop: "1.25rem" }}
-                  >
-                    {m.githubUsername ? "View on GitHub" : "Send an email"}
-                  </a>
+                  {m.githubUsername && (
+                    <a
+                      href={`https://github.com/${m.githubUsername}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-sm btn-paper mt-auto w-full justify-center !pr-4 pt-0"
+                      style={{ marginTop: "1.25rem" }}
+                    >
+                      View on GitHub
+                    </a>
+                  )}
                 </article>
               </Pin>
             </li>

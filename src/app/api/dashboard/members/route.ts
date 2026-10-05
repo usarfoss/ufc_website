@@ -1,13 +1,16 @@
 import type { NextRequest } from "next/server";
 import { getOrSetCached } from "@/server/cache/cache";
 import { prisma } from "@/server/db/prisma";
+import { requireSession } from "@/server/auth/session";
 import { json, withApiErrorHandling } from "@/server/http/api";
 
 export const GET = withApiErrorHandling(async (request: NextRequest) => {
+  // Members only. Email addresses are never part of this list, and cannot be searched either, so the list can't be used to find out whose email is whose.
+  await requireSession(request);
   const { searchParams } = new URL(request.url);
   const limit = Math.min(Math.max(Number(searchParams.get("limit")) || 20, 1), 100);
   const offset = Math.max(Number(searchParams.get("offset")) || 0, 0);
-  const search = searchParams.get("search")?.trim() || "";
+  const search = (searchParams.get("search")?.trim() || "").slice(0, 60);
   const sortBy = searchParams.get("sortBy") || "rank";
   const payload = await getOrSetCached("members", `${limit}:${offset}:${sortBy}:${search.toLowerCase()}`, 120, async () => {
     const where = search
@@ -15,7 +18,6 @@ export const GET = withApiErrorHandling(async (request: NextRequest) => {
           OR: [
             { name: { contains: search, mode: "insensitive" as const } },
             { githubUsername: { contains: search, mode: "insensitive" as const } },
-            { email: { contains: search, mode: "insensitive" as const } },
             { location: { contains: search, mode: "insensitive" as const } },
           ],
         }
@@ -30,7 +32,6 @@ export const GET = withApiErrorHandling(async (request: NextRequest) => {
         select: {
           id: true,
           name: true,
-          email: true,
           githubUsername: true,
           location: true,
           bio: true,
@@ -44,7 +45,6 @@ export const GET = withApiErrorHandling(async (request: NextRequest) => {
     const members = users.map((user, index) => ({
       id: user.id,
       name: user.name,
-      email: user.email,
       githubUsername: user.githubUsername,
       location: user.location,
       bio: user.bio,

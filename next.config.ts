@@ -10,6 +10,17 @@ const nextConfig: NextConfig = {
   experimental: { useTypeScriptCli: false },
   async headers() {
     return [
+      // Headers for every page and response.
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+        ],
+      },
       // The dashboard is for signed in members. robots.txt keeps crawlers out, and this keeps it out of results if a link to it is ever found.
       { source: "/dashboard/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] },
       { source: "/login", headers: [{ key: "X-Robots-Tag", value: "noindex" }] },

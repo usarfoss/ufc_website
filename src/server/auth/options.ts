@@ -60,9 +60,12 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+  // Seven days, not the default thirty: the token carries the member's GitHub access token, so it should not live for long.
   session: {
     strategy: "jwt",
+    maxAge: 7 * 24 * 60 * 60,
   },
+  jwt: { maxAge: 7 * 24 * 60 * 60 },
   callbacks: {
     async signIn({ account, profile }) {
       const githubProfile = asGitHubProfile(profile);

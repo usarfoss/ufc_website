@@ -1,9 +1,11 @@
 import type { NextRequest } from "next/server";
 import { getOrSetCached } from "@/server/cache/cache";
 import { prisma } from "@/server/db/prisma";
+import { requireSession } from "@/server/auth/session";
 import { json, withApiErrorHandling } from "@/server/http/api";
 
 export const GET = withApiErrorHandling(async (request: NextRequest) => {
+  await requireSession(request);
   const { searchParams } = new URL(request.url);
   const sortBy = searchParams.get("sortBy") || "totalPoints";
   const limit = Math.min(Math.max(Number(searchParams.get("limit")) || 50, 1), 100);

@@ -145,7 +145,7 @@ Any signed in member can propose an event, and an admin decides. The rules live 
 
 The public lists and each approved event's write-up are cached in Redis for a minute and cleared the moment anything changes, and the Events and Admin pages update live. Write endpoints also have a short burst limit (`src/server/security/rate-limit.ts`) in front of the database.
 
-Admins are set with `ADMIN_GITHUB_USERNAME`, which can list several GitHub usernames separated by commas.
+Admins are set with `ADMIN_GITHUB_IDS`, the numeric GitHub account ids separated by commas (find yours with `gh api users/<username> --jq .id`). Use ids, not usernames: a username can be renamed and then taken by somebody else, an id cannot. The list is read on every admin action, so removing someone takes effect immediately.
 
 ### Useful commands
 

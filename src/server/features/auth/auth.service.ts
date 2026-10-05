@@ -1,5 +1,6 @@
 import "server-only";
 import { invalidateCache } from "@/server/cache/cache";
+import { isAdminAccount } from "@/server/auth/roles";
 import { prisma } from "@/server/db/prisma";
 import { encryptToken } from "@/server/security/token-encryption";
 
@@ -11,14 +12,8 @@ export interface GitHubIdentity {
   avatar_url?: string | null;
 }
 
-/** ADMIN_GITHUB_USERNAME can hold one GitHub username or several, separated by commas. Admins review proposed events. */
-const resolveRole = (githubUsername: string): "ADMIN" | "MAINTAINER" => {
-  const admins = (process.env.ADMIN_GITHUB_USERNAME ?? "")
-    .split(",")
-    .map((name) => name.trim().toLowerCase())
-    .filter(Boolean);
-  return admins.includes(githubUsername.toLowerCase()) ? "ADMIN" : "MAINTAINER";
-};
+const resolveRole = (githubId: string, githubUsername: string): "ADMIN" | "MAINTAINER" =>
+  isAdminAccount({ githubId, githubUsername }) ? "ADMIN" : "MAINTAINER";
 
 /** Provisions and links the local profile to GitHub's immutable account identifier. */
 export const authService = {
@@ -29,17 +24,37 @@ export const authService = {
 
   async upsertGitHubUser(profile: GitHubIdentity, accessToken: string) {
     const githubId = String(profile.id);
-    const role = resolveRole(profile.login);
-    const existingUser = await prisma.user.findFirst({
+    const role = resolveRole(githubId, profile.login);
+
+    // An account is identified by GitHub's numeric id, which never changes. A username or an email can be handed on to somebody else, so
+    // they are never enough to be treated as the same person. The one exception: a profile made before it had an id (it has none yet) is
+    // linked by its email.
+    const existingUser =
+      (await prisma.user.findUnique({ where: { githubId } })) ??
+      (profile.email ? await prisma.user.findFirst({ where: { email: profile.email, githubId: null } }) : null);
+
+    // A username belongs to whoever has it now. If another profile still carries it, its owner has renamed their account, so let it go.
+    await prisma.user.updateMany({
       where: {
-        OR: [{ githubId }, { githubUsername: profile.login }, ...(profile.email ? [{ email: profile.email }] : [])],
+        githubUsername: profile.login,
+        ...(existingUser ? { id: { not: existingUser.id } } : {}),
+        OR: [{ githubId: null }, { githubId: { not: githubId } }],
       },
+      data: { githubUsername: null },
     });
+
+    // An email can only be on one profile. If it is already on somebody else's, we leave this person's email unset rather than fail their sign in.
+    const emailTaken =
+      !!profile.email &&
+      !!(await prisma.user.findFirst({
+        where: { email: profile.email, ...(existingUser ? { id: { not: existingUser.id } } : {}) },
+        select: { id: true },
+      }));
 
     const data = {
       githubId,
       githubUsername: profile.login,
-      email: profile.email ?? undefined,
+      email: emailTaken ? undefined : (profile.email ?? undefined),
       avatar: profile.avatar_url ?? undefined,
       name: existingUser?.name ?? profile.name ?? profile.login,
       lastActive: new Date(),

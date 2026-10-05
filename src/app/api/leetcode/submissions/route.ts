@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireSession } from "@/server/auth/session";
+import { prisma } from "@/server/db/prisma";
+import { ApiError } from "@/server/http/api";
+import { enforceRateLimit } from "@/server/security/rate-limit";
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const username = searchParams.get("username");
+    // This route makes our server call LeetCode, so it is for signed in members, a few times a minute, and only for their own linked account.
+    // Without that, anyone could use it as a free relay to LeetCode with our address.
+    const session = await requireSession(request);
+    await enforceRateLimit(`leetcode-calendar:${session.userId}`, 20, 60);
+    const linked = await prisma.user.findUnique({ where: { id: session.userId }, select: { leetcodeUsername: true } });
+    const username = linked?.leetcodeUsername;
 
     if (!username) {
-      return NextResponse.json({ error: "Username is required" }, { status: 400 });
+      return NextResponse.json({ error: "Link your LeetCode account first." }, { status: 400 });
     }
 
     // Fetch submission calendar from LeetCode GraphQL API
@@ -30,6 +38,7 @@ export async function GET(request: NextRequest) {
         query,
         variables: { username },
       }),
+      signal: AbortSignal.timeout(8_000),
     });
 
     if (!response.ok) {
@@ -76,6 +85,9 @@ export async function GET(request: NextRequest) {
       totalSubmissions,
     });
   } catch (error) {
+    if (error instanceof ApiError) {
+      return NextResponse.json({ error: error.message, ...error.details }, { status: error.status, headers: error.headers });
+    }
     console.error("LeetCode submissions error:", error);
     return NextResponse.json({ error: "Failed to fetch LeetCode submissions" }, { status: 500 });
   }

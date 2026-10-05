@@ -2,6 +2,7 @@ import "server-only";
 import { Prisma, type ApprovalStatus, type Event, type EventStatus } from "@prisma/client";
 import { getCached, getOrSetCached, invalidateCache, setCached } from "@/server/cache/cache";
 import { prisma } from "@/server/db/prisma";
+import { isAdminAccount } from "@/server/auth/roles";
 import { badRequest, conflict, forbidden, notFound, tooManyRequests, unauthorized } from "@/server/http/api";
 import type { EventDetails } from "@/types/events";
 import type { ProposalInput } from "./proposal";
@@ -36,13 +37,14 @@ export interface Viewer {
 
 /* ------------------------------------------------------------------------------------------------ roles and limits */
 
+/** "ADMIN" or "MAINTAINER" (every other signed in member), decided by the live admin list, never by the sign in token or a stored copy. */
 async function roleOf(userId: string) {
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { githubId: true, githubUsername: true } });
   if (!user) throw unauthorized();
-  return user.role;
+  return isAdminAccount(user) ? "ADMIN" : "MAINTAINER";
 }
 
-/** Reads the role from the database, not the sign in token, so a change of role takes effect straight away. */
+/** Checked on every call, so taking someone off the admin list stops them at once. */
 async function requireAdmin(userId: string) {
   if ((await roleOf(userId)) !== "ADMIN") throw forbidden("Only an admin can review events.");
 }

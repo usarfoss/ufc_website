@@ -1,10 +1,15 @@
 import type { NextRequest } from "next/server";
 import { requireSession } from "@/server/auth/session";
 import { OrgGitHubService } from "@/server/integrations/github-org.service";
-import { badRequest, json, withApiErrorHandling } from "@/server/http/api";
+import { isAdminUser } from "@/server/auth/roles";
+import { badRequest, forbidden, json, withApiErrorHandling } from "@/server/http/api";
+import { enforceRateLimit } from "@/server/security/rate-limit";
 
 export const GET = withApiErrorHandling(async (request: NextRequest) => {
   const session = await requireSession(request);
+  // This fans out to GitHub once per member, using the caller's own token and rate limit, so it is for admins and not for everyone.
+  if (!(await isAdminUser(session.userId))) throw forbidden("Only an admin can read organisation stats.");
+  await enforceRateLimit(`org-stats:${session.userId}`, 6, 60);
   const org = process.env.GITHUB_ORG;
 
   if (!org) {
