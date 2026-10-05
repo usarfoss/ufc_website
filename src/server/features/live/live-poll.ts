@@ -102,9 +102,11 @@ async function pollGitHub(member: Member): Promise<Outcome> {
 
     if (!numbersMoved && !newEvent) return "unchanged";
 
-    await syncGitHubUser(member.id);
+    const result = await syncGitHubUser(member.id);
     if (probe.events.modified && probe.events.latestEventId) await kv.set(`live:gh:event:${member.id}`, probe.events.latestEventId, DAY);
-    return "synced";
+    // Something looked different, but the sync compares with what is stored and only writes real differences. If it found none (for example
+    // a new public event that is not a commit, pull request or issue), nothing was written, so this is not a change.
+    return result.changed ? "synced" : "unchanged";
   } catch (error) {
     const status = (error as { status?: number }).status;
     // A revoked token needs a fresh sign in, and a rate limit needs time. Either way, leave this member alone for a while.
@@ -134,8 +136,8 @@ async function pollLeetCode(member: Member, force: boolean): Promise<{ outcome: 
       stored.hardSolved === stats.hardSolved;
     if (same) return { outcome: "unchanged", changed: false };
 
-    await leetcodeService.saveStats(member.id, member.leetcodeUsername, stats);
-    return { outcome: "synced", changed: true };
+    const written = await leetcodeService.saveStats(member.id, member.leetcodeUsername, stats);
+    return written ? { outcome: "synced", changed: true } : { outcome: "unchanged", changed: false };
   } catch (error) {
     console.error(`Live poll failed for LeetCode member ${member.leetcodeUsername}:`, error);
     return { outcome: "failed", changed: false };

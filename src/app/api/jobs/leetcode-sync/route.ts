@@ -21,9 +21,10 @@ const handler = async (request: Request) => {
   }
 
   const result = await leetcodeService.syncUserStats(user.id, user.leetcodeUsername);
-  await invalidateCache("dashboard", "leaderboard", "members");
+  // Caches are only cleared when the database really changed.
+  if (result.changed) await invalidateCache("dashboard", "leaderboard", "members");
 
-  return Response.json({ success: true, reason: body.reason, solved: result.stats.totalSolved });
+  return Response.json({ success: true, reason: body.reason, solved: result.stats.totalSolved, changed: result.changed });
 };
 
 const qstashSigningKeysConfigured = Boolean(process.env.QSTASH_CURRENT_SIGNING_KEY && process.env.QSTASH_NEXT_SIGNING_KEY);

@@ -135,9 +135,25 @@ export class LeetCodeService {
     }
   }
 
-  /** Writes numbers we already have to the database. */
+  /**
+   * Writes numbers we already have to the database, but only if they differ from what is stored. The solved counts are what people see and what
+   * the leaderboard uses, so those decide. Ranking and reputation drift on their own and differ a little between the two sources we read, so
+   * they are saved along with a real change and never cause a write by themselves. Returns whether anything was written.
+   */
   async saveStats(userId: string, leetcodeUsername: string, stats: LeetCodeUserStats) {
     const { prisma } = await import("@/server/db/prisma");
+    const stored = await prisma.leetCodeStats.findUnique({ where: { userId } });
+    if (
+      stored &&
+      stored.leetcodeUsername === leetcodeUsername &&
+      stored.totalSolved === stats.totalSolved &&
+      stored.easySolved === stats.easySolved &&
+      stored.mediumSolved === stats.mediumSolved &&
+      stored.hardSolved === stats.hardSolved
+    ) {
+      return false;
+    }
+
     const data = {
       leetcodeUsername,
       totalSolved: stats.totalSolved,
@@ -150,6 +166,7 @@ export class LeetCodeService {
       lastSynced: new Date(),
     };
     await prisma.leetCodeStats.upsert({ where: { userId }, update: data, create: { userId, ...data } });
+    return true;
   }
 
   /** Fetches the numbers from LeetCode and stores them. */
@@ -160,8 +177,8 @@ export class LeetCodeService {
       throw new Error(`LeetCode profile not found for ${leetcodeUsername}`);
     }
 
-    await this.saveStats(userId, leetcodeUsername, stats);
-    return { success: true, stats };
+    const changed = await this.saveStats(userId, leetcodeUsername, stats);
+    return { success: true, stats, changed };
   }
 
   calculatePoints(stats: { easySolved: number; mediumSolved: number; hardSolved: number }): number {

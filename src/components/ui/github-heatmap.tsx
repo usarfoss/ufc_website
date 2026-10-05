@@ -54,7 +54,7 @@ export default function GitHubHeatmap({ username }: Props) {
           unit="contribution"
           palette={GREENS}
           tipShadow="var(--signal)"
-          footerNote={syncedLabel ? `last synced ${syncedLabel}` : "synced in the background"}
+          footerNote={syncedLabel ? `last updated ${syncedLabel}` : "updated in the background"}
           emptyNote={
             <>
               <p className="hand text-[1.8rem] leading-none">nothing on the calendar yet</p>

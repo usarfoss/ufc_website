@@ -41,7 +41,10 @@ export interface GitHubContributionStats {
 }
 
 export interface GitHubActivity {
+  /** What identifies this item. Commits are identified by their sha, so the same commit is one item however we learned about it. */
   sourceId: string;
+  /** An older id this item used to be stored under (the id of the push event), so the old copy can be replaced. */
+  legacySourceId?: string;
   type: string;
   repo: string;
   date: string;
@@ -344,9 +347,77 @@ export class GitHubService {
         return { ...result, message: await message };
       });
 
-      return enriched;
+      // GitHub's events feed can run a long way behind (half an hour or more), but the commits themselves are available at once. So the commits
+      // made in the window are read directly, and the two views are merged. A push and its newest commit are the same item (same sha).
+      const sinceIso = new Date(cutoff).toISOString();
+      const commits = await this.getRecentCommits(username, [...new Set(candidates.map((c) => c.repo))], sinceIso);
+
+      const merged = new Map<string, GitHubActivity>();
+      for (const activity of enriched) {
+        const original = candidates.find((c) => c.sourceId === activity.sourceId);
+        const head = original?.type === "Push" ? original.payload?.head : undefined;
+        const item: GitHubActivity = head ? { ...activity, sourceId: `commit:${head}`, legacySourceId: activity.sourceId } : activity;
+        merged.set(item.sourceId, item);
+      }
+      for (const commit of commits) if (!merged.has(commit.sourceId)) merged.set(commit.sourceId, commit);
+
+      return [...merged.values()].sort((a, b) => b.date.localeCompare(a.date));
     } catch (error) {
       console.error(`Error fetching GitHub activity for ${username}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * The member's own commits since `sinceIso`, read straight from the repositories. Which repositories: the ones GitHub says they committed
+   * to in the window (this includes organisation repos), plus any the events feed already mentioned. Commits to branches other than the
+   * default one are not listed here, so the events feed still covers those.
+   */
+  private async getRecentCommits(username: string, knownRepos: string[], sinceIso: string): Promise<GitHubActivity[]> {
+    try {
+      let fromContributions: string[] = [];
+      try {
+        const data = await this.octokit.graphql<{
+          user?: {
+            contributionsCollection?: { commitContributionsByRepository?: Array<{ repository: { nameWithOwner: string } }> };
+          } | null;
+        }>(
+          `query($login: String!, $from: DateTime!) {
+            user(login: $login) {
+              contributionsCollection(from: $from) {
+                commitContributionsByRepository(maxRepositories: 25) { repository { nameWithOwner } }
+              }
+            }
+          }`,
+          { login: username, from: sinceIso },
+        );
+        fromContributions =
+          data.user?.contributionsCollection?.commitContributionsByRepository?.map((r) => r.repository.nameWithOwner) ?? [];
+      } catch (error) {
+        console.warn(`Could not list recent commit repositories for ${username}:`, error);
+      }
+
+      const repos = [...new Set([...fromContributions, ...knownRepos])].filter((name) => name.includes("/")).slice(0, 12);
+      const perRepo = await runWithConcurrency(repos, 5, async (full) => {
+        const [owner, repo] = full.split("/", 2);
+        try {
+          const { data } = await this.octokit.rest.repos.listCommits({ owner, repo, author: username, since: sinceIso, per_page: 30 });
+          return data.map<GitHubActivity>((c) => ({
+            sourceId: `commit:${c.sha}`,
+            type: "Commit",
+            repo: full,
+            date: c.commit.author?.date ?? c.commit.committer?.date ?? new Date().toISOString(),
+            message: firstLine(c.commit.message) || fallbackActivityMessage("push", full),
+          }));
+        } catch (error) {
+          // An empty repository or one we cannot read: nothing to add from it.
+          console.warn(`Could not read recent commits in ${full}:`, (error as { status?: number }).status ?? error);
+          return [];
+        }
+      });
+      return perRepo.flat();
+    } catch (error) {
+      console.error(`Error fetching recent commits for ${username}:`, error);
       return [];
     }
   }

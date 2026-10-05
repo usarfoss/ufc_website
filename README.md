@@ -128,7 +128,7 @@ Numbers on the dashboard are kept live by a poll, not by waiting for people to s
 - **GitHub:** one small request returns the member's commits, pull requests and issues totals, which are compared with the database. A conditional request for their newest public event (a "nothing new" answer costs nothing against GitHub's limits) catches activity the totals have not caught up with yet. Each member's own token pays for their own checks.
 - **LeetCode:** the solved counts are compared with the database, at most every two minutes per member, since LeetCode is not ours to hammer.
 - **Who is checked, and how often.** A member with any GitHub or LeetCode activity in the last 36 hours is "hot" and is checked every minute. A member with none is "cold" and is checked once every 6 hours, spread out so they do not all land on the same minute. When a cold member's 6 hour check finds something, they become hot again right away, and they stay hot until they have been quiet for 36 hours. A member who has the dashboard open right now is checked every minute whatever their history, so their live dashboard is live. The rules are in `src/server/features/live/live-poll.ts`.
-- **If nothing changed, nothing is written.** No sync, no database write, no cache clearing. When something did change, the member is updated, the caches are cleared, and open dashboards pick it up live.
+- **If nothing changed, nothing is written and no cache is cleared.** The sync compares what GitHub says with what is stored and writes only the differences. Caches are cleared only when the database really changed, and only the ones that show what changed (numbers: dashboard, leaderboard and members; new activity: the feed and the dashboard).
 
 QStash cannot schedule more often than once a minute. For a poll every 30 seconds, set `LIVE_POLL_SECONDS=30`: each poll then queues one more to run 30 seconds later. That doubles the messages QStash counts, so check your plan's daily limit first.
 
@@ -148,7 +148,7 @@ npm run jobs:schedule -- --list  # show what is scheduled
 
 It is safe to run again, and the times are in [scripts/schedule-jobs.mts](scripts/schedule-jobs.mts). The 36 hours applies only to GitHub and LeetCode activity. Event activity and members joining are never deleted or hidden by age. The rule lives in `src/server/features/activity/retention.ts`.
 
-GitHub's public events feed itself reports new activity a few minutes late, and private repositories never appear in it, so the poll can only be as live as GitHub is. For instant updates, GitHub webhooks (a GitHub App) would be the next step.
+GitHub's public events feed reports new activity late (half an hour or more at times) and never includes private repositories, so a sync does not rely on it alone: the member's commits are also read straight from the repositories they committed to, and the two are merged, with a commit identified by its sha so it appears once. Commits to private repositories, and to branches other than the default one in repositories the events feed does not mention, can still be missed. For instant updates, GitHub webhooks (a GitHub App) would be the next step.
 
 ### Useful commands
 
