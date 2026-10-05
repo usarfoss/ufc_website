@@ -5,6 +5,7 @@ import { authService } from "@/server/features/auth/auth.service";
 import { prisma } from "@/server/db/prisma";
 import { syncGitHubUser } from "@/server/features/github/github-sync.service";
 import { enqueueGitHubSync } from "@/server/jobs/github-sync";
+import { enqueueLeetCodeSync } from "@/server/jobs/leetcode-sync";
 
 interface GitHubProfile {
   id: number;
@@ -78,6 +79,11 @@ export const authOptions: NextAuthOptions = {
 
       // Someone signing in for the first time has no numbers yet, and the dashboard they land on would show zeros until a background job
       // finished. So the first sign in waits for the sync (up to a few seconds). Later sign ins already have data and sync in the background.
+      // LeetCode, if they have linked it, is refreshed in the background on every sign in, the same as GitHub (it never needs the wait).
+      if (user.leetcodeUsername) {
+        await enqueueLeetCodeSync(user.id, "login").catch((error) => console.error("Unable to enqueue the LeetCode sync:", error));
+      }
+
       if (!(await authService.hasStoredStats(user.id)) && (await syncWithin(user.id, FIRST_SYNC_WAIT_MS))) {
         return true;
       }

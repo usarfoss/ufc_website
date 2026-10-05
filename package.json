@@ -12,7 +12,8 @@
     "db:unseed": "tsx scripts/seed.mts unseed",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "jobs:schedule": "tsx scripts/schedule-jobs.mts"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.1",

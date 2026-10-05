@@ -1,19 +1,22 @@
 import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
 import { invalidateCache } from "@/server/cache/cache";
 import { prisma } from "@/server/db/prisma";
+import { activityCutoff, expired } from "@/server/features/activity/retention";
 
 export const runtime = "nodejs";
 
-const ACTIVITY_RETENTION_MS = 36 * 60 * 60 * 1000;
-
-/** Removes feed data that the product no longer displays. Invoked hourly by QStash. */
+/**
+ * Removes GitHub and LeetCode activity that is too old to show, from the club feed and from every member's dashboard (they are the same
+ * table). Event activity is never touched. Invoked hourly by QStash.
+ */
 const handler = async () => {
-  const cutoff = new Date(Date.now() - ACTIVITY_RETENTION_MS);
+  const cutoff = activityCutoff();
   const { count } = await prisma.activity.deleteMany({
-    where: { createdAt: { lt: cutoff } },
+    where: expired(),
   });
 
   if (count > 0) {
+    // Both the club feed and the per-member dashboard lists are cached, so both are cleared along with the rows.
     await invalidateCache("activity-feed", "dashboard");
   }
 

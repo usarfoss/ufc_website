@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { getOrSetCached } from "@/server/cache/cache";
 import { requireSession } from "@/server/auth/session";
 import { prisma } from "@/server/db/prisma";
+import { notExpired } from "@/server/features/activity/retention";
 import { json, notFound, withApiErrorHandling } from "@/server/http/api";
 
 export const GET = withApiErrorHandling(async (request: NextRequest) => {
@@ -20,7 +21,7 @@ export const GET = withApiErrorHandling(async (request: NextRequest) => {
         where: { githubStats: { isNot: null } },
       }),
       prisma.activity.findMany({
-        where: { userId: session.userId },
+        where: { userId: session.userId, ...notExpired() },
         orderBy: { createdAt: "desc" },
         take: 10,
         select: { id: true, type: true, description: true, metadata: true, createdAt: true },

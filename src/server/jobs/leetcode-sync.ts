@@ -1,7 +1,7 @@
 import "server-only";
 import { jobUrl, queue } from "./queue";
 
-export type LeetCodeSyncReason = "scheduled";
+export type LeetCodeSyncReason = "login" | "scheduled";
 
 /** Queues a LeetCode sync for one member. It runs in the background, the same way the GitHub sync does. */
 export async function enqueueLeetCodeSync(userId: string, reason: LeetCodeSyncReason) {

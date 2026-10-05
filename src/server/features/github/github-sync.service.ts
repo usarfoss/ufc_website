@@ -2,6 +2,7 @@ import "server-only";
 import { type ActivityType, type Prisma } from "@prisma/client";
 import { invalidateCache } from "@/server/cache/cache";
 import { prisma } from "@/server/db/prisma";
+import { activityCutoff } from "@/server/features/activity/retention";
 import { createGitHubService, type GitHubActivity } from "@/server/integrations/github.service";
 import { decryptToken } from "@/server/security/token-encryption";
 
@@ -39,10 +40,13 @@ export async function syncGitHubUser(userId: string) {
   const github = createGitHubService(decryptToken(user.githubTokenCiphertext));
   const { profile, contributions } = await github.fetchUserSnapshot(user.githubUsername);
   const now = new Date();
+  // GitHub reports events from the last few weeks. Anything older than we keep would be added now and deleted by the hourly cleanup, then
+  // added again by the next sync, so it would keep coming back onto dashboards. Only recent events are imported.
+  const cutoff = activityCutoff();
   const activities = contributions.recentActivity.flatMap((activity) => {
     const type = activityTypeFor(activity);
 
-    if (!type) return [];
+    if (!type || new Date(activity.date) < cutoff) return [];
 
     return [
       {

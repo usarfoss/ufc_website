@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { getOrSetCached } from "@/server/cache/cache";
 import { requireSession } from "@/server/auth/session";
 import { prisma } from "@/server/db/prisma";
+import { notExpired } from "@/server/features/activity/retention";
 import { json, withApiErrorHandling } from "@/server/http/api";
 
 export const GET = withApiErrorHandling(async (request: NextRequest) => {
@@ -10,15 +11,17 @@ export const GET = withApiErrorHandling(async (request: NextRequest) => {
   const limit = Math.min(Math.max(Number(searchParams.get("limit")) || 10, 1), 50);
   const offset = Math.max(Number(searchParams.get("offset")) || 0, 0);
   const payload = await getOrSetCached("activity-feed", `user:${session.userId}:${limit}:${offset}`, 30, async () => {
+    // Hide GitHub and LeetCode activity that has expired, even if the hourly cleanup has not got to it yet. Event activity always shows.
+    const where = { userId: session.userId, ...notExpired() };
     const [activities, total] = await Promise.all([
       prisma.activity.findMany({
-        where: { userId: session.userId },
+        where,
         orderBy: { createdAt: "desc" },
         take: limit,
         skip: offset,
         include: { event: { select: { title: true } } },
       }),
-      prisma.activity.count({ where: { userId: session.userId } }),
+      prisma.activity.count({ where }),
     ]);
 
     const formattedActivities = activities.map((activity) => ({
