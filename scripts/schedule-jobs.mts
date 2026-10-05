@@ -14,6 +14,12 @@ import { Client } from "@upstash/qstash";
 /** Fixed ids and times. Edit the cron here and run the script again to change how often a job runs. */
 const JOBS = [
   {
+    id: "live-poll",
+    path: "/api/jobs/live-poll",
+    cron: "* * * * *",
+    what: "check every active member for new GitHub and LeetCode activity, every minute",
+  },
+  {
     id: "github-reconcile",
     path: "/api/jobs/github-reconcile",
     cron: "0 */3 * * *",

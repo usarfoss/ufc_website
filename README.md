@@ -123,22 +123,32 @@ The first run downloads the right binary for your system. If npm blocks the pack
 
 ### What runs in the background
 
-GitHub and LeetCode work the same way. A member's numbers are stored the moment they sign in (GitHub, the first time) or link LeetCode, queued again on every sign in, and then kept fresh by scheduled QStash jobs. Each job is a signed request to a route in `src/app/api/jobs`:
+Numbers on the dashboard are kept live by a poll, not by waiting for people to sign in. Every minute QStash calls `/api/jobs/live-poll`, which checks every active member and updates only the ones whose data changed:
 
-| Route                          | What it does                                                                           | Runs          |
-| ------------------------------ | -------------------------------------------------------------------------------------- | ------------- |
-| `/api/jobs/github-reconcile`   | Queues a GitHub sync for every member active in the last 30 days                       | every 3 hours |
-| `/api/jobs/leetcode-reconcile` | Queues a LeetCode sync for every active member who linked one                          | every 3 hours |
-| `/api/jobs/activity-cleanup`   | Deletes GitHub and LeetCode activity older than 36 hours, from the feed and dashboards | every hour    |
+- **GitHub:** one small request returns the member's commits, pull requests and issues totals, which are compared with the database. A conditional request for their newest public event (a "nothing new" answer costs nothing against GitHub's limits) catches activity the totals have not caught up with yet. Each member's own token pays for their own checks.
+- **LeetCode:** the solved counts are compared with the database, at most every two minutes per member, since LeetCode is not ours to hammer.
+- **Who is checked, and how often.** A member with any GitHub or LeetCode activity in the last 36 hours is "hot" and is checked every minute. A member with none is "cold" and is checked once every 6 hours, spread out so they do not all land on the same minute. When a cold member's 6 hour check finds something, they become hot again right away, and they stay hot until they have been quiet for 36 hours. A member who has the dashboard open right now is checked every minute whatever their history, so their live dashboard is live. The rules are in `src/server/features/live/live-poll.ts`.
+- **If nothing changed, nothing is written.** No sync, no database write, no cache clearing. When something did change, the member is updated, the caches are cleared, and open dashboards pick it up live.
 
-The `reconcile` routes queue one `github-sync` or `leetcode-sync` job per member, so a slow account never holds up the others. The schedules are created with one command, which you run against your deployed address (set `NEXTAUTH_URL` and `QSTASH_TOKEN` first):
+QStash cannot schedule more often than once a minute. For a poll every 30 seconds, set `LIVE_POLL_SECONDS=30`: each poll then queues one more to run 30 seconds later. That doubles the messages QStash counts, so check your plan's daily limit first.
+
+| Route                          | What it does                                                           | Runs          |
+| ------------------------------ | ---------------------------------------------------------------------- | ------------- |
+| `/api/jobs/live-poll`          | Checks every active member and syncs only those whose data changed     | every minute  |
+| `/api/jobs/github-reconcile`   | A safety net: full GitHub sync for every active member, changed or not | every 3 hours |
+| `/api/jobs/leetcode-reconcile` | A safety net: full LeetCode sync for every active linked member        | every 3 hours |
+| `/api/jobs/activity-cleanup`   | Deletes GitHub and LeetCode activity older than 36 hours               | every hour    |
+
+The schedules are created with one command, which you run against your deployed address (set `NEXTAUTH_URL` and `QSTASH_TOKEN` first):
 
 ```bash
-npm run jobs:schedule            # create or update the three schedules
+npm run jobs:schedule            # create or update the schedules
 npm run jobs:schedule -- --list  # show what is scheduled
 ```
 
-It is safe to run again, and the times are in [scripts/schedule-jobs.mts](scripts/schedule-jobs.mts). The 36 hours applies only to GitHub and LeetCode activity, which is re-imported on every sync. Event activity (proposals, decisions, registrations) and members joining are never deleted or hidden by age. The rule lives in one place, `src/server/features/activity/retention.ts`, so the feed, every dashboard, the import and the cleanup agree.
+It is safe to run again, and the times are in [scripts/schedule-jobs.mts](scripts/schedule-jobs.mts). The 36 hours applies only to GitHub and LeetCode activity. Event activity and members joining are never deleted or hidden by age. The rule lives in `src/server/features/activity/retention.ts`.
+
+GitHub's public events feed itself reports new activity a few minutes late, and private repositories never appear in it, so the poll can only be as live as GitHub is. For instant updates, GitHub webhooks (a GitHub App) would be the next step.
 
 ### Useful commands
 

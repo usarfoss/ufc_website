@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { getCacheVersions } from "@/server/cache/cache";
+import { getCacheVersions, getRedis } from "@/server/cache/cache";
 import { getSession } from "@/server/auth/session";
 
 export const runtime = "nodejs";
@@ -27,6 +27,8 @@ export async function GET(request: NextRequest) {
 
       const checkVersions = async () => {
         try {
+          // Someone is looking at their dashboard, so the live poll treats them as active for the next minute and a half.
+          await getRedis()?.set(`live:watching:${session.userId}`, "1", { ex: 90 });
           const versions = await getCacheVersions();
           const serialized = JSON.stringify(versions);
 

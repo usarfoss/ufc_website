@@ -132,7 +132,17 @@ export class GitHubService {
       throw new Error("A GitHub OAuth access token is required.");
     }
 
-    this.octokit = new Octokit({ auth: accessToken });
+    // Octokit logs every request, and a 304 ("nothing new", which is how the live poll's conditional request says "no change") as a warning.
+    // That would fill the logs with several lines per member per minute, so request logging is off. Real errors are still logged.
+    this.octokit = new Octokit({
+      auth: accessToken,
+      log: {
+        debug: () => undefined,
+        info: () => undefined,
+        warn: (message: string) => (/ - 304 /.test(message) ? undefined : console.warn(message)),
+        error: console.error,
+      },
+    });
   }
 
   async getUserProfile(username: string): Promise<GitHubUserStats | null> {
@@ -478,6 +488,45 @@ export class GitHubService {
     );
 
     return result.flat();
+  }
+
+  /**
+   * A cheap "has anything changed?" check, used by the live poll. It costs about two API points and returns only the numbers that matter:
+   * the same three totals a full sync stores (so they can be compared directly), and the id of the newest public event.
+   *
+   * The events request is conditional. When nothing has happened since `etag`, GitHub answers 304 and does not count it against the rate limit.
+   * Unlike the numbers, a failure here is not fatal: the totals alone are enough to notice most changes.
+   */
+  async probe(username: string, etag?: string) {
+    const totals = this.octokit.graphql<{
+      user?: { contributionsCollection?: { contributionCalendar?: { totalContributions?: number } } } | null;
+      prs?: { issueCount?: number };
+      issues?: { issueCount?: number };
+    }>(
+      `query($login: String!, $prs: String!, $issues: String!) {
+        user(login: $login) { contributionsCollection { contributionCalendar { totalContributions } } }
+        prs: search(type: ISSUE, query: $prs, first: 1) { issueCount }
+        issues: search(type: ISSUE, query: $issues, first: 1) { issueCount }
+      }`,
+      { login: username, prs: `author:${username} is:pr`, issues: `author:${username} is:issue` },
+    );
+
+    const events = this.octokit
+      .request("GET /users/{username}/events/public", { username, per_page: 1, headers: etag ? { "if-none-match": etag } : {} })
+      .then((res) => ({ modified: true as const, etag: res.headers.etag ?? undefined, latestEventId: res.data[0]?.id ?? null }))
+      .catch((error: { status?: number }) => {
+        if (error.status === 304) return { modified: false as const };
+        console.warn(`GitHub events probe failed for ${username}:`, error);
+        return { modified: false as const };
+      });
+
+    const [data, latest] = await Promise.all([totals, events]);
+    const contributions = data.user?.contributionsCollection?.contributionCalendar?.totalContributions;
+    if (contributions === undefined || data.prs?.issueCount === undefined || data.issues?.issueCount === undefined) {
+      throw new Error(`GitHub returned no totals for ${username}`);
+    }
+
+    return { commits: contributions, pullRequests: data.prs.issueCount, issues: data.issues.issueCount, events: latest };
   }
 
   async fetchUserSnapshot(githubUsername: string) {

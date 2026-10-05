@@ -74,6 +74,7 @@ export default function DashboardPage() {
     }, 4_000);
     return () => window.clearInterval(timer);
   }, [waitingForSync, refreshStats, refreshActivity]);
+
   const loading = statsReq.loading;
   const error = statsReq.error;
   const recent = activityReq.data?.activities ?? [];

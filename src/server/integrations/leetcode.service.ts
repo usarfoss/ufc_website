@@ -18,10 +18,12 @@ export interface LeetCodeSubmission {
 }
 
 export class LeetCodeService {
-  async getUserStats(username: string): Promise<LeetCodeUserStats | null> {
+  /** `fast` skips the community API (which sleeps when idle and can take seconds to answer) and asks LeetCode directly. The live poll uses it. */
+  async getUserStats(username: string, options: { fast?: boolean } = {}): Promise<LeetCodeUserStats | null> {
     try {
       // Try primary API (alfa-leetcode-api)
       try {
+        if (options.fast) throw new Error("skipped: fast path");
         const response = await fetch(`https://alfa-leetcode-api.onrender.com/${username}/solved`, {
           headers: {
             Accept: "application/json",
@@ -52,7 +54,7 @@ export class LeetCodeService {
           return stats;
         }
       } catch (error) {
-        console.warn("Primary LeetCode API failed, trying fallback:", error);
+        if (!options.fast) console.warn("Primary LeetCode API failed, trying fallback:", error);
       }
 
       // Fallback: Try LeetCode GraphQL API
@@ -171,9 +173,9 @@ export class LeetCodeService {
 let _leetcodeService: LeetCodeService | null = null;
 
 export const leetcodeService = {
-  getUserStats: async (username: string) => {
+  getUserStats: async (username: string, options?: { fast?: boolean }) => {
     if (!_leetcodeService) _leetcodeService = new LeetCodeService();
-    return _leetcodeService.getUserStats(username);
+    return _leetcodeService.getUserStats(username, options);
   },
   syncUserStats: async (userId: string, username: string) => {
     if (!_leetcodeService) _leetcodeService = new LeetCodeService();

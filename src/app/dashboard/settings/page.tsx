@@ -207,8 +207,8 @@ export default function SettingsPage() {
               </p>
               <p className="mt-4 flex items-start gap-3 text-[0.95rem] leading-relaxed text-[var(--ink)]/70">
                 <RefreshCw size={18} strokeWidth={2.4} className="mt-0.5 shrink-0" />
-                Your GitHub data syncs on its own, in the background, after you sign in and on a regular refresh. There&apos;s no manual
-                sync button because you don&apos;t need one.
+                Your GitHub data is checked in the background every minute and updated the moment something changes, so there is nothing to
+                press.
               </p>
             </div>
           </Pin>
