@@ -121,16 +121,21 @@ function parseSpeaker(value: unknown): Speaker | undefined {
 }
 
 /** Turns whatever the client sent into a proposal we are happy to store, or says exactly what is wrong. */
-export function parseProposal(body: unknown): ProposalInput {
+/** A new event has to start at least an hour from now and within the next year. (An edited event is only held to this if its start moved.) */
+export function assertStartsInTime(date: Date) {
+  const now = Date.now();
+  if (date.getTime() < now + 60 * 60 * 1000) throw badRequest("The event has to start at least an hour from now.");
+  if (date.getTime() > now + 366 * DAY_MS) throw badRequest("The event has to be within the next year.");
+}
+
+export function parseProposal(body: unknown, options: { checkStart?: boolean } = {}): ProposalInput {
   if (!body || typeof body !== "object") throw badRequest("Send the event details as JSON.");
   const input = body as Record<string, unknown>;
   const raw = (input.details && typeof input.details === "object" ? input.details : {}) as Record<string, unknown>;
 
-  const now = Date.now();
   const date = new Date(typeof input.date === "string" ? input.date : NaN);
   if (Number.isNaN(date.getTime())) throw badRequest("Pick a valid start date and time.");
-  if (date.getTime() < now + 60 * 60 * 1000) throw badRequest("The event has to start at least an hour from now.");
-  if (date.getTime() > now + 366 * DAY_MS) throw badRequest("The event has to be within the next year.");
+  if (options.checkStart !== false) assertStartsInTime(date);
 
   let endsAt: string | undefined;
   if (raw.endsAt) {

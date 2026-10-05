@@ -164,6 +164,21 @@ GitHub's public events feed reports new activity late (half an hour or more at t
 | `npm run db:seed`   | Add five fake members so the leaderboard has something to show |
 | `npm run db:unseed` | Remove those fake members again                                |
 
+## How an event gets approved
+
+Any signed in member can propose an event, and an admin decides. The rules live in one place, [src/server/features/events/events.service.ts](src/server/features/events/events.service.ts), and the API routes only call it.
+
+1. **Propose.** The form asks for what an event page shows: title and subtitle, kind, when and where, a summary, the overview, highlights, who it is for, what to bring, a schedule (one or several days), the rounds of a competition, a speaker, registration and poster links, and tags. Only the basics and a paragraph of overview are required. Everything is validated (lengths, whole-number seats, web addresses only). Nobody can propose more than 5 events in any rolling 24 hours, withdrawn and rejected proposals still count, and the limit holds even if several requests arrive at once. An admin's own proposal is published straight away.
+2. **Review queue.** Admins see waiting proposals oldest first on the Admin page.
+3. **Decide.** An admin approves or rejects. A rejection needs a reason, which the proposer can read. A proposal is decided exactly once: if two admins click at the same moment, one wins and the other is told it was already decided.
+4. **Published.** Only approved events are public and open for registration. Registration checks capacity under a lock, so the last seat cannot be given out twice, and the button on the page responds at once and rolls back if the server says no.
+5. **Withdraw.** The proposer can take back a proposal that is still waiting.
+6. **Edit.** The proposer (and any admin) can edit an event until it starts. While it waits for review the proposer can change anything. If it was rejected, editing it sends it back to the queue, which is how you answer a "no". Once it is approved, people may have registered, so only an admin can change the title, date, place or kind, while the proposer can still improve everything else and add seats (never below the number already registered). Every edit carries the version it started from, so two people editing at once cannot silently overwrite each other.
+
+The public lists and each approved event's write-up are cached in Redis for a minute and cleared the moment anything changes, and the Events and Admin pages update live. Write endpoints also have a short burst limit (`src/server/security/rate-limit.ts`) in front of the database.
+
+Admins are set with `ADMIN_GITHUB_IDS`, the numeric GitHub account ids separated by commas (find yours with `gh api users/<username> --jq .id`). Use ids, not usernames: a username can be renamed and then taken by somebody else, an id cannot. The list is read on every admin action, so removing someone takes effect immediately.
+
 ## Contributing
 
 We would love your help, and you do not need to be an expert.

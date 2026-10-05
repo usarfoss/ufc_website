@@ -30,6 +30,7 @@ export const VIEWS = ["upcoming", "past", "pending", "rejected", "all"] as const
 export type EventView = (typeof VIEWS)[number];
 
 export { EVENT_TYPES, parseProposal, type ProposalInput } from "./proposal";
+import { assertStartsInTime } from "./proposal";
 
 export interface Viewer {
   id: string;
@@ -110,6 +111,8 @@ function present(event: EventWithPeople, viewer: { id: string; admin: boolean } 
     rejectionReason: mine || viewer?.admin ? (event.rejectionReason ?? undefined) : undefined,
     reviewedAt: event.reviewedAt?.toISOString(),
     createdAt: event.createdAt.toISOString(),
+    /** Changes whenever the event does. An edit sends it back, so two people editing at once cannot silently overwrite each other. */
+    updatedAt: event.updatedAt.toISOString(),
     creator: { name: event.creator.name || "Unknown", githubUsername: event.creator.githubUsername },
     reviewedBy: event.reviewedBy
       ? { name: event.reviewedBy.name || "An admin", githubUsername: event.reviewedBy.githubUsername }
@@ -407,6 +410,95 @@ export async function decideEvent(options: { eventId: string; adminId: string; d
 
   await invalidateCache("activity-feed", "dashboard", "events");
   return { id: event.id, approvalStatus: decision === "approve" ? "approved" : "rejected" };
+}
+
+const minute = (value: Date | string | null | undefined) => (value ? Math.floor(new Date(value).getTime() / 60_000) : null);
+
+/**
+ * Edit an event. The rules:
+ *  - The person who proposed it can edit it, and so can an admin. Nobody else can tell it exists unless it is public.
+ *  - A withdrawn proposal, or an event that has already started, cannot be edited.
+ *  - While it is waiting for review, the proposer can change anything. If it was turned down, editing it sends it back to the review queue
+ *    (that is how you answer a "no").
+ *  - Once it is approved, people may have registered, so only an admin can change the title, when and where it happens, or what kind of event
+ *    it is. The proposer can still improve everything else (the description, schedule, speaker, links and so on) and can raise the number of seats.
+ *  - Seats can never go below the number of people already registered.
+ *  - An edit has to carry the `updatedAt` it started from. If the event changed in the meantime, it is refused rather than overwriting that.
+ */
+export async function updateEvent(options: { eventId: string; userId: string; input: ProposalInput; expectedUpdatedAt?: string }) {
+  const { eventId, userId, input } = options;
+  const admin = (await roleOf(userId)) === "ADMIN";
+
+  const result = await prisma.$transaction(async (tx) => {
+    await lock(tx, `event-edit:${eventId}`);
+
+    const event = await tx.event.findUnique({ where: { id: eventId }, include: { _count: { select: { attendees: true } } } });
+    const mine = !!event && event.creatorId === userId;
+    if (!event || !(mine || admin)) throw notFound("That event doesn't exist.");
+    if (event.status === "CANCELLED") throw conflict("A withdrawn proposal can't be edited. Propose it again instead.");
+    if (event.date.getTime() < Date.now()) throw conflict("That event has already started, so it can't be edited.");
+    if (options.expectedUpdatedAt && new Date(options.expectedUpdatedAt).getTime() !== event.updatedAt.getTime()) {
+      throw conflict("Someone changed this event after you opened it. Close it and open it again to see their changes.");
+    }
+
+    const before = (event.details ?? {}) as unknown as Partial<EventDetails>;
+    const startMoved = minute(input.date) !== minute(event.date);
+    if (startMoved) assertStartsInTime(input.date);
+
+    if (!admin && event.approvalStatus === "APPROVED") {
+      const material =
+        input.title !== event.title ||
+        input.location !== event.location ||
+        input.type !== event.type ||
+        startMoved ||
+        minute(input.details.endsAt) !== minute(before.endsAt) ||
+        (input.details.mode ?? null) !== (before.mode ?? null);
+      if (material) {
+        throw forbidden(
+          "Once an event is approved, only an admin can change its title, date, place or kind, because people may have registered.",
+        );
+      }
+    }
+
+    if (input.maxAttendees < event._count.attendees) {
+      throw badRequest(
+        `${event._count.attendees} ${event._count.attendees === 1 ? "person has" : "people have"} already registered, so there have to be at least that many seats.`,
+      );
+    }
+
+    // Answering a "no": the proposer edits it and it goes back to the queue. An admin editing someone else's event leaves its status alone.
+    const resubmit = mine && !admin && event.approvalStatus === "REJECTED";
+
+    await tx.event.update({
+      where: { id: eventId },
+      data: {
+        title: input.title,
+        description: input.description,
+        date: input.date,
+        location: input.location,
+        maxAttendees: input.maxAttendees,
+        type: input.type,
+        details: input.details as unknown as Prisma.InputJsonValue,
+        ...(resubmit ? { approvalStatus: "PENDING", rejectionReason: null, reviewedAt: null, reviewedById: null } : {}),
+      },
+    });
+    if (resubmit) {
+      await tx.activity.create({
+        data: { type: "EVENT_PROPOSAL", userId, eventId, description: `You edited "${input.title}" and sent it back for review` },
+      });
+    }
+
+    const next = await tx.event.findUniqueOrThrow({ where: { id: eventId }, select: { approvalStatus: true, updatedAt: true } });
+    return { resubmitted: resubmit, approvalStatus: next.approvalStatus, updatedAt: next.updatedAt };
+  });
+
+  await invalidateCache("activity-feed", "dashboard", "events");
+  return {
+    id: eventId,
+    approvalStatus: result.approvalStatus.toLowerCase(),
+    resubmitted: result.resubmitted,
+    updatedAt: result.updatedAt.toISOString(),
+  };
 }
 
 /** The proposer takes back a proposal that is still waiting. It stays on their record and still counts toward their daily limit. */

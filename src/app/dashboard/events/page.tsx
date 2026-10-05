@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Calendar, CheckCircle, Clock, History, MapPin, Plus, Users, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Calendar, CheckCircle, Clock, History, MapPin, Pencil, Plus, Users, X } from "lucide-react";
 import { useAuth } from "@/features/auth/auth-provider";
 import { Pin, Tape } from "@/components/home/scrap";
 import { useApi, useVersionStream } from "@/components/dashboard/use-api";
@@ -9,7 +9,7 @@ import { Avatar, Empty, ErrorPanel, Field, isAdmin, Modal, PageHeader, useToast 
 import { TONE_BG, type Tone } from "@/data/tones";
 import { EventDetailsView } from "@/components/dashboard/event-details";
 import { ProposalFormView } from "@/components/dashboard/proposal-form";
-import type { buildProposal } from "@/features/events/form-codec";
+import { formFromEvent, type ProposalForm, type buildProposal } from "@/features/events/form-codec";
 import type { EventDetails } from "@/types/events";
 import { SkeletonCards, SkeletonRows, SkeletonShell } from "@/components/dashboard/skeleton";
 
@@ -70,11 +70,88 @@ export default function DashboardEventsPage() {
     { errorMessage: "We couldn't load events just now." },
   );
   useVersionStream("events", refresh); // someone proposed, decided or registered: pick it up without a reload
-  const events = data?.events ?? [];
+  // Registering is optimistic: the moment you press the button the card says "You're registered" and the seat count goes up, while the request
+  // is still on its way. These are the events that have been shown as registered ahead of the server. If a refresh arrives before the server has
+  // caught up, the card stays registered instead of flickering back, and if the request fails the event is taken out again.
+  const [optimistic, setOptimistic] = useState<ReadonlySet<string>>(new Set());
+  const loaded = data?.events;
+  const events = (loaded ?? []).map((e) =>
+    optimistic.has(e.id) && !e.isRegistered ? { ...e, isRegistered: true, currentAttendees: e.currentAttendees + 1 } : e,
+  );
   const quota = data?.quota ?? null;
   const outOfProposals = !!quota && quota.remaining === 0;
+  useEffect(() => {
+    if (!loaded || optimistic.size === 0) return;
+    const caughtUp = loaded.filter((e) => e.isRegistered && optimistic.has(e.id)).map((e) => e.id);
+    if (caughtUp.length === 0) return;
+    // The server now agrees, so the page no longer needs to remember it was ahead.
+    const timer = window.setTimeout(
+      () =>
+        setOptimistic((prev) => {
+          const next = new Set(prev);
+          caughtUp.forEach((id) => next.delete(id));
+          return next;
+        }),
+      0,
+    );
+    return () => window.clearTimeout(timer);
+  }, [loaded, optimistic]);
   const [withdrawingId, setWithdrawingId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+
+  // Editing: open an event in the form. We load it first (the list only carries the card), and remember when it was last changed so that a
+  // save from an out-of-date copy is refused instead of overwriting somebody else's edit.
+  const [editing, setEditing] = useState<{
+    id: string;
+    title: string;
+    form: ProposalForm;
+    updatedAt: string;
+    lockedBasics: boolean;
+  } | null>(null);
+  const [opening, setOpening] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const openEditor = async (id: string) => {
+    setOpening(id);
+    try {
+      const res = await fetch(`/api/dashboard/events/${id}`);
+      if (!res.ok) throw new Error(await errorOf(res, "Couldn't open that event."));
+      const { event } = (await res.json()) as { event: DashEvent & { details?: EventDetails; updatedAt: string } };
+      setEditing({
+        id,
+        title: event.title,
+        form: formFromEvent(event),
+        updatedAt: event.updatedAt,
+        // Once approved, people may have registered, so only an admin can move the basics.
+        lockedBasics: !admin && event.approvalStatus === "approved",
+      });
+    } catch (err) {
+      show(err instanceof Error ? err.message : "Couldn't open that event.", false);
+    } finally {
+      setOpening(null);
+    }
+  };
+
+  const saveEdit = async (body: ReturnType<typeof buildProposal>) => {
+    if (!editing) return;
+    try {
+      setSaving(true);
+      const res = await fetch(`/api/dashboard/events/${editing.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...body, expectedUpdatedAt: editing.updatedAt }),
+      });
+      if (!res.ok) throw new Error(await errorOf(res, "Couldn't save your changes."));
+      const result = (await res.json()) as { message?: string };
+      setEditing(null);
+      refresh();
+      show(result.message ?? "Saved.");
+    } catch (err) {
+      show(err instanceof Error ? err.message : "Couldn't save your changes.", false);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const [createOpen, setCreateOpen] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -106,13 +183,27 @@ export default function DashboardEventsPage() {
   };
 
   const register = async (id: string) => {
+    const mark = (on: boolean) =>
+      setOptimistic((prev) => {
+        const next = new Set(prev);
+        if (on) next.add(id);
+        else next.delete(id);
+        return next;
+      });
+
+    mark(true); // the card changes now, before the server has said anything
     try {
       const res = await fetch(`/api/dashboard/events/${id}/register`, { method: "POST" });
-      if (!res.ok) throw new Error(await errorOf(res, "Couldn't register you for that event."));
+      if (!res.ok) {
+        const reason = await errorOf(res, "Couldn't register you for that event.");
+        // "Already registered" means we were right all along: the server just knew before the page did.
+        if (res.status !== 409 || !/already registered/i.test(reason)) throw new Error(reason);
+      }
       refresh();
       show("You're registered. See you there!");
     } catch (err) {
       console.error("Error registering for event:", err);
+      mark(false); // it did not go through, so the card goes back to how it was
       show(err instanceof Error ? err.message : "Couldn't register you for that event.", false);
       refresh();
     }
@@ -318,6 +409,16 @@ export default function DashboardEventsPage() {
                       <button onClick={() => setOpenId(e.id)} className="btn btn-paper btn-sm justify-center !pr-4">
                         Read the full details
                       </button>
+                      {(e.isMine || admin) && e.status !== "cancelled" && e.status !== "completed" && (
+                        <button
+                          onClick={() => void openEditor(e.id)}
+                          disabled={opening === e.id}
+                          className="btn btn-ink btn-sm justify-center !pr-4"
+                        >
+                          <Pencil size={14} strokeWidth={2.6} />
+                          {opening === e.id ? "Opening…" : e.approvalStatus === "rejected" ? "Edit and resubmit" : "Edit"}
+                        </button>
+                      )}
                       {e.approvalStatus === "pending" && admin && e.status !== "cancelled" && (
                         <div className="flex gap-3">
                           <button
@@ -399,6 +500,27 @@ export default function DashboardEventsPage() {
       </Modal>
 
       <EventDetailModal id={openId} onClose={() => setOpenId(null)} />
+
+      <Modal
+        open={!!editing}
+        onClose={() => setEditing(null)}
+        title={editing ? `Edit "${editing.title}"` : "Edit event"}
+        tone="butter"
+        size="lg"
+      >
+        {editing && (
+          <ProposalFormView
+            key={editing.id}
+            admin={admin}
+            busy={saving}
+            initial={editing.form}
+            lockedBasics={editing.lockedBasics}
+            submitLabel="Save changes"
+            onSubmit={(body) => void saveEdit(body)}
+            onCancel={() => setEditing(null)}
+          />
+        )}
+      </Modal>
 
       <Modal
         open={!!rejectFor}

@@ -1,4 +1,4 @@
-import type { Round, ScheduleDay } from "@/types/events";
+import type { EventDetails, Round, ScheduleDay } from "@/types/events";
 
 /** The form keeps lists as plain text (one item per line) because that is quicker to type than a row of boxes. These turn that text into the shapes the server expects. */
 
@@ -143,5 +143,53 @@ export function buildProposal(f: ProposalForm) {
     maxAttendees: Number(f.maxAttendees) || undefined,
     date: iso(f.start),
     details,
+  };
+}
+
+/** A stored date as the "YYYY-MM-DDTHH:mm" in the viewer's own time that a date field wants. */
+const toLocalInput = (iso?: string) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+};
+
+/** The other way round: an event as it was saved, back into the form's plain-text fields so it can be edited. */
+export function formFromEvent(event: {
+  title: string;
+  description: string;
+  type: string;
+  location: string;
+  maxAttendees: number;
+  date: string;
+  details?: Partial<EventDetails>;
+}): ProposalForm {
+  const d = event.details ?? {};
+  return {
+    title: event.title,
+    subtitle: d.subtitle ?? "",
+    type: event.type.toUpperCase(),
+    mode: d.mode ?? "in-person",
+    summary: event.description,
+    start: toLocalInput(event.date),
+    end: toLocalInput(d.endsAt),
+    location: event.location,
+    maxAttendees: String(event.maxAttendees),
+    overview: (d.overview ?? []).join("\n\n"),
+    highlights: (d.highlights ?? []).join("\n"),
+    whoFor: d.whoFor ?? "",
+    bring: (d.bring ?? []).join("\n"),
+    schedule: (d.schedule ?? [])
+      .map((day) => [...(day.day ? [`# ${day.day}`] : []), ...day.items.map((item) => `${item.time} | ${item.activity}`)].join("\n"))
+      .join("\n"),
+    rounds: (d.rounds ?? []).map((r) => ({ name: r.name, when: r.when, tagline: r.tagline, body: r.body, scoring: r.scoring.join("\n") })),
+    speakerName: d.speaker?.name ?? "",
+    speakerTopic: d.speaker?.topic ?? "",
+    speakerBio: d.speaker?.bio ?? "",
+    speakerLinks: (d.speaker?.links ?? []).map((l) => `${l.label} | ${l.href}`).join("\n"),
+    registrationLabel: d.registration?.label ?? "",
+    registrationUrl: d.registration?.href ?? "",
+    imageUrl: d.imageUrl ?? "",
+    tags: (d.tags ?? []).join(", "),
   };
 }

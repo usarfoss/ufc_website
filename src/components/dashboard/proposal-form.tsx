@@ -32,13 +32,21 @@ export function ProposalFormView({
   busy,
   onSubmit,
   onCancel,
+  initial,
+  lockedBasics = false,
+  submitLabel,
 }: {
   admin: boolean;
   busy: boolean;
   onSubmit: (body: ReturnType<typeof buildProposal>) => void;
   onCancel: () => void;
+  /** Fill the form with an existing event, to edit it. */
+  initial?: ProposalForm;
+  /** The title, dates, place and kind cannot be changed (an approved event, edited by someone who is not an admin). */
+  lockedBasics?: boolean;
+  submitLabel?: string;
 }) {
-  const [f, setF] = useState<ProposalForm>(EMPTY_FORM);
+  const [f, setF] = useState<ProposalForm>(initial ?? EMPTY_FORM);
   const set = <K extends keyof ProposalForm>(key: K, value: ProposalForm[K]) => setF((prev) => ({ ...prev, [key]: value }));
   const [showRounds, setShowRounds] = useState(false);
   const [showSpeaker, setShowSpeaker] = useState(false);
@@ -55,10 +63,17 @@ export function ProposalFormView({
         onSubmit(buildProposal(f));
       }}
     >
+      {lockedBasics && (
+        <p className="code rounded-lg border-2 border-[var(--ink)] bg-[var(--butter)] px-3 py-2 text-[0.78rem] font-bold">
+          This event is approved and people may have registered, so only an admin can change its title, date, place or kind. Everything else
+          you can edit.
+        </p>
+      )}
       <Section n={1} title="The basics">
         <Field label="Title *">
           <input
             className="field"
+            disabled={lockedBasics}
             value={f.title}
             onChange={(e) => set("title", e.target.value)}
             placeholder="Git Gud"
@@ -77,7 +92,7 @@ export function ProposalFormView({
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Kind of event">
-            <select className="field" value={f.type} onChange={(e) => set("type", e.target.value)}>
+            <select className="field" disabled={lockedBasics} value={f.type} onChange={(e) => set("type", e.target.value)}>
               <option value="WORKSHOP">Workshop</option>
               <option value="HACKATHON">Hackathon or competition</option>
               <option value="MEETUP">Meetup or open talk</option>
@@ -85,7 +100,7 @@ export function ProposalFormView({
             </select>
           </Field>
           <Field label="How people take part">
-            <select className="field" value={f.mode} onChange={(e) => set("mode", e.target.value)}>
+            <select className="field" disabled={lockedBasics} value={f.mode} onChange={(e) => set("mode", e.target.value)}>
               <option value="in-person">In person</option>
               <option value="online">Online</option>
               <option value="hybrid">In person and online</option>
@@ -109,16 +124,30 @@ export function ProposalFormView({
       <Section n={2} title="When and where">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Starts *">
-            <input className="field" type="datetime-local" value={f.start} onChange={(e) => set("start", e.target.value)} required />
+            <input
+              className="field"
+              type="datetime-local"
+              disabled={lockedBasics}
+              value={f.start}
+              onChange={(e) => set("start", e.target.value)}
+              required
+            />
           </Field>
           <Field label="Ends">
-            <input className="field" type="datetime-local" value={f.end} onChange={(e) => set("end", e.target.value)} />
+            <input
+              className="field"
+              type="datetime-local"
+              disabled={lockedBasics}
+              value={f.end}
+              onChange={(e) => set("end", e.target.value)}
+            />
           </Field>
         </div>
         <div className="grid gap-4 sm:grid-cols-[1fr_9rem]">
           <Field label="Location *">
             <input
               className="field"
+              disabled={lockedBasics}
               value={f.location}
               onChange={(e) => set("location", e.target.value)}
               placeholder="USAR Campus, GGSIPU EDC, or Online"
@@ -340,7 +369,7 @@ export function ProposalFormView({
 
       <div className="flex gap-3 border-t-2 border-dashed border-[var(--ink)]/25 pt-6">
         <button type="submit" disabled={busy} className="btn btn-signal">
-          {busy ? "Saving…" : admin ? "Publish event" : "Send for approval"}
+          {busy ? "Saving…" : (submitLabel ?? (admin ? "Publish event" : "Send for approval"))}
         </button>
         <button type="button" onClick={onCancel} className="btn btn-paper">
           Cancel
