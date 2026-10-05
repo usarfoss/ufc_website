@@ -82,32 +82,6 @@ export function Panel({
   );
 }
 
-/** The dark counterpart for charts that are drawn for a dark background. */
-export function InkPanel({
-  children,
-  className = "",
-  title,
-  icon,
-}: {
-  children: ReactNode;
-  className?: string;
-  title: string;
-  icon?: ReactNode;
-}) {
-  return (
-    <section
-      className={`dotgrid relative border-[2.5px] border-[var(--ink)] bg-[var(--ink-2)] p-6 text-[var(--text)] shadow-[6px_6px_0_var(--signal)] sm:p-8 ${className}`}
-      style={{ borderRadius: "1.25rem" }}
-    >
-      <h2 className="mb-5 flex items-center gap-3 text-[1.4rem] leading-none">
-        {icon}
-        {title}
-      </h2>
-      {children}
-    </section>
-  );
-}
-
 export function Avatar({
   src,
   name,
@@ -135,23 +109,6 @@ export function Avatar({
         </span>
       )}
     </span>
-  );
-}
-
-export function Loading({ label = "fetching the good stuff" }: { label?: string }) {
-  return (
-    <div className="grid place-items-center py-24" role="status" aria-live="polite">
-      <div className="text-center">
-        <m.div
-          className="mx-auto w-20"
-          animate={{ y: [0, -14, 0], rotate: [-6, 6, -6] }}
-          transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
-        >
-          <StickerArt id="rocket" className="die-cut w-full" />
-        </m.div>
-        <p className="hand mt-4 text-[1.8rem] leading-none text-[var(--ink)]/70">{label}…</p>
-      </div>
-    </div>
   );
 }
 

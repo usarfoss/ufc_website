@@ -1,194 +1,73 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef } from "react";
+import { ActivityCalendar, CalendarCard, plural, type ApiDay } from "@/components/ui/activity-calendar";
+import { SkeletonCalendar } from "@/components/dashboard/skeleton";
 import { useApi } from "@/components/dashboard/use-api";
-import * as d3 from "d3";
 
-interface LeetCodeHeatmapProps {
+interface Props {
   username: string;
-  className?: string;
 }
 
-interface SubmissionDay {
-  date: string;
-  count: number;
-}
+// Empty, then four oranges, in LeetCode's own colour.
+const ORANGES = ["#ebe6d3", "#ffe2b8", "#ffc875", "#ffa116", "#c26a00"] as const;
 
-export default function LeetCodeHeatmap({ username, className = "" }: LeetCodeHeatmapProps) {
-  const svgRef = useRef<SVGSVGElement>(null);
-  const {
-    data: body,
-    error,
-    loading,
-  } = useApi<{ submissions?: SubmissionDay[] }>(username ? `/api/leetcode/submissions?username=${encodeURIComponent(username)}` : null, {
-    errorMessage: "Unable to load submission data",
-  });
-  const data = useMemo(() => body?.submissions ?? [], [body]);
+const LeetCodeMark = () => (
+  <svg className="text-[#ffa116]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z" />
+  </svg>
+);
 
-  useEffect(() => {
-    if (!data.length || !svgRef.current) return;
-
-    const svg = d3.select(svgRef.current);
-    svg.selectAll("*").remove();
-
-    const cellSize = 12;
-    const cellGap = 3;
-    const weeks = 53;
-    const days = 7;
-
-    const width = weeks * (cellSize + cellGap);
-    const height = days * (cellSize + cellGap) + 20;
-
-    svg.attr("width", "100%").attr("height", height).attr("viewBox", `0 0 ${width} ${height}`).attr("preserveAspectRatio", "xMinYMin meet");
-
-    const g = svg.append("g").attr("transform", "translate(0, 20)");
-
-    // Color scale - LeetCode orange theme
-    const colorScale = d3
-      .scaleQuantize<string>()
-      .domain([0, d3.max(data, (d) => d.count) || 10])
-      .range(["#3a2d1f", "#5a4a2f", "#8a6a3f", "#ffa116"]);
-
-    // Group data by date
-    const dataByDate = new Map(data.map((d) => [d.date, d]));
-
-    // Generate last 365 days
-    const today = new Date();
-    const oneYearAgo = new Date(today);
-    oneYearAgo.setFullYear(today.getFullYear() - 1);
-
-    const cells: { date: Date; count: number; week: number; day: number }[] = [];
-
-    for (let i = 0; i < 365; i++) {
-      const date = new Date(oneYearAgo);
-      date.setDate(oneYearAgo.getDate() + i);
-
-      const dateStr = date.toISOString().split("T")[0];
-      const dayData = dataByDate.get(dateStr);
-
-      const dayOfWeek = date.getDay();
-      const weekNumber = Math.floor(i / 7);
-
-      cells.push({
-        date,
-        count: dayData?.count || 0,
-        week: weekNumber,
-        day: dayOfWeek,
-      });
-    }
-
-    // Create tooltip
-    const tooltip = d3
-      .select("body")
-      .append("div")
-      .attr("class", "leetcode-heatmap-tooltip")
-      .style("position", "absolute")
-      .style("visibility", "hidden")
-      .style("background-color", "rgba(0, 0, 0, 0.9)")
-      .style("color", "white")
-      .style("padding", "8px 12px")
-      .style("border-radius", "6px")
-      .style("font-size", "12px")
-      .style("pointer-events", "none")
-      .style("z-index", "1000")
-      .style("border", "1px solid rgba(255, 161, 22, 0.5)");
-
-    // Draw cells
-    g.selectAll("rect")
-      .data(cells)
-      .enter()
-      .append("rect")
-      .attr("x", (d) => d.week * (cellSize + cellGap))
-      .attr("y", (d) => d.day * (cellSize + cellGap))
-      .attr("width", cellSize)
-      .attr("height", cellSize)
-      .attr("rx", 2)
-      .attr("fill", (d) => (d.count === 0 ? "#1a1a1a" : colorScale(d.count)))
-      .attr("stroke", "rgba(255, 161, 22, 0.2)")
-      .attr("stroke-width", 1)
-      .on("mouseover", function (event, d) {
-        d3.select(this).attr("stroke", "#ffa116").attr("stroke-width", 2);
-
-        tooltip.style("visibility", "visible").html(`
-            <div>
-              <strong>${d.count} submission${d.count !== 1 ? "s" : ""}</strong><br/>
-              ${d.date.toLocaleDateString("en-US", { weekday: "short", year: "numeric", month: "short", day: "numeric" })}
-            </div>
-          `);
-      })
-      .on("mousemove", function (event) {
-        tooltip.style("top", event.pageY - 10 + "px").style("left", event.pageX + 10 + "px");
-      })
-      .on("mouseout", function () {
-        d3.select(this).attr("stroke", "rgba(255, 161, 22, 0.2)").attr("stroke-width", 1);
-
-        tooltip.style("visibility", "hidden");
-      });
-
-    // Add month labels
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const monthLabels = svg.append("g").attr("transform", "translate(0, 10)");
-
-    let currentMonth = oneYearAgo.getMonth();
-    let monthX = 0;
-
-    for (let week = 0; week < weeks; week++) {
-      const date = new Date(oneYearAgo);
-      date.setDate(oneYearAgo.getDate() + week * 7);
-      const month = date.getMonth();
-
-      if (month !== currentMonth) {
-        monthLabels
-          .append("text")
-          .attr("x", monthX)
-          .attr("y", 0)
-          .attr("fill", "#8b949e")
-          .attr("font-size", "10px")
-          .text(months[currentMonth]);
-
-        currentMonth = month;
-        monthX = week * (cellSize + cellGap);
-      }
-    }
-
-    // Remove the tooltip we appended to <body> when the data changes or the heatmap unmounts.
-    return () => {
-      tooltip.remove();
-    };
-  }, [data]);
-
-  if (loading) {
-    return (
-      <div className={`flex items-center justify-center p-8 ${className}`}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#ffa116]"></div>
-      </div>
-    );
-  }
-
-  if (error || !username) {
-    return (
-      <div className={`text-center p-8 ${className}`}>
-        <p className="text-gray-400 text-sm">{error ?? "No LeetCode username provided"}</p>
-      </div>
-    );
-  }
+/** A member's LeetCode submissions over the last year, drawn the same way as the GitHub calendar. */
+export default function LeetCodeHeatmap({ username }: Props) {
+  const { data, error, loading, reload } = useApi<{ submissions?: ApiDay[]; fetchedAt?: string }>(
+    username ? "/api/leetcode/submissions" : null,
+    {
+      errorMessage: "We couldn't load your LeetCode submissions just now.",
+    },
+  );
+  const days = data?.submissions ?? [];
+  const total = days.reduce((n, d) => n + d.count, 0);
 
   return (
-    <div className={className}>
-      <div className="w-full overflow-hidden">
-        <svg ref={svgRef} className="max-w-full h-auto"></svg>
-      </div>
-      <div className="flex items-center justify-end mt-4 space-x-2 text-xs text-gray-400">
-        <span>Less</span>
-        <div className="flex space-x-1">
-          <div className="w-3 h-3 rounded-sm bg-[#1a1a1a] border border-gray-700"></div>
-          <div className="w-3 h-3 rounded-sm bg-[#3a2d1f]"></div>
-          <div className="w-3 h-3 rounded-sm bg-[#5a4a2f]"></div>
-          <div className="w-3 h-3 rounded-sm bg-[#8a6a3f]"></div>
-          <div className="w-3 h-3 rounded-sm bg-[#ffa116]"></div>
+    <CalendarCard
+      label="LeetCode submissions calendar"
+      title="Your LeetCode"
+      accent="submissions."
+      icon={<LeetCodeMark />}
+      count={days.length ? plural(total, "submission") : undefined}
+      shadow="#c26a00"
+    >
+      {error ? (
+        <div className="mt-8 rounded-2xl border-2 border-[var(--ink)] bg-[var(--pink)] p-5">
+          <p className="font-semibold">{error}</p>
+          <button onClick={reload} className="btn btn-sm btn-ink mt-4">
+            Try again
+          </button>
         </div>
-        <span>More</span>
-      </div>
-    </div>
+      ) : loading ? (
+        <SkeletonCalendar />
+      ) : (
+        <ActivityCalendar
+          days={days}
+          unit="submission"
+          palette={ORANGES}
+          tipShadow="#ffa116"
+          footerNote={
+            data?.fetchedAt
+              ? `updated ${new Date(data.fetchedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}, refreshed every few minutes`
+              : "read from LeetCode"
+          }
+          emptyNote={
+            <>
+              <p className="hand text-[1.8rem] leading-none">no submissions in the last year yet</p>
+              <p className="mx-auto mt-3 max-w-md text-[0.98rem] text-[var(--ink)]/70">
+                Solve a problem on LeetCode and it shows up here within a few minutes. If you have solved some already, check that your
+                LeetCode profile is public.
+              </p>
+            </>
+          }
+        />
+      )}
+    </CalendarCard>
   );
 }

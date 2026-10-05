@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { Activity, Calendar, GitCommit, GitPullRequest, type LucideIcon } from "lucide-react";
 import { useApi, useVersionStream } from "@/components/dashboard/use-api";
-import { Avatar, Empty, ErrorPanel, Loading, PageHeader, Pager, pageRange } from "@/components/dashboard/ui";
+import { Avatar, Empty, ErrorPanel, PageHeader, Pager, pageRange } from "@/components/dashboard/ui";
 import { TONE_BG, type Tone } from "@/data/tones";
+import { SkeletonRows, SkeletonShell } from "@/components/dashboard/skeleton";
 
 interface ActivityItem {
   id: string;
@@ -53,7 +54,9 @@ export default function ActivityPage() {
       />
 
       {loading ? (
-        <Loading label="loading the feed" />
+        <SkeletonShell label="Loading the feed" caption="loading the feed">
+          <SkeletonRows count={7} />
+        </SkeletonShell>
       ) : error ? (
         <ErrorPanel title="Couldn't load the feed" message={error} onRetry={reload} />
       ) : items.length === 0 ? (

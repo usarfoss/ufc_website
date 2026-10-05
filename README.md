@@ -73,7 +73,7 @@ The address, the site description and the picture shown when a link is shared al
 
 - Next.js 16 (App Router) with React 19 and TypeScript
 - Tailwind CSS 4, plus a hand written design system in `src/components/home/home.css`
-- Framer Motion for animation, Lenis for smooth scrolling, Matter.js for the sticker physics, d3 for the LeetCode heatmap
+- Framer Motion for animation, Lenis for smooth scrolling and Matter.js for the sticker physics
 - next-auth with GitHub OAuth
 - Prisma 7 with PostgreSQL
 - Upstash Redis for caching and live updates, and Upstash QStash for the background GitHub sync

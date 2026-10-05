@@ -7,7 +7,8 @@ import { useAuth } from "@/features/auth/auth-provider";
 import { GithubIcon } from "@/components/ui/social-icons";
 import { Badge, Tape } from "@/components/home/scrap";
 import { useApi, useVersionStream } from "@/components/dashboard/use-api";
-import { Avatar, Empty, ErrorPanel, Loading, PageHeader, Panel } from "@/components/dashboard/ui";
+import { Avatar, Empty, ErrorPanel, PageHeader, Panel } from "@/components/dashboard/ui";
+import { SkeletonLeaderboard } from "@/components/dashboard/skeleton";
 
 interface LeaderboardUser {
   id: string;
@@ -156,7 +157,7 @@ export default function LeaderboardPage() {
     [all, sortBy],
   );
 
-  if (loading) return <Loading label="counting points" />;
+  if (loading) return <SkeletonLeaderboard />;
   if (error && !all.length) return <ErrorPanel title="Couldn't load the leaderboard" message={error} onRetry={reload} />;
 
   const showGithub = sortBy !== "leetcode";

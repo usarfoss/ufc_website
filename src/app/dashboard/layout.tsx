@@ -6,7 +6,7 @@ import { useAuth } from "@/features/auth/auth-provider";
 import { HomeShell } from "@/components/home/home-shell";
 import { Footer } from "@/components/home/footer";
 import { DashTabs } from "@/components/dashboard/dash-tabs";
-import { Loading } from "@/components/dashboard/ui";
+import { SkeletonPage } from "@/components/dashboard/skeleton";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -27,7 +27,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <main className="relative min-h-[100svh] bg-[var(--paper)] pb-24 pt-28 text-[var(--ink)] sm:pt-32">
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
           {loading || !user ? (
-            <Loading label={loading ? "checking your pass" : "taking you to sign in"} />
+            <SkeletonPage />
           ) : (
             <>
               <DashTabs />

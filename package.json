@@ -23,7 +23,6 @@
     "@types/matter-js": "^0.20.2",
     "@upstash/qstash": "^2.11.3",
     "@upstash/redis": "^1.38.3",
-    "d3": "^7.9.0",
     "dotenv": "^17.4.2",
     "framer-motion": "^13.1.1",
     "lucide-react": "^1.38.0",
@@ -35,7 +34,6 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
-    "@types/d3": "^7.4.3",
     "@types/node": "^26",
     "@types/react": "^19",
     "@types/react-dom": "^19",

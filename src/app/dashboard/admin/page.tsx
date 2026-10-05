@@ -6,9 +6,10 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/features/auth/auth-provider";
 import { Pin, Tape } from "@/components/home/scrap";
 import { useApi, useVersionStream } from "@/components/dashboard/use-api";
-import { Empty, ErrorPanel, Field, isAdmin, Loading, Modal, PageHeader, useToast } from "@/components/dashboard/ui";
+import { Empty, ErrorPanel, Field, isAdmin, Modal, PageHeader, useToast } from "@/components/dashboard/ui";
 import { EventDetailsView } from "@/components/dashboard/event-details";
 import type { EventDetails } from "@/types/events";
+import { SkeletonCards, SkeletonShell } from "@/components/dashboard/skeleton";
 
 interface PendingEvent {
   id: string;
@@ -91,7 +92,9 @@ export default function AdminPage() {
       />
 
       {loading ? (
-        <Loading label="loading the queue" />
+        <SkeletonShell label="Loading the queue" caption="loading the queue">
+          <SkeletonCards count={3} className="grid gap-7" />
+        </SkeletonShell>
       ) : error ? (
         <ErrorPanel title="Couldn't load the queue" message={error} onRetry={reload} />
       ) : events.length === 0 ? (

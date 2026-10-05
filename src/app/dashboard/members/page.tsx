@@ -5,8 +5,9 @@ import { Calendar, MapPin, Search } from "lucide-react";
 import { GithubIcon } from "@/components/ui/social-icons";
 import { Pin, Tape } from "@/components/home/scrap";
 import { useApi } from "@/components/dashboard/use-api";
-import { Avatar, Empty, ErrorPanel, Loading, PageHeader, Pager, pageRange } from "@/components/dashboard/ui";
+import { Avatar, Empty, ErrorPanel, PageHeader, Pager, pageRange } from "@/components/dashboard/ui";
 import { TAPE_CYCLE } from "@/data/tones";
+import { SkeletonCards, SkeletonShell } from "@/components/dashboard/skeleton";
 
 interface Member {
   id: string;
@@ -71,7 +72,9 @@ export default function MembersPage() {
       </PageHeader>
 
       {loading ? (
-        <Loading label="finding everyone" />
+        <SkeletonShell label="Finding everyone" caption="finding everyone">
+          <SkeletonCards count={8} className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" />
+        </SkeletonShell>
       ) : error ? (
         <ErrorPanel title="Couldn't load members" message={error} onRetry={reload} />
       ) : members.length === 0 ? (

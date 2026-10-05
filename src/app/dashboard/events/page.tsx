@@ -5,12 +5,13 @@ import { Calendar, CheckCircle, Clock, History, MapPin, Plus, Users, X } from "l
 import { useAuth } from "@/features/auth/auth-provider";
 import { Pin, Tape } from "@/components/home/scrap";
 import { useApi, useVersionStream } from "@/components/dashboard/use-api";
-import { Avatar, Empty, ErrorPanel, Field, isAdmin, Loading, Modal, PageHeader, useToast } from "@/components/dashboard/ui";
+import { Avatar, Empty, ErrorPanel, Field, isAdmin, Modal, PageHeader, useToast } from "@/components/dashboard/ui";
 import { TONE_BG, type Tone } from "@/data/tones";
 import { EventDetailsView } from "@/components/dashboard/event-details";
 import { ProposalFormView } from "@/components/dashboard/proposal-form";
 import type { buildProposal } from "@/features/events/form-codec";
 import type { EventDetails } from "@/types/events";
+import { SkeletonCards, SkeletonRows, SkeletonShell } from "@/components/dashboard/skeleton";
 
 interface DashEvent {
   id: string;
@@ -211,7 +212,9 @@ export default function DashboardEventsPage() {
       </PageHeader>
 
       {loading ? (
-        <Loading label="loading events" />
+        <SkeletonShell label="Loading events" caption="pinning up the events">
+          <SkeletonCards count={4} />
+        </SkeletonShell>
       ) : error ? (
         <ErrorPanel title="Couldn't load events" message={error} onRetry={reload} />
       ) : events.length === 0 ? (
@@ -444,7 +447,9 @@ function EventDetailModal({ id, onClose }: { id: string | null; onClose: () => v
   return (
     <Modal open={!!id} onClose={onClose} title={event?.title ?? "Event details"} tone="butter" size="lg">
       {loading ? (
-        <Loading label="loading the details" />
+        <SkeletonShell label="Loading the details">
+          <SkeletonRows count={3} />
+        </SkeletonShell>
       ) : error ? (
         <p className="font-semibold text-[#a52a1d]">{error}</p>
       ) : event?.details ? (
