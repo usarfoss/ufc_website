@@ -1,10 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Activity, Calendar, GitCommit, GitPullRequest, Star, Trophy, type LucideIcon } from "lucide-react";
 import { useAuth } from "@/features/auth/auth-provider";
-import { useApi } from "@/components/dashboard/use-api";
+import { useApi, useVersionStream } from "@/components/dashboard/use-api";
 import GitHubHeatmap from "@/components/ui/github-heatmap";
 import { GithubIcon } from "@/components/ui/social-icons";
 import { Pin, Tape } from "@/components/home/scrap";
@@ -57,13 +57,31 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const [page, setPage] = useState(1);
   const PER_PAGE = 10;
-  const statsReq = useApi<{ stats?: DashboardStats }>("/api/dashboard/stats", {
+  const statsReq = useApi<{ stats?: DashboardStats; lastSynced?: string | null }>("/api/dashboard/stats", {
     errorMessage: "We couldn't load your dashboard just now.",
   });
   const activityReq = useApi<{ activities?: RecentActivity[]; total?: number }>(
     `/api/dashboard/activities?limit=${PER_PAGE}&offset=${(page - 1) * PER_PAGE}`,
   );
   const stats = statsReq.data?.stats ?? null;
+
+  // A brand new member has not been synced yet, so the first numbers arrive a few seconds after they land here. Pick them up when
+  // the server says they changed, and check on a timer too (for deployments without the live stream), for about a minute.
+  const waitingForSync = statsReq.data !== null && !statsReq.data.lastSynced;
+  const { refresh: refreshStats } = statsReq;
+  const { refresh: refreshActivity } = activityReq;
+  useVersionStream("dashboard", refreshStats);
+  useVersionStream("activity-feed", refreshActivity);
+  useEffect(() => {
+    if (!waitingForSync) return;
+    let tries = 0;
+    const timer = window.setInterval(() => {
+      refreshStats();
+      refreshActivity();
+      if (++tries >= 15) window.clearInterval(timer);
+    }, 4_000);
+    return () => window.clearInterval(timer);
+  }, [waitingForSync, refreshStats, refreshActivity]);
   const loading = statsReq.loading;
   const error = statsReq.error;
   const recent = activityReq.data?.activities ?? [];
@@ -95,6 +113,15 @@ export default function DashboardPage() {
           </a>
         )}
       </PageHeader>
+
+      {waitingForSync && (
+        <Panel>
+          <p className="text-[1.05rem]">
+            <span className="font-bold">Syncing your GitHub history.</span> Your commits and pull requests are being counted right now. This
+            takes a few seconds, and this page fills in by itself.
+          </p>
+        </Panel>
+      )}
 
       {/* identity + stats */}
       <div className="grid items-start gap-8 lg:grid-cols-12">

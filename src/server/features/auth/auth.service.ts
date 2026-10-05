@@ -16,6 +16,11 @@ const resolveRole = (githubUsername: string): "ADMIN" | "MAINTAINER" =>
 
 /** Provisions and links the local profile to GitHub's immutable account identifier. */
 export const authService = {
+  /** True once a GitHub sync has ever been stored for this user. A brand new member has none, so their dashboard would be empty. */
+  async hasStoredStats(userId: string) {
+    return (await prisma.gitHubStats.count({ where: { userId } })) > 0;
+  },
+
   async upsertGitHubUser(profile: GitHubIdentity, accessToken: string) {
     const githubId = String(profile.id);
     const role = resolveRole(profile.login);
