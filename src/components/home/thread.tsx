@@ -47,13 +47,14 @@ export function Thread({
 }) {
   const wrap = useRef<HTMLDivElement>(null);
   const base = useRef<SVGPathElement>(null);
-  const [geo, setGeo] = useState<{ d: string; w: number; h: number; knots: Pt[] }>({ d: "", w: 0, h: 0, knots: [] });
+  const [geo, setGeo] = useState<{ d: string; w: number; h: number; knots: Pt[]; pts: Pt[] }>({ d: "", w: 0, h: 0, knots: [], pts: [] });
   const tipY = useMotionValue(0);
   const needleX = useMotionValue(0);
   const needleY = useMotionValue(0);
   const needleR = useMotionValue(90);
-  const lenRef = useRef(0);
-  const [dash, setDash] = useState({ len: 0, shown: 0 });
+  const shadow = useRef<SVGPathElement>(null);
+  // The path sampled once (see `sample`), so that finding where the stitch has got to is a lookup in a table and not a search along the path.
+  const table = useRef<{ len: number; ys: Float32Array; xs: Float32Array; ls: Float32Array } | null>(null);
   const { scrollY } = useScroll();
 
   // Measure every knot, relative to the wrapper.
@@ -84,7 +85,7 @@ export function Thread({
         }
         pts.push(b);
       }
-      setGeo({ d: pathThrough(pts), w: box.width, h: box.height, knots });
+      setGeo({ d: pathThrough(pts), w: box.width, h: box.height, knots, pts });
     };
     measure();
     const ro = new ResizeObserver(measure);
@@ -97,34 +98,83 @@ export function Thread({
     };
   }, [amplitude]);
 
+  /**
+   * Works out, once, where the thread is at every few pixels of its length, straight from the points it was drawn through (each stretch is a
+   * cubic curve with known controls, so no question needs to be put to the browser). The thread only ever goes down the page, so the
+   * samples are sorted by y, and finding where the stitch has got to on each scroll is a lookup. (Asking the browser for points along the
+   * path on every scroll frame is what used to make this page lag, and it got slower with every event added to the thread.)
+   */
+  const sample = () => {
+    const pts = geo.pts;
+    if (pts.length < 2) {
+      table.current = null;
+      return;
+    }
+    const PER = 48;
+    const n = (pts.length - 1) * PER + 1;
+    const ys = new Float32Array(n);
+    const xs = new Float32Array(n);
+    const ls = new Float32Array(n);
+    ys[0] = pts[0].y;
+    xs[0] = pts[0].x;
+    let k = 1;
+    let len = 0;
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1];
+      const b = pts[i];
+      const my = (a.y + b.y) / 2;
+      for (let s = 1; s <= PER; s++) {
+        const t = s / PER;
+        const u = 1 - t;
+        const x = u * u * u * a.x + 3 * u * u * t * a.x + 3 * u * t * t * b.x + t * t * t * b.x;
+        const y = u * u * u * a.y + 3 * u * u * t * my + 3 * u * t * t * my + t * t * t * b.y;
+        len += Math.hypot(x - xs[k - 1], y - ys[k - 1]);
+        xs[k] = x;
+        ys[k] = y;
+        ls[k] = len;
+        k++;
+      }
+    }
+    table.current = { len, ys, xs, ls };
+  };
+
   // Which stretch of thread is "stitched" depends on how far the reader's eye line has travelled.
   const update = () => {
     const el = wrap.current;
-    const path = base.current;
-    if (!el || !path || !geo.d) return;
-    const len = path.getTotalLength();
-    lenRef.current = len;
+    const t = table.current;
+    if (!el || !t || !geo.d) return;
     const top = el.getBoundingClientRect().top;
     const eye = Math.min(Math.max(window.innerHeight * 0.58 - top, 0), geo.h);
-    // The path is monotone in y, so the point at a given y can be bisected.
+    // First sample at or below the eye line (the samples are sorted by y), then the point between it and the one before.
     let lo = 0;
-    let hi = len;
-    for (let i = 0; i < 22; i++) {
-      const mid = (lo + hi) / 2;
-      if (path.getPointAtLength(mid).y < eye) lo = mid;
+    let hi = t.ys.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (t.ys[mid] < eye) lo = mid + 1;
       else hi = mid;
     }
-    const p = path.getPointAtLength(lo);
-    const q = path.getPointAtLength(Math.min(len, lo + 2));
-    tipY.set(p.y);
-    needleX.set(p.x);
-    needleY.set(p.y);
-    const heading = (Math.atan2(q.y - p.y, q.x - p.x) * 180) / Math.PI; // 90 = straight down
+    const i = Math.max(1, lo);
+    const span = t.ys[i] - t.ys[i - 1];
+    const f = span > 0 ? Math.min(1, Math.max(0, (eye - t.ys[i - 1]) / span)) : 0;
+    const px = t.xs[i - 1] + (t.xs[i] - t.xs[i - 1]) * f;
+    const py = t.ys[i - 1] + (t.ys[i] - t.ys[i - 1]) * f;
+    const shown = t.ls[i - 1] + (t.ls[i] - t.ls[i - 1]) * f;
+    const j = Math.min(t.ys.length - 1, i + 1);
+    const heading = (Math.atan2(t.ys[j] - py, t.xs[j] - px) * 180) / Math.PI; // 90 = straight down
+    tipY.set(py);
+    needleX.set(px);
+    needleY.set(py);
     needleR.set(lean + Math.max(-30, Math.min(30, (heading - 90) * 0.6)));
-    setDash((d) => (Math.abs(d.shown - lo) > 0.5 || d.len !== len ? { len, shown: lo } : d));
+    // The stitched length is written straight onto the two paths, so scrolling never has to re-render the thread.
+    const dash = `${shown.toFixed(1)} ${(t.len + 10).toFixed(1)}`;
+    base.current?.setAttribute("stroke-dasharray", dash);
+    shadow.current?.setAttribute("stroke-dasharray", dash);
   };
   useMotionValueEvent(scrollY, "change", update);
-  useEffect(update, [geo]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    sample();
+    update();
+  }, [geo]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div ref={wrap} className={`relative ${className ?? ""}`}>
@@ -134,23 +184,16 @@ export function Thread({
           <path d={geo.d} fill="none" stroke="rgba(20,20,15,0.22)" strokeWidth="2.5" strokeDasharray="2 10" strokeLinecap="round" />
           {/* shadow + stitched thread */}
           <path
+            ref={shadow}
             d={geo.d}
             fill="none"
             stroke="rgba(0,0,0,0.18)"
             strokeWidth="6"
             strokeLinecap="round"
             transform="translate(2 4)"
-            strokeDasharray={`${dash.shown} ${dash.len + 10}`}
+            strokeDasharray="0 100000"
           />
-          <path
-            ref={base}
-            d={geo.d}
-            fill="none"
-            stroke="#d6332c"
-            strokeWidth="4.5"
-            strokeLinecap="round"
-            strokeDasharray={`${dash.shown} ${dash.len + 10}`}
-          />
+          <path ref={base} d={geo.d} fill="none" stroke="#d6332c" strokeWidth="4.5" strokeLinecap="round" strokeDasharray="0 100000" />
           {geo.knots.map((k, i) => (
             <Knot key={i} x={k.x} y={k.y} tipY={tipY} />
           ))}
