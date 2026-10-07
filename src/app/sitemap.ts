@@ -13,6 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: absoluteUrl("/about"), changeFrequency: "yearly", priority: 0.8 },
     { url: absoluteUrl("/events"), lastModified: newest, changeFrequency: "monthly", priority: 0.8 },
     { url: absoluteUrl("/achievements"), changeFrequency: "yearly", priority: 0.6 },
+    { url: absoluteUrl("/support-us"), changeFrequency: "monthly", priority: 0.7 },
     ...EVENTS.map((e) => ({
       url: absoluteUrl(`/events/${e.slug}`),
       lastModified: new Date(e.sort),

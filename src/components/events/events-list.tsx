@@ -120,8 +120,18 @@ export function EventsList() {
               calendar that&apos;s mostly there for show.
             </p>
             <p>
-              We don&apos;t chase sponsors to pay for a tech club either. This space is for people who genuinely want to be here. Click any
-              event on the thread to read the whole story.
+              Sponsors help us do the big ones properly, and we only work with people who respect what this club is. This space is for
+              people who genuinely want to be here. Click any event on the thread to read the whole story.
+            </p>
+          </div>
+        </Reveal>
+        <Reveal delay={0.15}>
+          <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
+            <ArrowLink href="/support-us" className="btn btn-signal">
+              Support our next event
+            </ArrowLink>
+            <p className="max-w-sm text-[0.98rem] font-semibold leading-snug text-[var(--ink)]/70">
+              FOSS Forge 2.0 · 21 to 22 Oct · all kinds of sponsors welcome.
             </p>
           </div>
         </Reveal>

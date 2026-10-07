@@ -1269,3 +1269,28 @@ html[data-no-io] [data-reveal="m"] > .mask-line {
     transition: none;
   }
 }
+
+/* Support us: the lit squares of the "2.0" pop in one column after another. They are fully visible without animation (reduced motion, or
+   before the styles run), so nothing is ever hidden waiting for it. */
+@keyframes ufc-forge-pop {
+  0% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.ufc-home .forge-cell {
+  animation: ufc-forge-pop 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ufc-home .forge-cell {
+    animation: none;
+  }
+}
