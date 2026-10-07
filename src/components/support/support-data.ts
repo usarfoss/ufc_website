@@ -19,17 +19,50 @@ export const ELYSIAN = {
 } as const;
 
 /** A backer and its logo (a file in public/). `mark` is true for a square badge, which is shown with the name beside it. */
-export type Backer = { name: string; src: string; w: number; h: number; mark?: boolean };
+export type Backer = {
+  name: string;
+  href: string;
+  src: string;
+  w: number;
+  h: number;
+  /** A square badge (an app icon, a community's avatar), shown with the name beside it. */
+  mark?: boolean;
+  /** Logos that are made for a dark or coloured background sit on their own brand colour, so they look the way their owners drew them. */
+  tile?: string;
+  /** The colour of the name beside a badge, and whether it is set in a serif face (as CodeCrafters does). */
+  ink?: string;
+  serif?: boolean;
+};
 
-const KIWIX: Backer = { name: "Kiwix", src: "/logos/kiwix.webp", w: 1, h: 1, mark: true };
-const FOSS_UNITED: Backer = { name: "FOSS United", src: "/logos/fossunited.webp", w: 600, h: 472 };
-const MINIMAX: Backer = { name: "MiniMax", src: "/logos/minimax.webp", w: 349, h: 128 };
-const TRAE: Backer = { name: "TRAE", src: "/logos/trae.svg", w: 1, h: 1, mark: true };
-const UNSTOP: Backer = { name: "Unstop", src: "/logos/unstop.svg", w: 2000, h: 796 };
-const CODECAP: Backer = { name: "CodeCap", src: "/logos/codecap.jpg", w: 1, h: 1, mark: true };
+const KIWIX: Backer = { name: "Kiwix", href: "https://www.kiwix.org", src: "/logos/kiwix-light.svg", w: 3071.4, h: 773.7, tile: "#0b0a1c" };
+const FOSS_UNITED: Backer = { name: "FOSS United", href: "https://fossunited.org", src: "/logos/fossunited.webp", w: 600, h: 472 };
+const MINIMAX: Backer = { name: "MiniMax", href: "https://www.minimax.io", src: "/logos/minimax.webp", w: 349, h: 128 };
+const TRAE: Backer = { name: "TRAE", href: "https://www.trae.ai", src: "/logos/trae.svg", w: 1, h: 1, mark: true };
+const UNSTOP: Backer = { name: "Unstop", href: "https://unstop.com", src: "/logos/unstop.svg", w: 2000, h: 796 };
+const CODECAP: Backer = {
+  name: "CodeCap",
+  href: "https://www.linkedin.com/company/codecap-community",
+  src: "/logos/codecap.jpg",
+  w: 1,
+  h: 1,
+  mark: true,
+};
+const CODECRAFTERS: Backer = {
+  name: "CodeCrafters",
+  href: "https://codecrafters.io",
+  src: "/logos/codecrafters.svg",
+  w: 27.3211,
+  h: 18.7013,
+  mark: true,
+  tile: "#061418",
+  ink: "#f1eff0",
+  serif: true,
+};
+const ELEVENLABS: Backer = { name: "ElevenLabs", href: "https://elevenlabs.io", src: "/logos/elevenlabs.svg", w: 694, h: 90 };
+const XYZ: Backer = { name: ".XYZ", href: "https://gen.xyz", src: "/logos/xyz.svg", w: 85, h: 49.5, tile: "#fff532" };
 
 /** Backing FOSS Forge 2.0 right now. */
-export const CURRENT_SPONSORS: Backer[] = [KIWIX, FOSS_UNITED];
+export const CURRENT_SPONSORS: Backer[] = [KIWIX, FOSS_UNITED, CODECRAFTERS, ELEVENLABS, XYZ];
 
 /** Who backed which event of ours, newest first. Links go to the event pages. */
 export const PAST_BACKERS: { event: string; when: string; href: string; poster?: string; backers: Backer[] }[] = [

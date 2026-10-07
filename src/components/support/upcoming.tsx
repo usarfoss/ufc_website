@@ -1,7 +1,14 @@
 import { Plus } from "lucide-react";
 import { MaskLine, Reveal } from "@/components/home/motion-primitives";
 import { SponsorLogo } from "./sponsor-logo";
-import { CURRENT_SPONSORS, FORGE } from "./support-data";
+import { CURRENT_SPONSORS, FORGE, type Backer } from "./support-data";
+
+/** The height that keeps a logo at most `maxWidth` wide, so a long wordmark shrinks to fit its card instead of overflowing it. */
+const fit = (b: Backer, height: number, maxWidth: number) => {
+  // A badge with its name beside it is as wide as the badge plus the letters, which grow with the badge.
+  const widthPerHeight = b.mark ? b.w / b.h + 0.32 * b.name.length : b.w / b.h;
+  return Math.min(height, Math.floor(maxWidth / widthPerHeight));
+};
 
 /** The sponsors of FOSS Forge 2.0, given the room they deserve, with an empty place beside them. */
 export function Upcoming() {
@@ -21,9 +28,16 @@ export function Upcoming() {
           {CURRENT_SPONSORS.map((s, i) => (
             <li key={s.name}>
               <Reveal delay={i * 0.08} className="h-full">
-                <div className="grid h-full min-h-[14rem] place-items-center rounded-2xl border-[2.5px] border-[var(--ink)]! bg-[var(--cream)] p-8 shadow-[7px_7px_0_var(--ink)]">
-                  <SponsorLogo b={s} height={92} />
-                </div>
+                <a
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${s.name}, opens their website`}
+                  style={{ background: s.tile ?? "var(--cream)" }}
+                  className="grid h-full min-h-[9.5rem] place-items-center rounded-2xl border-[2.5px] border-[var(--ink)]! p-5 shadow-[7px_7px_0_var(--ink)] transition-transform duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[10px_10px_0_var(--ink)] focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-[var(--ink)] sm:min-h-[14rem] sm:p-8"
+                >
+                  <SponsorLogo b={s} height={fit(s, 92, 250)} link={false} />
+                </a>
               </Reveal>
             </li>
           ))}
@@ -31,7 +45,7 @@ export function Upcoming() {
             <Reveal delay={0.16} className="h-full">
               <a
                 href="#contact"
-                className="group grid h-full min-h-[14rem] place-items-center rounded-2xl border-[2.5px] border-dashed border-[var(--ink)]! p-8 text-center transition-colors hover:bg-[var(--butter)]"
+                className="group grid h-full min-h-[9.5rem] place-items-center rounded-2xl border-[2.5px] border-dashed border-[var(--ink)]! p-5 sm:min-h-[14rem] sm:p-8 text-center transition-colors hover:bg-[var(--butter)]"
               >
                 <span>
                   <span className="mx-auto grid size-12 place-items-center rounded-full border-2 border-[var(--ink)]! bg-[var(--cream)]">
