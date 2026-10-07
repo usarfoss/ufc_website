@@ -62,7 +62,7 @@ const ELEVENLABS: Backer = { name: "ElevenLabs", href: "https://elevenlabs.io", 
 const XYZ: Backer = { name: ".XYZ", href: "https://gen.xyz", src: "/logos/xyz.svg", w: 85, h: 49.5, tile: "#4A1955" };
 
 /** Backing FOSS Forge 2.0 right now. */
-export const CURRENT_SPONSORS: Backer[] = [KIWIX, FOSS_UNITED, CODECRAFTERS, ELEVENLABS, XYZ];
+export const CURRENT_SPONSORS: Backer[] = [KIWIX, FOSS_UNITED, CODECRAFTERS, ELEVENLABS, XYZ, UNSTOP];
 
 /** Who backed which event of ours, newest first. Links go to the event pages. */
 export const PAST_BACKERS: { event: string; when: string; href: string; poster?: string; backers: Backer[] }[] = [

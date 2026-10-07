@@ -1,11 +1,29 @@
 import Image from "next/image";
+import type { CSSProperties } from "react";
 import type { Backer } from "./support-data";
 
 /**
  * A sponsor's logo at a given height, linking to their website (it opens in a new tab). Square badges (an app icon, a community's avatar)
- * are shown with the name beside them. Pass `link={false}` when something around the logo is already the link.
+ * are shown with the name beside them. Pass `link={false}` when something around the logo is already the link. `phoneHeight` is the height on
+ * narrow screens, where two cards sit side by side, and defaults to the same as `height`.
  */
-export function SponsorLogo({ b, height = 40, link = true }: { b: Backer; height?: number; link?: boolean }) {
+export function SponsorLogo({
+  b,
+  height = 40,
+  phoneHeight = height,
+  link = true,
+}: {
+  b: Backer;
+  height?: number;
+  phoneHeight?: number;
+  link?: boolean;
+}) {
+  const vars = {
+    "--h": `${height}px`,
+    "--hp": `${phoneHeight}px`,
+    "--f": `${Math.round(height * 0.5)}px`,
+    "--fp": `${Math.round(phoneHeight * 0.5)}px`,
+  } as CSSProperties;
   const img = (
     <Image
       src={b.src}
@@ -13,23 +31,24 @@ export function SponsorLogo({ b, height = 40, link = true }: { b: Backer; height
       width={Math.round((height * b.w) / b.h)}
       height={height}
       unoptimized={b.src.endsWith(".svg")}
-      className={`w-auto shrink-0 object-contain ${b.src.endsWith(".jpg") ? "rounded-[22%]" : ""}`}
-      style={{ height, width: "auto" }}
+      className={`h-[var(--hp)] w-auto shrink-0 object-contain sm:h-[var(--h)] ${b.src.endsWith(".jpg") ? "rounded-[22%]" : ""}`}
       draggable={false}
     />
   );
   const logo = b.mark ? (
-    <span className="flex items-center gap-3">
+    <span className="flex items-center gap-2 sm:gap-3" style={vars}>
       {img}
       <span
-        className={`leading-none ${b.serif ? "font-serif font-semibold tracking-[-0.01em]" : "font-extrabold tracking-[-0.02em]"}`}
-        style={{ fontSize: Math.round(height * 0.5), color: b.ink }}
+        className={`text-[length:var(--fp)] leading-none sm:text-[length:var(--f)] ${b.serif ? "font-serif font-semibold tracking-[-0.01em]" : "font-extrabold tracking-[-0.02em]"}`}
+        style={{ color: b.ink }}
       >
         {b.name}
       </span>
     </span>
   ) : (
-    img
+    <span className="block" style={vars}>
+      {img}
+    </span>
   );
   if (!link) return logo;
   return (
