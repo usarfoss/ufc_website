@@ -91,7 +91,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     name: "Piyush Gupta",
     photo: "/team-images/piyush.jpg",
-    focus: "62% 92%",
+    focus: "50% 25%",
     headline: "Research Intern",
     org: "NSUT",
     detail: "Netaji Subhas University of Technology",
