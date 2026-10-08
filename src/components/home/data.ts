@@ -251,7 +251,7 @@ export const TEAM: Member[] = [
     name: "Piyush Gupta",
     role: "Oldie",
     img: "/team-images/piyush.jpg",
-    line: "Legend says he once closed an issue by deleting the issue.",
+    line: "sudhar gye toh sher kaun bolega",
     focus: "50% 25%",
   },
   // oldies
