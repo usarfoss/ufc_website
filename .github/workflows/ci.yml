@@ -1,0 +1,154 @@
+name: CI
+
+# Runs on every push to main and on every pull request into main. Nothing here talks to a real service: the values below are made up, and
+# the build and the smoke test only need the site to start, not to reach a database.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# A newer push to the same branch makes the older run pointless.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "24"
+
+jobs:
+  format:
+    name: Prettier
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      # Fails if any file is not formatted. Fix it locally with `npm run format`.
+      - run: npm run format:check
+
+  lint:
+    name: ESLint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run lint
+
+  build:
+    name: Build and open on localhost:3000
+    runs-on: ubuntu-latest
+    # Longer than one smoke-test request is allowed to take (15 minutes), so a request that hangs ends as a clear error of its own.
+    timeout-minutes: 30
+
+    env:
+      # Made-up values, only so the app has something to read. None of them is a real secret or points at a real service. Redis and QStash are
+      # left out on purpose: the site has to run without them too.
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: ci-only-secret-that-protects-nothing-0123456789
+      GITHUB_ID: ci-client-id
+      GITHUB_SECRET: ci-client-secret
+      TOKEN_ENCRYPTION_KEY: MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=
+      ADMIN_GITHUB_IDS: "1"
+      NEXT_TELEMETRY_DISABLED: "1"
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      # Next's own build cache: the second build of the same dependencies is much quicker.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**', 'public/**', 'next.config.ts') }}
+          restore-keys: |
+            next-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+
+      # Generates the Prisma client, then type checks and builds the site.
+      - run: npm run build
+
+      - name: Start the site on localhost:3000 and wait until it answers
+        run: |
+          # Run Next directly rather than through `npm start`, so the process id saved here is the server's own and can be stopped.
+          ./node_modules/.bin/next start --port 3000 > server.log 2>&1 &
+          echo $! > server.pid
+
+          for i in $(seq 1 60); do
+            if curl -fsS --max-time 5 -o /dev/null http://localhost:3000/; then
+              echo "The site answered on http://localhost:3000 after ${i}s."
+              exit 0
+            fi
+            if ! kill -0 "$(cat server.pid)" 2>/dev/null; then
+              echo "::error::The server stopped before it answered."
+              exit 1
+            fi
+            sleep 1
+          done
+
+          echo "::error::The site did not answer on http://localhost:3000 within 60 seconds."
+          exit 1
+
+      - name: Check a few pages and routes
+        env:
+          # How long any one request may take before it counts as a failure: 15 minutes.
+          REQUEST_TIMEOUT_SECONDS: "900"
+        run: |
+          check() {
+            # `|| true`: a request that times out must be reported below as a failed check, not stop the whole step here.
+            code="$(curl -s --max-time "$REQUEST_TIMEOUT_SECONDS" -o /dev/null -w '%{http_code}' "http://localhost:3000$1" || true)"
+            if [ "$code" = "$2" ]; then
+              echo "ok    $1 -> $code"
+            elif [ "$code" = "000" ]; then
+              echo "::error::$1 got no answer (timed out after ${REQUEST_TIMEOUT_SECONDS}s or the connection failed), expected $2"
+              failed=1
+            else
+              echo "::error::$1 answered $code, expected $2"
+              failed=1
+            fi
+          }
+          failed=0
+          check /                     200
+          check /events               200
+          check /support-us           200
+          check /foss-forge-2         200
+          check /login                200
+          check /robots.txt           200
+          check /sitemap.xml          200
+          # Signed out, so the API must say so and not fall over.
+          check /api/dashboard/stats  401
+          # Not a page: must be a proper 404, not an error.
+          check /this-page-does-not-exist 404
+          exit $failed
+
+      - name: Server log
+        if: always()
+        run: cat server.log || true
+
+      - name: Stop the site
+        if: always()
+        run: kill "$(cat server.pid)" 2>/dev/null || true

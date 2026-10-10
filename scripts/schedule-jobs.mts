@@ -16,8 +16,8 @@ const JOBS = [
   {
     id: "live-poll",
     path: "/api/jobs/live-poll",
-    cron: "*/2 * * * *",
-    what: "check every active member for new GitHub and LeetCode activity, every 2 minutes (every minute while a dashboard is open)",
+    cron: "*/5 * * * *",
+    what: "check the members who are due for new GitHub and LeetCode activity, every 5 minutes (every minute while a dashboard is open, and not at all after 3 quiet hours)",
   },
   {
     id: "github-reconcile",

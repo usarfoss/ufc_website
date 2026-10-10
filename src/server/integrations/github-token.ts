@@ -1,5 +1,5 @@
 import "server-only";
-import { getRedis } from "@/server/cache/cache";
+import { getStateRedis } from "@/server/cache/redis";
 import { prisma } from "@/server/db/prisma";
 import { clearNeedsSignIn, markNeedsSignIn } from "@/server/auth/reauth";
 import { decryptToken, encryptToken } from "@/server/security/token-encryption";
@@ -238,7 +238,7 @@ const realDeps: TokenDeps = {
   },
 
   async lock(userId) {
-    const redis = getRedis();
+    const redis = getStateRedis();
     const key = `auth:renew:${userId}`;
     if (!redis) {
       if (memoryLocks.has(key)) return null;

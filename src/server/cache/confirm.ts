@@ -1,8 +1,8 @@
 import "server-only";
-import { getRedis } from "@/server/cache/cache";
+import { getStateRedis } from "@/server/cache/redis";
 
 /** Compare, then either forget or remember, in one step. */
-const seenScript = getRedis()?.createScript<number>(`
+const seenScript = getStateRedis()?.createScript<number>(`
   if redis.call('GET', KEYS[1]) == ARGV[1] then
     redis.call('DEL', KEYS[1])
     return 1
@@ -34,7 +34,7 @@ export async function seenTwice(key: string, signature: string, ttlSeconds = 5 *
  * misbehaving cannot start an endless chain of re-checks: after that, the regular checks carry on as normal. Without Redis it always allows.
  */
 export async function allowRecheck(key: string, ttlSeconds = 10 * 60) {
-  const redis = getRedis();
+  const redis = getStateRedis();
   if (!redis) return true;
   try {
     return (await redis.set(`recheck:${key}`, "1", { ex: ttlSeconds, nx: true })) === "OK";

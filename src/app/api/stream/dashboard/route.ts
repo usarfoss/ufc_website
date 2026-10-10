@@ -1,13 +1,20 @@
 import type { NextRequest } from "next/server";
-import { getCacheVersions, getRedis, type CacheNamespace } from "@/server/cache/cache";
+import { getCacheVersions, type CacheNamespace } from "@/server/cache/cache";
 import { getSession } from "@/server/auth/session";
-import { POLL_STATE_KEY, encodeState, watchingField } from "@/server/features/live/poll-state";
+import { markWatching, touchSiteActive } from "@/server/features/live/poll-state";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const encoder = new TextEncoder();
-const CHECK_EVERY_MS = 5_000;
+/**
+ * How often this server looks at the cache versions while anyone is connected. Every look is a Redis request, a server that always has a
+ * viewer makes 8,600 of them a day at this pace, and the live poll only runs once a minute anyway, so a change shows up within about ten
+ * seconds of being made, which is as quick as it needs to be.
+ */
+const CHECK_EVERY_MS = 10_000;
+/** How often the members with a dashboard open on this server are reported, all in one write (the note lasts 150 seconds). */
+const REPORT_EVERY_MS = 30_000;
 
 /**
  * One check on behalf of every open stream on this server. Each stream used to ask Redis for the versions on its own timer, so ten open tabs
@@ -21,6 +28,7 @@ const watchers = new Map<string, number>();
 let timer: ReturnType<typeof setInterval> | null = null;
 let latest: Versions | null = null;
 let checking: Promise<void> | null = null;
+let reportedAt = 0;
 
 /**
  * While anyone has a dashboard open, this server runs the live poll itself once a minute, so the people looking get changes within about a
@@ -44,6 +52,17 @@ function pollWhileWatched() {
     });
 }
 
+/**
+ * "These members have a dashboard open," said once for everyone on this server instead of once per member (a write per viewer every half
+ * minute adds up quickly with a few hundred people). It also says the site is in use, which is what keeps the scheduled poll running.
+ */
+function report() {
+  if (watchers.size === 0 || Date.now() - reportedAt < REPORT_EVERY_MS - 1_000) return;
+  reportedAt = Date.now();
+  void markWatching([...watchers.keys()]);
+  void touchSiteActive();
+}
+
 function check() {
   checking ??= getCacheVersions()
     .then((versions) => {
@@ -62,8 +81,11 @@ async function subscribe(listener: Listener, userId: string) {
   watchers.set(userId, (watchers.get(userId) ?? 0) + 1);
   timer ??= setInterval(() => {
     void check();
+    report();
     pollWhileWatched();
   }, CHECK_EVERY_MS);
+  void touchSiteActive();
+  report();
   pollWhileWatched();
   // Someone joining mid-way is told where things stand from the last check, or from a fresh one if there has not been one yet.
   if (latest) listener(latest);
@@ -79,24 +101,7 @@ function unsubscribe(listener: Listener, userId: string) {
     clearInterval(timer);
     timer = null;
     latest = null;
-  }
-}
-
-/**
- * "This member has the dashboard open." The live poll treats them as active for the next two minutes. Said at most once a minute per member
- * on this server, however many tabs they have open.
- */
-const told = new Map<string, number>();
-
-async function markWatching(userId: string) {
-  const now = Date.now();
-  if (now - (told.get(userId) ?? 0) < 60_000) return;
-  told.set(userId, now);
-  if (told.size > 500) for (const [id, at] of told) if (now - at > 120_000) told.delete(id);
-  try {
-    await getRedis()?.hset(POLL_STATE_KEY, { [watchingField(userId)]: encodeState("1", 120) });
-  } catch (error) {
-    console.error("Could not record an open dashboard:", error);
+    reportedAt = 0;
   }
 }
 
@@ -129,15 +134,12 @@ export async function GET(request: NextRequest) {
       };
 
       // The first message tells the page where things stand, and then each message follows an actual change.
-      const watchTimer = setInterval(() => void markWatching(session.userId), 30_000);
       const heartbeatTimer = setInterval(() => send("heartbeat", { at: Date.now() }), 25_000);
-      void markWatching(session.userId);
       void subscribe(onVersions, session.userId);
 
       cleanup = () => {
         if (closed) return;
         closed = true;
-        clearInterval(watchTimer);
         clearInterval(heartbeatTimer);
         unsubscribe(onVersions, session.userId);
         try {

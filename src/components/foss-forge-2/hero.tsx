@@ -21,8 +21,8 @@ export function ForgeHero() {
           </h1>
           <Reveal delay={0.1}>
             <p className="mt-7 max-w-lg text-[1.18rem] leading-[1.6] text-[var(--ink)]/80">
-              Our open source festival is back at {FORGE.venue}, inside {FORGE.fest}. Not your usual hackathon: pick from a pool of real-world
-              issues, compete with others on the same challenge, and ship a contribution that can actually be used.
+              Our open source festival is back at {FORGE.venue}, inside {FORGE.fest}. Not your usual hackathon: pick from a pool of
+              real-world issues, compete with others on the same challenge, and ship a contribution that can actually be used.
             </p>
           </Reveal>
           <div className="mt-9 flex flex-wrap items-center gap-x-4 gap-y-4">
