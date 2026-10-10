@@ -15,7 +15,7 @@ const ITEMS: PileItem[] = [
   imgItem("gopher", "/collage/gopher.webp", "The Go gopher", 88, 120),
   imgItem("pandu", "/collage/pandu.webp", "Pandu Ranga, a chihuahua in a hoodie", 104, 148),
   imgItem("git", "/collage/git.webp", "The Git logo", 168, 70),
-  imgItem("ayush", "/collage/ayush.webp", "Ayush Katoch, spotted travelling through dimensions", 150, 150),
+  imgItem("Aayush", "/collage/Aayush.webp", "Aayush Katoch, spotted travelling through dimensions", 150, 150),
   imgItem("gnu", "/collage/gnu.webp", "The GNU head", 106, 104),
   imgItem("messi-dog", "/collage/messi-dog.webp", "A dog receiving a kiss on the head", 140, 139),
   imgItem("inkscape", "/collage/inkscape.webp", "The Inkscape logo", 104, 104),
