@@ -8,6 +8,9 @@
 #
 # It REPLACES the tables it finds in the target (--clean). Point it at a scratch database or at the database you mean to bring back, and
 # nowhere else. Without --scratch it asks you to type the target's host name first, so a wrong address cannot go through by habit.
+#
+# It is all or nothing: the whole replacement runs as one transaction, so if anything goes wrong part way the target is left exactly as it
+# was, never half old and half new.
 set -euo pipefail
 
 dump="${1:?usage: restore.sh <backup.dump> <target-database-url> [--scratch]}"
@@ -22,6 +25,8 @@ if [ "$scratch" != "--scratch" ]; then
 fi
 
 # --clean --if-exists: drop what the backup contains and recreate it, so the target ends up exactly as the backup was.
-# --exit-on-error is left off on purpose: a scratch Postgres may lack roles that the dump mentions, and those are harmless.
-pg_restore --no-owner --no-privileges --clean --if-exists --schema=public --dbname "$target" "$dump"
+# --single-transaction: do all of it in one transaction (this also makes it stop at the first error). Without it, a failure after the drops
+# would leave the target with some tables gone and nothing to replace them. The dump has no owners or grants (--no-owner, --no-privileges
+# when it was made), so there are no roles for it to trip over.
+pg_restore --no-owner --no-privileges --clean --if-exists --single-transaction --schema=public --dbname "$target" "$dump"
 echo "Restored $dump into $host."

@@ -1,4 +1,5 @@
 import "server-only";
+import type { Prisma } from "@prisma/client";
 import { invalidateCache } from "@/server/cache/cache";
 import { PollState, claimPoll } from "@/server/features/live/poll-state";
 import { prisma, prismaRead } from "@/server/db/prisma";
@@ -43,8 +44,13 @@ export const HOT_WINDOW_MS = 36 * 60 * 60 * 1000;
 export const COLD_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const COLD_SPREAD_MS = 20 * 60 * 1000;
 const RETRY_AFTER_FAILURE_MS = 30 * 60 * 1000;
-/** More people than this and the rest would have to wait for a later page. (Only ids are loaded for them, so it is cheap to set high.) */
-const ROSTER_LIMIT = 5_000;
+/**
+ * The roster (everyone who could be polled, as bare ids) is read a page at a time, in a fixed order, until nobody is left, so no member is
+ * ever left out by a cap. The ceiling is only a safety stop against something going badly wrong; it is far above the size of the club, and
+ * below the number of values one database query can carry, so one list of ids is always safe to send back.
+ */
+const ROSTER_PAGE = 2_000;
+const ROSTER_CEILING = 20_000;
 const GITHUB_CONCURRENCY = 6;
 const LEETCODE_CONCURRENCY = 3;
 
@@ -173,6 +179,30 @@ async function pollLeetCode(
 
 /* ------------------------------------------------------------------------------------------------ everyone */
 
+/**
+ * Reads every page from `fetchPage` (which returns the rows after `cursor`, in a stable order) until a short page says there are no more.
+ * Paging by a cursor on a stable key, rather than taking the first N, is what makes sure the same members are not the ones left out.
+ */
+export async function collectPages<T extends { id: string }>(
+  fetchPage: (cursor: string | undefined, take: number) => Promise<T[]>,
+  pageSize = ROSTER_PAGE,
+  ceiling = ROSTER_CEILING,
+): Promise<{ rows: T[]; truncated: boolean }> {
+  const rows: T[] = [];
+  let cursor: string | undefined;
+  while (rows.length < ceiling) {
+    const take = Math.min(pageSize, ceiling - rows.length);
+    const page = await fetchPage(cursor, take);
+    rows.push(...page);
+    // A page that is not full is the last one.
+    if (page.length < take) return { rows, truncated: false };
+    cursor = page[page.length - 1].id;
+  }
+  // The ceiling was reached with a full page. That may have been exactly the end, so look for one more before calling it a truncation.
+  const extra = await fetchPage(cursor, 1);
+  return { rows, truncated: extra.length > 0 };
+}
+
 const lane = async <T, R>(items: T[], limit: number, deadline: number, task: (item: T) => Promise<R>) => {
   const out: R[] = [];
   let next = 0;
@@ -228,16 +258,22 @@ async function poll(state: PollState, options: PollOptions) {
 
   // Who could be polled at all, as bare ids. A thousand of these is a few kilobytes, and nothing yet needs a token or a stats row. (A replica
   // is used when there is one: a moment old is fine here, and it keeps this off the database that takes the writes.)
-  const roster = await prismaRead.user.findMany({
-    where: {
-      ...(options.onlyUserIds ? { id: { in: options.onlyUserIds } } : {}),
-      ...(signInNeeded.size ? { id: { notIn: [...signInNeeded], ...(options.onlyUserIds ? { in: options.onlyUserIds } : {}) } } : {}),
-      lastActive: { gte: new Date(started - GITHUB_ACTIVE_WITHIN_MS) },
-      OR: [{ githubTokenCiphertext: { not: null } }, { leetcodeUsername: { not: null } }],
-    },
-    select: { id: true, liveActiveAt: true },
-    take: ROSTER_LIMIT,
-  });
+  const rosterWhere: Prisma.UserWhereInput = {
+    ...(options.onlyUserIds ? { id: { in: options.onlyUserIds } } : {}),
+    ...(signInNeeded.size ? { id: { notIn: [...signInNeeded], ...(options.onlyUserIds ? { in: options.onlyUserIds } : {}) } } : {}),
+    lastActive: { gte: new Date(started - GITHUB_ACTIVE_WITHIN_MS) },
+    OR: [{ githubTokenCiphertext: { not: null } }, { leetcodeUsername: { not: null } }],
+  };
+  const { rows: roster, truncated } = await collectPages((cursor, take) =>
+    prismaRead.user.findMany({
+      where: rosterWhere,
+      select: { id: true, liveActiveAt: true },
+      orderBy: { id: "asc" },
+      take,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    }),
+  );
+  if (truncated) console.warn(`The live poll's roster hit its ceiling of ${ROSTER_CEILING} members, so the rest are not being polled.`);
   const ids = roster.map((m) => m.id);
 
   // Who is hot: seen new activity lately, or has GitHub/LeetCode activity on record from the last 36 hours, or has the dashboard open now.

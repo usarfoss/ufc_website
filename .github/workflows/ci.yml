@@ -25,9 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -42,9 +42,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -56,7 +56,8 @@ jobs:
   build:
     name: Build and open on localhost:3000
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Longer than one smoke-test request is allowed to take (15 minutes), so a request that hangs ends as a clear error of its own.
+    timeout-minutes: 30
 
     env:
       # Made-up values, only so the app has something to read. None of them is a real secret or points at a real service. Redis and QStash are
@@ -71,9 +72,9 @@ jobs:
       NEXT_TELEMETRY_DISABLED: "1"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -81,7 +82,7 @@ jobs:
       - run: npm ci
 
       # Next's own build cache: the second build of the same dependencies is much quicker.
-      - uses: actions/cache@v4
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .next/cache
           key: next-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**', 'public/**', 'next.config.ts') }}
@@ -98,7 +99,7 @@ jobs:
           echo $! > server.pid
 
           for i in $(seq 1 60); do
-            if curl -fsS -o /dev/null http://localhost:3000/; then
+            if curl -fsS --max-time 5 -o /dev/null http://localhost:3000/; then
               echo "The site answered on http://localhost:3000 after ${i}s."
               exit 0
             fi
@@ -113,11 +114,18 @@ jobs:
           exit 1
 
       - name: Check a few pages and routes
+        env:
+          # How long any one request may take before it counts as a failure: 15 minutes.
+          REQUEST_TIMEOUT_SECONDS: "900"
         run: |
           check() {
-            code="$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:3000$1")"
+            # `|| true`: a request that times out must be reported below as a failed check, not stop the whole step here.
+            code="$(curl -s --max-time "$REQUEST_TIMEOUT_SECONDS" -o /dev/null -w '%{http_code}' "http://localhost:3000$1" || true)"
             if [ "$code" = "$2" ]; then
               echo "ok    $1 -> $code"
+            elif [ "$code" = "000" ]; then
+              echo "::error::$1 got no answer (timed out after ${REQUEST_TIMEOUT_SECONDS}s or the connection failed), expected $2"
+              failed=1
             else
               echo "::error::$1 answered $code, expected $2"
               failed=1

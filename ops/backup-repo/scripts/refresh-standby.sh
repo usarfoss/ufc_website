@@ -17,5 +17,6 @@ if [ "$promoted" = "t" ]; then
   exit 0
 fi
 
-pg_restore --no-owner --no-privileges --clean --if-exists --schema=public --dbname "$standby" "$dump"
+# One transaction: if the refresh fails part way, the standby keeps the previous copy instead of being left half replaced.
+pg_restore --no-owner --no-privileges --clean --if-exists --single-transaction --schema=public --dbname "$standby" "$dump"
 echo "Standby refreshed from $dump."
