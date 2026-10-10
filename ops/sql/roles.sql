@@ -4,7 +4,9 @@
 -- After this the site uses `ufc_app`, which can read and write rows but cannot change or destroy the structure, and the backup job uses
 -- `ufc_backup`, which can only read. The owner login is then used for migrations only and never leaves your machine or the build.
 --
--- Before running: replace both passwords below (any long random string: `openssl rand -base64 24`) and keep them in your password manager.
+-- Before running: replace both passwords below and keep them in your password manager. Make them with `openssl rand -hex 24`: letters and
+-- digits only, so they can go into a connection address as they are (a password with / + = or @ in it has to be escaped there, and that is
+-- an easy way to take the site down).
 -- It is safe to run again; it only adds permissions.
 
 DO $$

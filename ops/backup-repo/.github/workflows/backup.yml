@@ -20,13 +20,13 @@ jobs:
     timeout-minutes: 30
 
     env:
-      # Must be the same major version as the database, or newer (see the Neon console, Settings). Set a repository variable PG_MAJOR to change it.
-      PG_MAJOR: ${{ vars.PG_MAJOR || '17' }}
+      # Must be the same major version as the database, or newer (see the Neon console, Settings). Set a repository variable PG_MAJOR to change it. (The UFC database runs Postgres 18.)
+      PG_MAJOR: ${{ vars.PG_MAJOR || '18' }}
 
     # An empty Postgres that the backup is test-restored into, thrown away with the job.
     services:
       scratch:
-        image: postgres:${{ vars.PG_MAJOR || '17' }}
+        image: postgres:${{ vars.PG_MAJOR || '18' }}
         env:
           POSTGRES_PASSWORD: scratch
         ports:

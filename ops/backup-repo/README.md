@@ -22,7 +22,7 @@ Copy everything in this folder (including `.github/`) into a new private reposit
 | `AGE_PUBLIC_KEY`      | secret             | The public key, starting `age1`. Make the pair on your own machine: `age-keygen -o ufc-backup-key.txt`                 |
 | `STANDBY_1_URL`       | secret, optional   | Direct address of a second Postgres (another Neon account, Supabase, ...) that is kept as a copy.                      |
 | `STANDBY_2_URL`       | secret, optional   | The same, for a third.                                                                                                 |
-| `PG_MAJOR`            | variable, optional | Postgres major version of the database, if it is not 17.                                                               |
+| `PG_MAJOR`            | variable, optional | Postgres major version of the database, if it is not 18 (the default).                                                 |
 
 Then **Actions, Database backup, Run workflow** once, and check it goes green. The first successful run produces an artifact; open it to
 make sure there is a `.dump.age` file in it.
