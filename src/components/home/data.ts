@@ -222,7 +222,7 @@ export const TEAM: Member[] = [
   {
     name: "Aayush",
     role: "Tech Lead",
-    img: "/team-images/ayush-katoch.jpg",
+    img: "/team-images/Aayush-katoch.jpg",
     line: "Spotted travelling through dimensions. Pull request still pending.",
     focus: "50% 6%",
   },
