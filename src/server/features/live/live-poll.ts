@@ -1,7 +1,7 @@
 import "server-only";
 import { invalidateCache } from "@/server/cache/cache";
 import { PollState, claimPoll } from "@/server/features/live/poll-state";
-import { prisma } from "@/server/db/prisma";
+import { prisma, prismaRead } from "@/server/db/prisma";
 import { syncGitHubUser } from "@/server/features/github/github-sync.service";
 import { createGitHubService } from "@/server/integrations/github.service";
 import { TOKEN_FIELDS, usableGitHubToken, type TokenRow } from "@/server/integrations/github-token";
@@ -22,7 +22,11 @@ import { SERVICE_ACTIVITY_TYPES } from "@/server/features/activity/retention";
  *    member is checked at most every couple of minutes.
  *
  * Everything the poll remembers between runs (when a member was last checked, the events ETag) lives in one Redis hash (see poll-state.ts),
- * read once at the start of a run and saved once at the end. It is only a hint: losing it just means one extra check.
+ * read (only the notes for the members being looked at) at the start of a run and saved once at the end. It is only a hint: losing it just
+ * means one extra check.
+ *
+ * A run is cheap however many members there are: it loads their ids, works out who is due, and only then loads the full rows (tokens, stats)
+ * of those few. And the scheduled run does not start at all when nobody has been on the site for a while (see siteIsIdle).
  */
 
 const GITHUB_ACTIVE_WITHIN_MS = 30 * 24 * 60 * 60 * 1000;
@@ -39,6 +43,8 @@ export const HOT_WINDOW_MS = 36 * 60 * 60 * 1000;
 export const COLD_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const COLD_SPREAD_MS = 20 * 60 * 1000;
 const RETRY_AFTER_FAILURE_MS = 30 * 60 * 1000;
+/** More people than this and the rest would have to wait for a later page. (Only ids are loaded for them, so it is cheap to set high.) */
+const ROSTER_LIMIT = 5_000;
 const GITHUB_CONCURRENCY = 6;
 const LEETCODE_CONCURRENCY = 3;
 
@@ -203,7 +209,7 @@ export async function runGatedLivePoll(options: PollOptions = {}) {
 }
 
 export async function runLivePoll(options: PollOptions = {}) {
-  const state = await PollState.load();
+  const state = new PollState();
   try {
     return await poll(state, options);
   } finally {
@@ -220,46 +226,66 @@ async function poll(state: PollState, options: PollOptions) {
   // sign in, but a member in this state is not looking at the site, so it can wait too.)
   const signInNeeded = await membersNeedingSignIn();
 
-  const members = await prisma.user.findMany({
+  // Who could be polled at all, as bare ids. A thousand of these is a few kilobytes, and nothing yet needs a token or a stats row. (A replica
+  // is used when there is one: a moment old is fine here, and it keeps this off the database that takes the writes.)
+  const roster = await prismaRead.user.findMany({
     where: {
       ...(options.onlyUserIds ? { id: { in: options.onlyUserIds } } : {}),
       ...(signInNeeded.size ? { id: { notIn: [...signInNeeded], ...(options.onlyUserIds ? { in: options.onlyUserIds } : {}) } } : {}),
       lastActive: { gte: new Date(started - GITHUB_ACTIVE_WITHIN_MS) },
       OR: [{ githubTokenCiphertext: { not: null } }, { leetcodeUsername: { not: null } }],
     },
-    select: {
-      ...TOKEN_FIELDS,
-      liveActiveAt: true,
-      githubUsername: true,
-      leetcodeUsername: true,
-      githubStats: { select: { commits: true, pullRequests: true, issues: true } },
-      leetcodeStats: { select: { easySolved: true, mediumSolved: true, hardSolved: true } },
-    },
-    take: 500,
+    select: { id: true, liveActiveAt: true },
+    take: ROSTER_LIMIT,
   });
-  const ids = members.map((m) => m.id);
+  const ids = roster.map((m) => m.id);
 
   // Who is hot: seen new activity lately, or has GitHub/LeetCode activity on record from the last 36 hours, or has the dashboard open now.
-  const recent = new Set(
+  const [recent] = await Promise.all([
     ids.length
-      ? (
-          await prisma.activity.groupBy({
-            by: ["userId"],
-            where: { userId: { in: ids }, type: { in: SERVICE_ACTIVITY_TYPES }, createdAt: { gte: hotSince } },
-          })
-        ).map((row) => row.userId)
+      ? prismaRead.activity.groupBy({
+          by: ["userId"],
+          where: { userId: { in: ids }, type: { in: SERVICE_ACTIVITY_TYPES }, createdAt: { gte: hotSince } },
+        })
       : [],
-  );
+    // The three notes that decide who is due, for everyone on the roster. Everything else is read below, for the members who are due.
+    state.fetch(["watching", "cold:due", "gh:checked"], ids),
+  ]);
+  const recentIds = new Set(recent.map((row) => row.userId));
   const open = new Set(options.watching);
-  const isHot = (m: Member) =>
-    open.has(m.id) || !!state.get("watching", m.id) || (!!m.liveActiveAt && m.liveActiveAt >= hotSince) || recent.has(m.id);
-  const isDue = (m: Member) => isHot(m) || Number(state.get("cold:due", m.id) ?? 0) <= started;
+  const isHot = (m: { id: string; liveActiveAt: Date | null }) =>
+    open.has(m.id) || !!state.get("watching", m.id) || (!!m.liveActiveAt && m.liveActiveAt >= hotSince) || recentIds.has(m.id);
+  const isDue = (m: { id: string; liveActiveAt: Date | null }) => isHot(m) || Number(state.get("cold:due", m.id) ?? 0) <= started;
 
-  const hot = members.filter(isHot);
-  const due = members.filter(isDue);
+  const hot = roster.filter(isHot);
+  const dueRoster = roster.filter(isDue);
   // The member who has gone longest without a check goes first, so a slow minute never starves the same people.
-  due.sort((a, b) => Number(state.get("gh:checked", a.id) ?? 0) - Number(state.get("gh:checked", b.id) ?? 0));
+  dueRoster.sort((a, b) => Number(state.get("gh:checked", a.id) ?? 0) - Number(state.get("gh:checked", b.id) ?? 0));
+  const dueIds = dueRoster.map((m) => m.id);
   const hotIds = new Set(hot.map((m) => m.id));
+
+  // Only now the full rows (with tokens and stats), and only for those who are due: on a quiet minute that is a handful out of everyone.
+  const [rows] = await Promise.all([
+    dueIds.length
+      ? prisma.user.findMany({
+          where: { id: { in: dueIds } },
+          select: {
+            ...TOKEN_FIELDS,
+            liveActiveAt: true,
+            githubUsername: true,
+            leetcodeUsername: true,
+            githubStats: { select: { commits: true, pullRequests: true, issues: true } },
+            leetcodeStats: { select: { easySolved: true, mediumSolved: true, hardSolved: true } },
+          },
+        })
+      : [],
+    state.fetch(["backoff", "gh:etag", "gh:event", "gh:v", "settle", "lc:checked"], dueIds),
+  ]);
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  const due: Member[] = dueIds.flatMap((id) => {
+    const row = byId.get(id);
+    return row ? [row] : [];
+  });
 
   const [github, leetcode] = await Promise.all([
     lane(due, GITHUB_CONCURRENCY, deadline, async (member) => {
@@ -297,9 +323,9 @@ async function poll(state: PollState, options: PollOptions) {
   if (leetcode.some((r) => r.activityAdded)) await invalidateCache("activity-feed");
 
   return {
-    members: members.length,
+    members: roster.length,
     hot: hot.length,
-    cold: members.length - hot.length,
+    cold: roster.length - hot.length,
     checked: due.length,
     becameHot: [...changed].filter((id) => !hotIds.has(id)).length,
     github: tally(github.map((r) => r.outcome)),

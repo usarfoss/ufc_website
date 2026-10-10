@@ -1,0 +1,7 @@
+# Backups never go in git: they are kept as workflow artifacts and releases, encrypted.
+out/
+*.dump
+*.dump.age
+# The private key must never be anywhere near this repository.
+*key*.txt
+*.agekey

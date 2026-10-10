@@ -1,0 +1,95 @@
+name: Database backup
+
+# Every 6 hours: take a backup, prove it restores, encrypt it, keep it, and refresh the standby copies.
+# Needs the secrets listed in README.md. A failed run emails the person who owns this repository.
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write # only for the weekly copy, which is kept as a release
+
+concurrency:
+  group: database-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      # Must be the same major version as the database, or newer (see the Neon console, Settings). Set a repository variable PG_MAJOR to change it.
+      PG_MAJOR: ${{ vars.PG_MAJOR || '17' }}
+
+    # An empty Postgres that the backup is test-restored into, thrown away with the job.
+    services:
+      scratch:
+        image: postgres:${{ vars.PG_MAJOR || '17' }}
+        env:
+          POSTGRES_PASSWORD: scratch
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the Postgres client and age
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq age postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y -qq "postgresql-client-${PG_MAJOR}"
+          echo "/usr/lib/postgresql/${PG_MAJOR}/bin" >> "$GITHUB_PATH"
+
+      - name: Back up, prove it restores, encrypt
+        env:
+          BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+          AGE_PUBLIC_KEY: ${{ secrets.AGE_PUBLIC_KEY }}
+          RESTORE_CHECK_URL: postgresql://postgres:scratch@localhost:5432/postgres
+        run: ./scripts/dump.sh
+
+      - name: Keep the encrypted backup for 30 days
+        uses: actions/upload-artifact@v4
+        with:
+          name: ufc-backup-${{ github.run_id }}
+          path: out/*.dump.age
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Keep one backup a week for good (as a release, newest 12)
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Runs only on the first scheduled run of Sunday (UTC).
+          if [ "$(date -u +%u)" = "7" ] && [ "$(date -u +%H)" -lt 6 ]; then
+            tag="weekly-$(date -u +%Y%m%d)"
+            gh release create "$tag" out/*.dump.age --title "Weekly backup $tag" --notes "Encrypted database backup."
+            gh release list --limit 100 --json tagName --jq '.[12:][].tagName' | xargs -r -n1 gh release delete --yes --cleanup-tag
+          fi
+
+      - name: Refresh the standby copies
+        env:
+          STANDBY_1_URL: ${{ secrets.STANDBY_1_URL }}
+          STANDBY_2_URL: ${{ secrets.STANDBY_2_URL }}
+        run: |
+          dump="$(cat out/latest.txt)"
+          failed=0
+          for n in 1 2; do
+            var="STANDBY_${n}_URL"
+            url="${!var:-}"
+            if [ -z "$url" ]; then echo "No standby $n configured, skipping."; continue; fi
+            ./scripts/refresh-standby.sh "$dump" "$url" || { echo "::error::Standby $n could not be refreshed."; failed=1; }
+          done
+          exit $failed
+
+      - name: Remove the unencrypted copy
+        if: always()
+        run: rm -f out/*.dump out/*.txt

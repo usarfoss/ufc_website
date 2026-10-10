@@ -47,7 +47,10 @@ export function Ticket({ notchBg = "var(--sky)" }: { notchBg?: string }) {
         </div>
       </div>
 
-      <div data-brochure className="relative border-t-2 border-dashed border-[var(--ink)]/60! px-6 py-6 sm:px-8 lg:border-l-2 lg:border-t-0">
+      <div
+        data-brochure
+        className="relative border-t-2 border-dashed border-[var(--ink)]/60! px-6 py-6 sm:px-8 lg:border-l-2 lg:border-t-0"
+      >
         <span className={`${notch} -left-3 -top-3`} style={{ background: notchBg }} aria-hidden="true" />
         <span
           className={`${notch} -right-3 -top-3 lg:-bottom-3 lg:left-[-0.75rem] lg:right-auto lg:top-auto`}

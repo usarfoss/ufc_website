@@ -11,7 +11,12 @@ export const GET = withApiErrorHandling(async (request: NextRequest) => {
     const [user, recentActivity, memberCount] = await Promise.all([
       prisma.user.findUnique({
         where: { id: session.userId },
-        include: { githubStats: true },
+        select: {
+          id: true,
+          name: true,
+          githubUsername: true,
+          githubStats: { select: { commits: true, pullRequests: true, issues: true, lastSynced: true } },
+        },
       }),
       prisma.activity.findMany({
         where: { userId: session.userId, ...notExpired() },

@@ -13,7 +13,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "jobs:schedule": "tsx scripts/schedule-jobs.mts"
+    "jobs:schedule": "tsx scripts/schedule-jobs.mts",
+    "db:ping": "tsx scripts/db-ping.mts"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.1",

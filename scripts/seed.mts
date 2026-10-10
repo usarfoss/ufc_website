@@ -11,6 +11,10 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
+import { assertNotProduction } from "../prisma/db-guard";
+
+// Seeding writes made-up people. It must never do that to the real database.
+assertNotProduction(process.env.DATABASE_URL, "Seeding");
 
 const SEED_DOMAIN = "@seed.ufc.local";
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });

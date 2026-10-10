@@ -31,8 +31,8 @@ export function ForgeAbout() {
           <div className="border-l-[3px] border-[var(--signal-deep)]! pl-6">
             <p className="code mb-2 text-[0.72rem] font-bold uppercase tracking-widest text-[var(--signal-deep)]">{FORGE.name}</p>
             <p>
-              This is <Mark tone="var(--butter)">not a traditional hackathon</Mark>. Instead of one problem statement for everyone, you get a
-              pool of real-world challenges from open-source projects, non-profits, communities and technical partners. You choose what to
+              This is <Mark tone="var(--butter)">not a traditional hackathon</Mark>. Instead of one problem statement for everyone, you get
+              a pool of real-world challenges from open-source projects, non-profits, communities and technical partners. You choose what to
               solve, compete with others on similar challenges, and earn points, rewards and prizes for what you actually accomplish.
             </p>
           </div>

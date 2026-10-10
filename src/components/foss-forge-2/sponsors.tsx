@@ -25,8 +25,8 @@ export function ForgeSponsors() {
       </h2>
       <Reveal delay={0.08}>
         <p className="mt-6 max-w-2xl text-[1.12rem] leading-[1.7] text-[var(--ink)]/80">
-          {FORGE.name} is put on by students and held up by its backers — many of whom bring the very challenges teams take on. These are the
-          ones on the board so far.
+          {FORGE.name} is put on by students and held up by its backers — many of whom bring the very challenges teams take on. These are
+          the ones on the board so far.
         </p>
       </Reveal>
 

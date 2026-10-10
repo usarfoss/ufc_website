@@ -14,7 +14,17 @@ export const GET = withApiErrorHandling(async (request: NextRequest) => {
       where: {
         OR: [{ githubStats: { isNot: null } }, { leetcodeStats: { isNot: null } }],
       },
-      include: { githubStats: true, leetcodeStats: true },
+      // Only what the list shows. (A member's GitHub row also holds their whole contribution calendar, which is far larger than everything
+      // else here, and was being loaded for every member each time the list was rebuilt.)
+      select: {
+        id: true,
+        name: true,
+        githubUsername: true,
+        leetcodeUsername: true,
+        avatar: true,
+        githubStats: { select: { commits: true, pullRequests: true, issues: true, contributions: true } },
+        leetcodeStats: { select: { totalSolved: true, easySolved: true, mediumSolved: true, hardSolved: true } },
+      },
     });
 
     const rankedUsers = users

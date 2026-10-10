@@ -1,5 +1,5 @@
 import "server-only";
-import { getRedis } from "@/server/cache/cache";
+import { getStateRedis } from "@/server/cache/redis";
 
 /**
  * Members who have to sign in again, because their GitHub connection has run out and could not be renewed.
@@ -26,7 +26,7 @@ export async function needsSignIn(userId: string) {
   if (hit && Date.now() - hit.at < MEMO_MS) return hit.value;
 
   let value = local.has(userId);
-  const redis = getRedis();
+  const redis = getStateRedis();
   if (redis) {
     try {
       value = (await redis.sismember(SET, userId)) === 1;
@@ -43,7 +43,7 @@ export async function markNeedsSignIn(userId: string) {
   local.add(userId);
   remember(userId, true);
   try {
-    await getRedis()?.sadd(SET, userId);
+    await getStateRedis()?.sadd(SET, userId);
   } catch (error) {
     console.error("Could not record that a member has to sign in again:", error);
   }
@@ -53,7 +53,7 @@ export async function clearNeedsSignIn(userId: string) {
   local.delete(userId);
   remember(userId, false);
   try {
-    await getRedis()?.srem(SET, userId);
+    await getStateRedis()?.srem(SET, userId);
   } catch (error) {
     console.error("Could not clear a member's sign in note:", error);
   }
@@ -61,7 +61,7 @@ export async function clearNeedsSignIn(userId: string) {
 
 /** Everyone who currently has to sign in again, in one read. The live poll skips them. */
 export async function membersNeedingSignIn(): Promise<Set<string>> {
-  const redis = getRedis();
+  const redis = getStateRedis();
   if (!redis) return new Set(local);
   try {
     return new Set(await redis.smembers<string[]>(SET));
